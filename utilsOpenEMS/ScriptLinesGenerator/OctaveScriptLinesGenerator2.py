@@ -7,146 +7,20 @@ import numpy as np
 import re
 import math
 
-from utilsOpenEMS.GlobalFunctions.GlobalFunctions import _bool, _r
+from utilsOpenEMS.GlobalFunctions.GlobalFunctions import _bool, _r, _r2
 from utilsOpenEMS.SettingsItem.SettingsItem import SettingsItem
 from utilsOpenEMS.GuiHelpers.GuiHelpers import GuiHelpers
 from utilsOpenEMS.GuiHelpers.FactoryCadInterface import FactoryCadInterface
 
-class OctaveScriptLinesGenerator:
+from utilsOpenEMS.ScriptLinesGenerator.CommonScriptLinesGenerator import CommonScriptLinesGenerator
+
+class OctaveScriptLinesGenerator2(CommonScriptLinesGenerator):
 
     #
     #   constructor, get access to form GUI
     #
     def __init__(self, form, statusBar = None):
-        self.form = form
-        self.statusBar = statusBar
-
-        self.internalPortIndexNamesList = {}
-        self.internalNF2FFIndexNamesList = {}
-
-        #
-        # GUI helpers function like display message box and so
-        #
-        self.guiHelpers = GuiHelpers(self.form, statusBar = self.statusBar)
-        self.cadHelpers = FactoryCadInterface.createHelper()
-
-    def getUnitLengthFromUI_m(self):
-        unitStr = self.form.simParamsDeltaUnitList.currentText()
-        return SettingsItem.getUnitsAsNumber(unitStr)
-
-    def getFreeCADUnitLength_m(self):
-        # # FreeCAD uses mm internally, so getFreeCADUnitLength_m() should always return 0.001.
-        # # Below is one way to retrieve this value from schemaTranslate() without implying it.
-        # [qtyStr, standardUnitsPerTargetUnit, targetUnitStr] = App.Units.schemaTranslate( App.Units.Quantity("1.0 m"), App.Units.Scheme.SI2 )
-        # return 1.0 / standardUnitsPerTargetUnit # standard unit is mm : return 1.0 / 1000 [m]
-        return 0.001
-
-    def getItemsByClassName(self):
-        categoryCount = self.form.objectAssignmentRightTreeWidget.invisibleRootItem().childCount()
-        categoryNodes = [self.form.objectAssignmentRightTreeWidget.topLevelItem(k) for k in range(categoryCount)]
-        itemsByClassName = {}
-        for m, categoryNode in enumerate(categoryNodes):  # for each category
-            for k in range(categoryNode.childCount()):  # for each child item in a given category
-                item = categoryNode.child(k)
-                itemData = item.data(0, QtCore.Qt.UserRole)
-                if not itemData:
-                    continue
-                itemClassName = itemData.__class__.__name__
-                if not (itemClassName in itemsByClassName):
-                    itemsByClassName[itemClassName] = [[item, itemData]]
-                else:
-                    itemsByClassName[itemClassName].append([item, itemData])
-
-        print("generateOpenEMSScript: Item classes found = " + ", ".join(itemsByClassName.keys()))
-
-        return itemsByClassName
-
-    #
-    #	Returns object priority
-    #		priorityItemName - string which identifies item by its text in priority tree view widget
-    #
-    def getItemPriority(self, priorityItemName):
-        #
-        #	priority is read from tree view
-        #
-        priorityItemValue = 42
-        itemsCount = self.form.objectAssignmentPriorityTreeView.topLevelItemCount()
-        for k in range(itemsCount):
-            priorityItem = self.form.objectAssignmentPriorityTreeView.topLevelItem(k)
-            if priorityItemName in priorityItem.text(0):
-                #
-                #	THIS IS MY FORMULA TO HAVE AT LEAST TWO 0 AT END AND NOT HAVE PRIORITY INDEX 0 BUT START AT 100 AT LEAST!
-                #		ATTENTION: higher number means higher priority so fromual is: (1001 - k)     ...to get item at top of tree view with highest priority numbers!
-                #
-                priorityItemValue = (100 - k) * 100
-                break  # this will break loop SO JUST ONE ITEM FROM PRIORITY LIST IS DELETED
-
-        return priorityItemValue
-
-    #
-    #   Returns current FreeCAD file:
-    #       - absolute directory
-    #       - name without extension
-    #
-    def getCurrDir(self):
-        programname = os.path.basename(self.cadHelpers.getCurrDocumentFileName())
-        programDir = os.path.dirname(self.cadHelpers.getCurrDocumentFileName())
-        programbase, ext = os.path.splitext(programname)  # extract basename and ext from filename
-        return [programDir, programbase]
-
-    #
-    #   Creates output dir in current FreeCAD file directory if not exists.
-    #       outputDir - absolute path to directory where folder with simulation files should be created
-    #
-    def createOuputDir(self, outputDir):
-        programname = os.path.basename(self.cadHelpers.getCurrDocumentFileName())     # FreeCAD filename with extension
-        programdir = os.path.dirname(self.cadHelpers.getCurrDocumentFileName())       # FreeCAD file directory
-        programbase, ext = os.path.splitext(programname)                # FreeCAD filename without extension
-
-        #
-        #   Simulation files will be saved in folder named based on FreeCAD filename and suffix _openEMS_simulation
-        #       If parameter outputDir is not set this folder will be generated in the same folder as FreeCAD file.
-        #       If outputDir is set folder with simulation folder with files is genenrated next to .ini file
-        #
-        if outputDir is None or outputDir == False:
-            absoluteOutputDir = f"{programdir}/{programbase}_openEMS_simulation"
-        else:
-            absoluteOutputDir = outputDir
-
-        if not os.path.exists(absoluteOutputDir):
-            os.makedirs(absoluteOutputDir)
-            print(f"Created directory for simulation: {outputDir}")
-
-        return absoluteOutputDir
-
-    def reportFreeCADItemSettings(self, items):
-        # "FreeCAD item detection everywhere in Main Tree!!! need to get rid this, now it's tolerated during development!"
-        if not items:
-            return
-
-        for [item, currSetting] in items:
-            #	GET PARENT NODE DATATYPE
-            print("#")
-            print("#FREECAD OBJ.")
-            if (str(item.parent().text(0)) == "Grid"):
-                print("name: Grid Default")
-                print("type: FreeCADSettingsItem")
-                pass
-            elif (str(item.parent().text(0)) == "Ports"):
-                print("name: Port Default")
-                print("type: FreeCADSettingsItem")
-                pass
-            elif (str(item.parent().text(0)) == "Excitation"):
-                print("name: Excitation Default")
-                print("type: FreeCADSettingsItem")
-                pass
-            elif (str(item.parent().text(0)) == "Materials"):
-                print("name: Material Default")
-                print("type: FreeCADSettingsItem")
-                pass
-            else:
-                print("Parent of FreeCADSettingItem UNKNOWN")
-                pass
+        super(OctaveScriptLinesGenerator2, self).__init__(form, statusBar)
 
     def getOctaveExecCommand(self, mFileName, options=""):
         cmd = self.form.octaveExecCommandList.currentText()
@@ -174,17 +48,6 @@ class OctaveScriptLinesGenerator:
         genScript += "\n"
 
         return genScript
-
-    def getModelCoordsType(self):
-        """
-        Returns current coordinate system, as there can be just rectangular or just cylindrical for all grid items it's enough to look at first grid item.
-        :return: string (rectangular, cylindrical)
-        """
-        if self.form.gridSettingsTreeView.topLevelItemCount() > 0:
-            coordsType = self.form.gridSettingsTreeView.topLevelItem(0).data(0, QtCore.Qt.UserRole).coordsType
-        else:
-            coordsType = "rectangular"
-        return coordsType
 
     def getCoordinateSystemScriptLines(self):
         genScript = ""
@@ -284,111 +147,51 @@ class OctaveScriptLinesGenerator:
 
                         if (freeCadObj.Name.find("Sketch") > -1):
                             #
-                            #   Sketch is added as polygon into conducting sheet material
+                            # If object is sketch then it's added as it outline
                             #
-                            normDir = ""
-                            elevation = ""
-                            if (bbCoords.XMin == bbCoords.XMax):
-                                normDir = "x"
-                                elevation = bbCoords.XMin
 
-                                pointIndex = 1
+                            normDir, elevation, points = self.getSketchPointsForConductingSheet(freeCadObj)
+                            if not normDir.startswith("ERROR"):
                                 genScript += "points = [];\n"
-                                for geometryObj in freeCadObj.Geometry:
-                                    if (str(type(geometryObj)).find("LineSegment") > -1):
-                                        genScript += f"points(1,{pointIndex}) = " + str(_r(geometryObj.StartPoint.y)) + ";"
-                                        genScript += f"points(2,{pointIndex}) = " + str(_r(geometryObj.StartPoint.z)) + ";"
-                                        genScript += "\n"
-                                        pointIndex += 1
+                                if len(points[0])  == 0:
+                                    genScript += "%% ERROR, no points for polygon for conducting sheet nothing generated"
+                                else:
+                                    for k in range(len(points[0])):
+                                        genScript += f"points(1,{k+1}) = {points[0][k]};\n"
+                                        genScript += f"points(2,{k+1}) = {points[1][k]};\n"
+                                genScript += "\n"
 
-                            elif (bbCoords.YMin == bbCoords.YMax):
-                                normDir = "y"
-                                elevation = bbCoords.YMin
-
-                                pointIndex = 1
-                                genScript += "points = [];\n"
-                                for geometryObj in freeCadObj.Geometry:
-                                    if (str(type(geometryObj)).find("LineSegment") > -1):
-                                        genScript += f"points(1,{pointIndex}) = " + str(_r(geometryObj.StartPoint.x)) + ";"
-                                        genScript += f"points(2,{pointIndex}) = " + str(_r(geometryObj.StartPoint.z)) + ";"
-                                        genScript += "\n"
-                                        pointIndex += 1
-
-                            elif (bbCoords.ZMin == bbCoords.ZMax):
-                                normDir = "z"
-                                elevation = bbCoords.ZMin
-
-                                pointIndex = 1
-                                genScript += "points = [];\n"
-                                for geometryObj in freeCadObj.Geometry:
-                                    if (str(type(geometryObj)).find("LineSegment") > -1):
-                                        genScript += f"points(1,{pointIndex}) = " + str(_r(geometryObj.StartPoint.x)) + ";"
-                                        genScript += f"points(2,{pointIndex}) = " + str(_r(geometryObj.StartPoint.y)) + ";"
-                                        genScript += "\n"
-                                        pointIndex += 1
-
+                                genScript += f"CSX = AddPolygon(CSX, '{currSetting.getName()}', {str(objModelPriority)}, '{normDir}', {elevation}, points);\n"
+                                genScript += "\n"
+                                print("material conducting sheet: polygon into conducting sheet added.")
                             else:
-                                normDir = "ERROR: sketch not lay in coordinate plane"
+                                genScript += normDir + "\n"
+                                genScript += "\n"
+                                print("ERROR: material conducting sheet: " + normDir)
 
-                            genScript += f"CSX = AddPolygon(CSX, '{currSetting.getName()}', {str(objModelPriority)}, '{normDir}', {_r(elevation)}, points);\n"
-
-                            print("polygon into conducting sheet added.")
-
-                        elif (bbCoords.XMin == bbCoords.XMax or bbCoords.YMin == bbCoords.YMax or bbCoords.ZMin == bbCoords.ZMax):
+                        elif (_r(bbCoords.XMin) == _r(bbCoords.XMax) or _r(bbCoords.YMin) == _r(bbCoords.YMax) or _r(bbCoords.ZMin) == _r(bbCoords.ZMax)):
                             #
-                            # Adding planar object into conducting sheet, if it consiss from faces then each face is added as polygon.
+                            # Adding planar object into conducting sheet, if it consists from faces then each face is added as polygon.
                             #
 
-                            if (len(freeCadObj.Shape.Faces) > 0):
-
-                                normDir = ""
-                                elevation = ""
-                                if (bbCoords.XMin == bbCoords.XMax):
-                                    normDir = "x"
-                                    elevation = bbCoords.XMin
-
-                                    for face in freeCadObj.Shape.Faces:
-                                        pointIndex = 1
-                                        genScript += "points = [];\n"
-                                        for vertex in face.Vertexes:
-                                            genScript += f"points(1,{pointIndex}) = " + str(_r(vertex.Y)) + ";"
-                                            genScript += f"points(2,{pointIndex}) = " + str(_r(vertex.Z)) + ";"
-                                            genScript += "\n"
-                                            pointIndex += 1
-                                        genScript += f"CSX = AddPolygon(CSX, '{currSetting.getName()}', {str(objModelPriority)}, '{normDir}', {_r(elevation)}, points);\n"
-
-                                elif (bbCoords.YMin == bbCoords.YMax):
-                                    normDir = "y"
-                                    elevation = bbCoords.YMin
-
-                                    for face in freeCadObj.Shape.Faces:
-                                        pointIndex = 1
-                                        genScript += "points = [];\n"
-                                        for vertex in face.Vertexes:
-                                            genScript += f"points(1,{pointIndex}) = " + str(_r(vertex.X)) + ";"
-                                            genScript += f"points(2,{pointIndex}) = " + str(_r(vertex.Z)) + ";"
-                                            genScript += "\n"
-                                            pointIndex += 1
-                                        genScript += f"CSX = AddPolygon(CSX, '{currSetting.getName()}', {str(objModelPriority)}, '{normDir}', {_r(elevation)}, points);\n"
-
-                                elif (bbCoords.ZMin == bbCoords.ZMax):
-                                    normDir = "z"
-                                    elevation = bbCoords.ZMin
-
-                                    for face in freeCadObj.Shape.Faces:
-                                        pointIndex = 1
-                                        genScript += "points = [];\n"
-                                        for vertex in face.Vertexes:
-                                            genScript += f"points(1,{pointIndex}) = " + str(_r(vertex.X)) + ";"
-                                            genScript += f"points(2,{pointIndex}) = " + str(_r(vertex.Y)) + ";"
-                                            genScript += "\n"
-                                            pointIndex += 1
-                                        genScript += f"CSX = AddPolygon(CSX, '{currSetting.getName()}', {str(objModelPriority)}, '{normDir}', {_r(elevation)}, points);\n"
-
+                            normDir, elevation, facesList = self.getFacePointsForConductingSheet(freeCadObj)
+                            if normDir != "":
+                                for face in facesList:
+                                    genScript += "points = [];\n"
+                                    for pointIndex in range(len(face[0])):
+                                        genScript += f"points(1,{pointIndex+1}) = {face[0][pointIndex]};"
+                                        genScript += f"points(2,{pointIndex+1}) = {face[1][pointIndex]};"
+                                        genScript += "\n"
+                                    genScript += f"CSX = AddPolygon(CSX, '{currSetting.getName()}', {str(objModelPriority)}, '{normDir}', {_r(elevation)}, points);\n"
                             else:
-                                genScript += f"%\tObject is planar as it should be.\n"
+                                genScript += f"%\tObject has no faces, conducting sheet is generated based on object bounding box since it's planar.\n"
                                 genScript += f"CSX = AddBox(CSX,'{currSetting.getName()}',{str(objModelPriority)},[{_r(bbCoords.XMin)} {_r(bbCoords.YMin)} {_r(bbCoords.ZMin)}],[{_r(bbCoords.XMax)} {_r(bbCoords.YMax)} {_r(bbCoords.ZMax)}]);\n"
+
                         else:
+                            #
+                            # If object is 3D object then it's boundaries are added as conducting sheets.
+                            #
+
                             genScript += f"%\tObject is 3D so there are sheets on its boundary box generated.\n"
                             genScript += f"CSX = AddBox(CSX,'{currSetting.getName()}',{str(objModelPriority)},[{_r(bbCoords.XMin)} {_r(bbCoords.YMin)} {_r(bbCoords.ZMin)}],[{_r(bbCoords.XMax)} {_r(bbCoords.YMax)} {_r(bbCoords.ZMin)}]);\n"
                             genScript += f"CSX = AddBox(CSX,'{currSetting.getName()}',{str(objModelPriority)},[{_r(bbCoords.XMin)} {_r(bbCoords.YMin)} {_r(bbCoords.ZMin)}],[{_r(bbCoords.XMax)} {_r(bbCoords.YMin)} {_r(bbCoords.ZMax)}]);\n"
@@ -420,6 +223,8 @@ class OctaveScriptLinesGenerator:
                         #	there can be circle, circle arc and maybe something else in sketch geometry
                         #
 
+                        """
+                        # WRONG SINCE StartPoint, EndPoint are defined in XY and not in absolute coordinates
                         for geometryObj in freeCadObj.Geometry:
                             if (str(type(geometryObj)).find("LineSegment") > -1):
                                 genScript += "points = [];\n"
@@ -431,8 +236,30 @@ class OctaveScriptLinesGenerator:
                                 genScript += "points(2,2) = " + str(geometryObj.EndPoint.y) + ";"
                                 genScript += "points(3,2) = " + str(geometryObj.EndPoint.z) + ";"
                                 genScript += "\n"
-                                genScript += "CSX = AddCurve(CSX,'" + currSetting.getName() + "'," + str(
-                                    objModelPriority) + ", points);\n"
+                                genScript += "CSX = AddCurve(CSX,'" + currSetting.getName() + "'," + str(objModelPriority) + ", points);\n"
+                        """
+
+                        genScript += "points = [];\n"
+                        for v in freeCadObj.Shape.OrderedVertexes:
+                            genScript += f"points(1,2) = {_r(v.X)};"
+                            genScript += f"points(2,2) = {_r(v.Y)};"
+                            genScript += f"points(3,2) = {_r(v.Z)};"
+                            genScript += "CSX = AddCurve(CSX,'" + currSetting.getName() + "'," + str(objModelPriority) + ", points);\n"
+                            genScript += "\n"
+
+                        #   HERE IS MADE ASSUMPTION THAT:
+                        #       We suppose in sketch there are no mulitple closed sketches
+                        #
+                        #   Add first vertex into list
+                        #
+                        genScript += "points = [];\n"
+                        v = freeCadObj.Shape.OrderedVertexes[0]
+                        if len(freeCadObj.OpenVertices) == 0:
+                            genScript += f"points(1,2) = {_r(v.X)};"
+                            genScript += f"points(2,2) = {_r(v.Y)};"
+                            genScript += f"points(3,2) = {_r(v.Z)};"
+                            genScript += f"CSX = AddCurve(CSX,'{currSetting.getName()}',{objModelPriority}, points);\n"
+                            genScript += "\n"
 
                         print("Line segments from sketch added.")
 
@@ -474,6 +301,80 @@ class OctaveScriptLinesGenerator:
 
         return genScript
 
+    def getCartesianOrCylindricalScriptLinesFromStartStop(self, bbCoords, startPointName=None, stopPointName=None):
+        genScript = "";
+        refUnit = self.getUnitLengthFromUI_m()  # Coordinates need to be given in drawing units
+        sf = self.getFreeCADUnitLength_m() / refUnit  # scaling factor for FreeCAD units to drawing units
+
+        strPortCoordsCartesianToCylindrical = ""
+        strPortCoordsCartesianToCylindrical += "[generatedAuxTheta generatedAuxR generatedAuxZ] = cart2pol(portStart);\n"
+        strPortCoordsCartesianToCylindrical += "portStart = [generatedAuxR generatedAuxTheta generatedAuxZ];\n"
+        strPortCoordsCartesianToCylindrical += "[generatedAuxTheta generatedAuxR generatedAuxZ] = cart2pol(portStop);\n"
+        strPortCoordsCartesianToCylindrical += "portStop = [generatedAuxR generatedAuxTheta generatedAuxZ];\n"
+
+        if (self.getModelCoordsType() == "cylindrical"):
+            # CYLINDRICAL COORDINATE TYPE USED
+            if ((bbCoords.XMin <= 0 and bbCoords.YMin <= 0 and bbCoords.XMax >= 0 and bbCoords.YMax >= 0) or
+                (bbCoords.XMin >= 0 and bbCoords.YMin >= 0 and bbCoords.XMax <= 0 and bbCoords.YMax <= 0)
+            ):
+                if (_r2(bbCoords.XMin) == _r2(bbCoords.XMax) or _r2(bbCoords.YMin) == _r2(bbCoords.YMax)):
+                    #
+                    #   Object is thin it's plane or line crossing origin
+                    #
+                    radius1 = -math.sqrt((sf * bbCoords.XMin) ** 2 + (sf * bbCoords.YMin) ** 2)
+                    theta1 = math.atan2(bbCoords.YMin, bbCoords.XMin)
+                    radius2 = math.sqrt((sf * bbCoords.XMax) ** 2 + (sf * bbCoords.YMax) ** 2)
+
+                    genScript += 'portStart = [{0:g}, {1:g}, {2:g}];\n'.format(_r(radius1), _r(theta1), _r(sf * bbCoords.ZMin))
+                    genScript += 'portStop = [{0:g}, {1:g}, {2:g}];\n'.format(_r(radius2), _r(theta1), _r(sf * bbCoords.ZMax))
+                    genScript += '\n'
+                else:
+                    #
+                    # origin [0,0,0] is contained inside boundary box, so now must used theta 0-360deg
+                    #
+                    radius1 = math.sqrt((sf * bbCoords.XMin) ** 2 + (sf * bbCoords.YMin) ** 2)
+                    radius2 = math.sqrt((sf * bbCoords.XMax) ** 2 + (sf * bbCoords.YMax) ** 2)
+
+                    genScript += 'portStart = [0, -pi, {0:g}];\n'.format(_r(sf * bbCoords.ZMin))
+                    genScript += 'portStop  = [{0:g}, pi, {1:g}];\n'.format(_r(max(radius1, radius2)), _r(sf * bbCoords.ZMax))
+
+            else:
+                #
+                # port is lying outside origin
+                #
+                genScript += 'portStart = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMin),
+                                                                             _r(sf * bbCoords.YMin),
+                                                                             _r(sf * bbCoords.ZMin))
+                genScript += 'portStop  = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMax),
+                                                                             _r(sf * bbCoords.YMax),
+                                                                             _r(sf * bbCoords.ZMax))
+                genScript += strPortCoordsCartesianToCylindrical
+
+                if (bbCoords.YMin <= 0 and bbCoords.YMax >= 0):
+                    #
+                    #   special case when planar object lays on X axis like in Y+ and Y- in this case theta is generated:
+                    #       -pi for start point
+                    #       +pi for stop point
+                    #   therefore to correct this since theta is in range -pi..+pi I have to add 360deg so +2*pi for start point will get it right as it should be
+                    #
+                    genScript += f"portStart(1) += 2*pi\n"
+
+        else:
+            # CARTESIAN GRID USED
+            genScript += 'portStart = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMin),
+                                                                         _r(sf * bbCoords.YMin),
+                                                                         _r(sf * bbCoords.ZMin))
+            genScript += 'portStop  = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMax),
+                                                                         _r(sf * bbCoords.YMax),
+                                                                         _r(sf * bbCoords.ZMax))
+
+        if (not startPointName is None):
+            genScript = genScript.replace("portStart", startPointName)
+        if (not stopPointName is None):
+            genScript = genScript.replace("portStop", stopPointName)
+
+        return genScript
+
     def getPortDefinitionsScriptLines(self, items):
         genScript = ""
         if not items:
@@ -495,13 +396,6 @@ class OctaveScriptLinesGenerator:
         coaxialDirStr = {'x': '0', 'y': '1', 'z': '2', 'x+': '0', 'y+': '1', 'z+': '2', 'x-': '0', 'y-': '1', 'z-': '2', 'r+': '0', 'r-': '0', 'theta+': '1', 'theta-': '1'}
         coplanarDirStr = {'x': '0', 'y': '1', 'z': '2', 'x+': '0', 'y+': '1', 'z+': '2', 'x-': '0', 'y-': '1', 'z-': '2', 'r+': '0', 'r-': '0', 'theta+': '1', 'theta-': '1'}
         striplineDirStr = {'x': '0', 'y': '1', 'z': '2', 'x+': '0', 'y+': '1', 'z+': '2', 'x-': '0', 'y-': '1', 'z-': '2', 'r+': '0', 'r-': '0', 'theta+': '1', 'theta-': '1'}
-        probeDirStr = {'x': '0', 'y': '1', 'z': '2', 'x+': '0', 'y+': '1', 'z+': '2', 'x-': '0', 'y-': '1', 'z-': '2', 'r+': '0', 'r-': '0', 'theta+': '1', 'theta-': '1'}
-
-        strPortCoordsCartesianToCylindrical = ""
-        strPortCoordsCartesianToCylindrical += "[generatedAuxTheta generatedAuxR generatedAuxZ] = cart2pol(portStart);\n"
-        strPortCoordsCartesianToCylindrical += "portStart = [generatedAuxTheta generatedAuxR generatedAuxZ];\n"
-        strPortCoordsCartesianToCylindrical += "[generatedAuxTheta generatedAuxR generatedAuxZ] = cart2pol(portStop);\n"
-        strPortCoordsCartesianToCylindrical += "portStop = [generatedAuxTheta generatedAuxR generatedAuxZ];\n"
 
         genScript += "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n"
         genScript += "% PORTS\n"
@@ -537,38 +431,7 @@ class OctaveScriptLinesGenerator:
                     # PORT openEMS GENERATION INTO VARIABLE
                     #
                     if (currSetting.getType() == 'lumped'):
-
-                        if (self.getModelCoordsType() == "cylindrical"):
-                            # CYLINDRICAL COORDINATE TYPE USED
-                            if (bbCoords.XMin <= 0 and bbCoords.YMin <= 0 and bbCoords.XMax >= 0 and bbCoords.YMax >= 0):
-                                #
-                                # origin [0,0,0] is contained inside boundary box, so now must used theta 0-360deg
-                                #
-                                radius1 = math.sqrt((sf * bbCoords.XMin) ** 2 + (sf * bbCoords.YMin) ** 2)
-                                radius2 = math.sqrt((sf * bbCoords.XMax) ** 2 + (sf * bbCoords.YMax) ** 2)
-
-                                genScript += 'portStart = [ 0, -pi, {0:g} ];\n'.format(_r(sf * bbCoords.ZMin))
-                                genScript += 'portStop  = [ {0:g}, pi, {1:g} ];\n'.format(_r(max(radius1, radius2)), _r(sf * bbCoords.ZMax))
-                            else:
-                                #
-                                # port is lying outside origin
-                                #
-                                genScript += 'portStart = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMin),
-                                                                                             _r(sf * bbCoords.YMin),
-                                                                                             _r(sf * bbCoords.ZMin))
-                                genScript += 'portStop  = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMax),
-                                                                                             _r(sf * bbCoords.YMax),
-                                                                                             _r(sf * bbCoords.ZMax))
-                                genScript += strPortCoordsCartesianToCylindrical
-
-                        else:
-                            # CARTESIAN GRID USED
-                            genScript += 'portStart = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMin),
-                                                                                         _r(sf * bbCoords.YMin),
-                                                                                         _r(sf * bbCoords.ZMin))
-                            genScript += 'portStop  = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMax),
-                                                                                         _r(sf * bbCoords.YMax),
-                                                                                         _r(sf * bbCoords.ZMax))
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
                         if currSetting.infiniteResistance:
                             genScript += 'portR = inf;\n'
@@ -578,9 +441,6 @@ class OctaveScriptLinesGenerator:
                         genScript += 'portUnits = ' + str(currSetting.getRUnits()) + ';\n'
                         genScript += "portExcitationAmplitude = " + str(currSetting.excitationAmplitude) + ";\n"
                         genScript += 'portDirection = {}*portExcitationAmplitude;\n'.format(baseVectorStr.get(currSetting.direction, '?'))
-
-                        print('\t\tportStart = [ {0:g}, {1:g}, {2:g} ];'.format(_r(bbCoords.XMin), _r(bbCoords.YMin),_r(bbCoords.ZMin)))
-                        print('\t\tportStop  = [ {0:g}, {1:g}, {2:g} ];'.format(_r(bbCoords.XMax), _r(bbCoords.YMax),_r(bbCoords.ZMax)))
 
                         isActiveStr = {False: '', True: ', true'}
 
@@ -597,42 +457,14 @@ class OctaveScriptLinesGenerator:
 
                     elif (currSetting.getType() == 'microstrip'):
 
-                        #
-                        #   It's important to generate microstrip port right, that means where is placed microstrip line, because microstrip consists from ground plane and trace
-                        #       This is just playing with X,Y,Z coordinates of boundary box for microstrip port for min, max coordinates.
-                        #
-                        portStartX = _r(sf * bbCoords.XMin)
-                        portStartY = _r(sf * bbCoords.YMin)
-                        portStartZ = _r(sf * bbCoords.ZMin)
-                        portStopX = _r(sf * bbCoords.XMax)
-                        portStopY = _r(sf * bbCoords.YMax)
-                        portStopZ = _r(sf * bbCoords.ZMax)
-
-                        if (currSetting.direction == "XY plane, top layer"):
-                            portStartZ = _r(sf * bbCoords.ZMax)
-                            portStopZ = _r(sf * bbCoords.ZMin)
-                        elif (currSetting.direction == "YZ plane, right layer"):
-                            portStartX = _r(sf * bbCoords.XMax)
-                            portStopX = _r(sf * bbCoords.XMin)
-                        elif (currSetting.direction == "XZ plane, front layer"):
-                            portStartY = _r(sf * bbCoords.YMax)
-                            portStopY = _r(sf * bbCoords.YMin)
-
-                        if (currSetting.mslPropagation == "z-"):
-                            portStartZ = _r(sf * bbCoords.ZMax)
-                            portStopZ = _r(sf * bbCoords.ZMin)
-                        elif (currSetting.mslPropagation == "x-"):
-                            portStartX = _r(sf * bbCoords.XMax)
-                            portStopX = _r(sf * bbCoords.XMin)
-                        elif (currSetting.mslPropagation == "y-"):
-                            portStartY = _r(sf * bbCoords.YMax)
-                            portStopY = _r(sf * bbCoords.YMin)
-
-                        genScript += 'portStart  = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStartX, portStartY, portStartZ)
-                        genScript += 'portStop = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStopX, portStopY, portStopZ)
-
-                        if (self.getModelCoordsType() == "cylindrical"):
-                            genScript += strPortCoordsCartesianToCylindrical
+                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ = currSetting.getMicrostripStartStopCoords(bbCoords, sf)
+                        bbCoords.XMin = portStartX
+                        bbCoords.YMin = portStartY
+                        bbCoords.ZMin = portStartZ
+                        bbCoords.XMax = portStopX
+                        bbCoords.YMax = portStopY
+                        bbCoords.ZMax = portStopZ
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
                         if currSetting.infiniteResistance:
                             genScript += 'portR = inf;\n'
@@ -668,39 +500,14 @@ class OctaveScriptLinesGenerator:
                         genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'circular waveguide'):
-                        portStartX = _r(sf * bbCoords.XMin)
-                        portStartY = _r(sf * bbCoords.YMin)
-                        portStartZ = _r(sf * bbCoords.ZMin)
-                        portStopX = _r(sf * bbCoords.XMax)
-                        portStopY = _r(sf * bbCoords.YMax)
-                        portStopZ = _r(sf * bbCoords.ZMax)
-
-                        if (currSetting.waveguideCircDir == "z-"):
-                            portStartZ = _r(sf * bbCoords.ZMax)
-                            portStopZ = _r(sf * bbCoords.ZMin)
-                        elif (currSetting.waveguideCircDir == "x-"):
-                            portStartX = _r(sf * bbCoords.XMax)
-                            portStopX = _r(sf * bbCoords.XMin)
-                        elif (currSetting.waveguideCircDir == "y-"):
-                            portStartY = _r(sf * bbCoords.YMax)
-                            portStopY = _r(sf * bbCoords.YMin)
-
-                        genScript += 'portStart  = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStartX, portStartY, portStartZ)
-                        genScript += 'portStop = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStopX, portStopY, portStopZ)
-
-                        if (self.getModelCoordsType() == "cylindrical"):
-                            genScript += strPortCoordsCartesianToCylindrical
-
-                        #
-                        #   Based on port excitation direction which is not used at waveguide due it has modes, but based on that height and width are resolved.
-                        #
-                        waveguideRadius = 0
-                        if (currSetting.direction[0] == "z"):
-                            waveguideRadius = min(abs(portStartX - portStopX), abs(portStartY - portStopY))
-                        elif (currSetting.direction[0] == "x"):
-                            waveguideRadius = min(abs(portStartY - portStopY), abs(portStartZ - portStopZ))
-                        elif (currSetting.direction[0] == "y"):
-                            waveguideRadius = min(abs(portStartX - portStopX), abs(portStartZ - portStopZ))
+                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, waveguideRadius = currSetting.getCircularWaveguidStartStopRadius(bbCoords, sf)
+                        bbCoords.XMin = portStartX
+                        bbCoords.YMin = portStartY
+                        bbCoords.ZMin = portStartZ
+                        bbCoords.XMax = portStopX
+                        bbCoords.YMax = portStopY
+                        bbCoords.ZMax = portStopZ
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
                         genScript += "%% circular port openEMS code should be here\n"
 
@@ -726,43 +533,14 @@ class OctaveScriptLinesGenerator:
                         genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'rectangular waveguide'):
-                        portStartX = _r(sf * bbCoords.XMin)
-                        portStartY = _r(sf * bbCoords.YMin)
-                        portStartZ = _r(sf * bbCoords.ZMin)
-                        portStopX = _r(sf * bbCoords.XMax)
-                        portStopY = _r(sf * bbCoords.YMax)
-                        portStopZ = _r(sf * bbCoords.ZMax)
-
-                        if (currSetting.waveguideRectDir == "z-"):
-                            portStartZ = _r(sf * bbCoords.ZMax)
-                            portStopZ = _r(sf * bbCoords.ZMin)
-                        elif (currSetting.waveguideRectDir == "x-"):
-                            portStartX = _r(sf * bbCoords.XMax)
-                            portStopX = _r(sf * bbCoords.XMin)
-                        elif (currSetting.waveguideRectDir == "y-"):
-                            portStartY = _r(sf * bbCoords.YMax)
-                            portStopY = _r(sf * bbCoords.YMin)
-
-                        genScript += 'portStart  = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStartX, portStartY, portStartZ)
-                        genScript += 'portStop = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStopX, portStopY, portStopZ)
-
-                        if (self.getModelCoordsType() == "cylindrical"):
-                            genScript += strPortCoordsCartesianToCylindrical
-
-                        #
-                        #   Based on port excitation direction which is not used at waveguide due it has modes, but based on that height and width are resolved.
-                        #
-                        waveguideWidth = 0
-                        waveguideHeight = 0
-                        if (currSetting.direction[0] == "z"):
-                            waveguideWidth = abs(portStartX - portStopX)
-                            waveguideHeight = abs(portStartY - portStopY)
-                        elif (currSetting.direction[0] == "x"):
-                            waveguideWidth = abs(portStartY - portStopY)
-                            waveguideHeight = abs(portStartZ - portStopZ)
-                        elif (currSetting.direction[0] == "y"):
-                            waveguideWidth = abs(portStartX - portStopX)
-                            waveguideHeight = abs(portStartZ - portStopZ)
+                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, waveguideWidth, waveguideHeight = currSetting.getRectangularWaveguideStartStopWidthHeight(bbCoords, sf)
+                        bbCoords.XMin = portStartX
+                        bbCoords.YMin = portStartY
+                        bbCoords.ZMin = portStartZ
+                        bbCoords.XMax = portStopX
+                        bbCoords.YMax = portStopY
+                        bbCoords.ZMax = portStopZ
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
                         genScript += "%% rectangular port openEMS code should be here\n"
                         #[CSX,port] = AddRectWaveGuidePort( CSX, prio, portnr, start, stop, dir, a, b, mode_name, exc_amp, varargin )
@@ -782,43 +560,22 @@ class OctaveScriptLinesGenerator:
                         genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'coaxial'):
-                        portStartX = _r(sf * bbCoords.XMin)
-                        portStartY = _r(sf * bbCoords.YMin)
-                        portStartZ = _r(sf * bbCoords.ZMin)
-                        portStopX = _r(sf * bbCoords.XMax)
-                        portStopY = _r(sf * bbCoords.YMax)
-                        portStopZ = _r(sf * bbCoords.ZMax)
-
-                        if (currSetting.direction[-1] == "-"):
-                            portStartX = _r(sf * bbCoords.XMax)
-                            portStartY = _r(sf * bbCoords.YMax)
-                            portStartZ = _r(sf * bbCoords.ZMax)
-                            portStopX = _r(sf * bbCoords.XMin)
-                            portStopY = _r(sf * bbCoords.YMin)
-                            portStopZ = _r(sf * bbCoords.ZMin)
-
-                        #calculate coaxial port radius, it's smaller dimension from width, height
-                        coaxialRadius = 0.0
-                        if (currSetting.direction.startswith("z")):
-                            coaxialRadius = min(abs(portStartX - portStopX), abs(portStartY - portStopY))
-                        elif (currSetting.direction.startswith("x")):
-                            coaxialRadius = min(abs(portStartY - portStopY), abs(portStartZ - portStopZ))
-                        elif (currSetting.direction.startswith("y")):
-                            coaxialRadius = min(abs(portStartX - portStopX), abs(portStartZ - portStopZ))
+                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, coaxialRadius = currSetting.getCoaxialStartStopAndRadius(bbCoords, sf)
 
                         #
                         #   This is important, radius is calculated from bounding box coordinates from FreeCAD so must be multiplied by metric units used in FreeCAD.
                         #   LuboJ ERROR: not sure if scaling done right
                         #
-                        coaxialRadius = coaxialRadius/2 * self.getFreeCADUnitLength_m() / self.getUnitLengthFromUI_m()
+                        coaxialRadius = coaxialRadius * self.getFreeCADUnitLength_m() / self.getUnitLengthFromUI_m()
 
                         #
                         #   LuboJ ERROR: not sure if scaling done right
                         #
-                        coaxialInnerRadius = _r(currSetting.coaxialInnerRadiusValue * currSetting.getUnitsAsNumber(currSetting.coaxialInnerRadiusUnits) / self.getUnitLengthFromUI_m())
-                        coaxialShellThickness = _r(currSetting.coaxialShellThicknessValue * currSetting.getUnitsAsNumber(currSetting.coaxialShellThicknessUnits) / self.getUnitLengthFromUI_m())
-                        coaxialFeedShift = _r(currSetting.coaxialFeedpointShiftValue * currSetting.getUnitsAsNumber(currSetting.coaxialFeedpointShiftUnits) / self.getUnitLengthFromUI_m())
-                        coaxialMeasPlaneShift = _r(currSetting.coaxialMeasPlaneShiftValue * currSetting.getUnitsAsNumber(currSetting.coaxialMeasPlaneShiftUnits) / self.getUnitLengthFromUI_m())
+                        coaxialInnerRadius, coaxialShellThickness, coaxialFeedShift, coaxialMeasPlaneShift = currSetting.getCoaxialInnerRadiusShellThicknessFeedShiftMeasShift()
+                        coaxialInnerRadius = _r(coaxialInnerRadius / self.getUnitLengthFromUI_m())
+                        coaxialShellThickness = _r(coaxialShellThickness / self.getUnitLengthFromUI_m())
+                        coaxialFeedShift = _r(coaxialFeedShift / self.getUnitLengthFromUI_m())
+                        coaxialMeasPlaneShift = _r(coaxialMeasPlaneShift / self.getUnitLengthFromUI_m())
 
                         #
                         #   LuboJ ERROR: FeedShift and MeasPlaneShift doesn't seem to be working properly, it's not moving anything, error is somewhere here in code
@@ -827,20 +584,15 @@ class OctaveScriptLinesGenerator:
                         measPlaneStr = {False: "", True: ", 'MeasPlaneShift', " + str(coaxialMeasPlaneShift)}
 
                         #
-                        #   Port start and end need to be shifted into middle of feed plane
+                        #   Port start and end need to be shifted into middle of feed plane, this is done inside function in port settings
                         #
-                        if (currSetting.direction.startswith("z")):
-                            genScript += 'portStart  = [ {0:g}, {1:g}, {2:g} ];\n'.format((portStartX+portStopX)/2, (portStartY+portStopY)/2, portStartZ)
-                            genScript += 'portStop = [ {0:g}, {1:g}, {2:g} ];\n'.format((portStartX+portStopX)/2, (portStartY+portStopY)/2, portStopZ)
-                        elif (currSetting.direction.startswith("x") or currSetting.direction.startswith("r")):
-                            genScript += 'portStart  = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStartX, (portStartY+portStopY)/2, (portStartZ+portStopZ)/2)
-                            genScript += 'portStop = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStopX, (portStartY+portStopY)/2, (portStartZ+portStopZ)/2)
-                        elif (currSetting.direction.startswith("y") or currSetting.direction.startswith("theta")):
-                            genScript += 'portStart  = [ {0:g}, {1:g}, {2:g} ];\n'.format((portStartX+portStopX)/2, portStartY, (portStartZ+portStopZ)/2)
-                            genScript += 'portStop = [ {0:g}, {1:g}, {2:g} ];\n'.format((portStartX+portStopX)/2, portStopY, (portStartZ+portStopZ)/2)
-
-                        if (self.getModelCoordsType() == "cylindrical"):
-                            genScript += strPortCoordsCartesianToCylindrical
+                        bbCoords.XMin = portStartX
+                        bbCoords.YMin = portStartY
+                        bbCoords.ZMin = portStartZ
+                        bbCoords.XMax = portStopX
+                        bbCoords.YMax = portStopY
+                        bbCoords.ZMax = portStopZ
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
                         genScript += 'coaxialDir = {};\n'.format(coaxialDirStr.get(currSetting.direction))
 
@@ -881,91 +633,15 @@ class OctaveScriptLinesGenerator:
                         genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'coplanar'):
+                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, gapWidth, coplanarEVecStr = currSetting.getCoplanarStartStopAndGapWidthAndEVecStr(bbCoords, sf)
 
-                        gapWidth = currSetting.coplanarGapValue * currSetting.getUnitsAsNumber(currSetting.coplanarGapUnits) / self.getUnitLengthFromUI_m()
-                        gapWidth_freeCAD_units = currSetting.coplanarGapValue * currSetting.getUnitsAsNumber(currSetting.coplanarGapUnits) / self.getFreeCADUnitLength_m()
+                        gapWidth = gapWidth / self.getUnitLengthFromUI_m()
                         genScript += 'gap_width = ' + str(gapWidth) + ';\n'
-
-                        #
-                        #   1. set all coords to max or min, this means where coplanar waveguide is placed if on top or bottom of object but we don't know orientation now
-                        #
-                        portStartX = _r(sf * bbCoords.XMin)
-                        portStartY = _r(sf * bbCoords.YMin)
-                        portStartZ = _r(sf * bbCoords.ZMin)
-                        portStopX = _r(sf * bbCoords.XMax)
-                        portStopY = _r(sf * bbCoords.YMax)
-                        portStopZ = _r(sf * bbCoords.ZMax)
-
-                        #
-                        #   2. set coordinates of coplanar based on plane, height must be same
-                        #
-                        if (currSetting.direction == "XY plane, top layer"):
-                            portStartZ = _r(sf * bbCoords.ZMax)
-                            portStopZ = _r(sf * bbCoords.ZMax)
-                        elif (currSetting.direction == "XY plane, bottom layer"):
-                            portStartZ = _r(sf * bbCoords.ZMin)
-                            portStopZ = _r(sf * bbCoords.ZMin)
-                        elif (currSetting.direction == "YZ plane, right layer"):
-                            portStartX = _r(sf * bbCoords.XMax)
-                            portStopX = _r(sf * bbCoords.XMax)
-                        elif (currSetting.direction == "YZ plane, left layer"):
-                            portStartX = _r(sf * bbCoords.XMin)
-                            portStopX = _r(sf * bbCoords.XMin)
-                        elif (currSetting.direction == "XZ plane, front layer"):
-                            portStartY = _r(sf * bbCoords.YMax)
-                            portStopY = _r(sf * bbCoords.YMax)
-                        elif (currSetting.direction == "XZ plane, back layer"):
-                            portStartY = _r(sf * bbCoords.YMin)
-                            portStopY = _r(sf * bbCoords.YMin)
-
-                        #
-                        #   3. set coplanar direcion based on propagation
-                        #
-                        if (currSetting.coplanarPropagation == "z-"):
-                            portStartZ = _r(sf * bbCoords.ZMax)
-                            portStopZ = _r(sf * bbCoords.ZMin)
-                        elif (currSetting.coplanarPropagation == "x-"):
-                            portStartX = _r(sf * bbCoords.XMax)
-                            portStopX = _r(sf * bbCoords.XMin)
-                        elif (currSetting.coplanarPropagation == "y-"):
-                            portStartY = _r(sf * bbCoords.YMax)
-                            portStopY = _r(sf * bbCoords.YMin)
-                        elif (currSetting.coplanarPropagation == "z+"):
-                            portStartZ = _r(sf * bbCoords.ZMin)
-                            portStopZ = _r(sf * bbCoords.ZMax)
-                        elif (currSetting.coplanarPropagation == "x+"):
-                            portStartX = _r(sf * bbCoords.XMin)
-                            portStopX = _r(sf * bbCoords.XMax)
-                        elif (currSetting.coplanarPropagation == "y+"):
-                            portStartY = _r(sf * bbCoords.YMin)
-                            portStopY = _r(sf * bbCoords.YMax)
 
                         genScript += 'coplanarDir = {};\n'.format(coplanarDirStr.get(currSetting.coplanarPropagation[0], '?'))  # use just first letter of propagation direction
 
-                        if (currSetting.direction[0:2] == "XY" and currSetting.coplanarPropagation[0] == "x"):
-                            genScript += 'coplanarEVec = [0 1 0];\n'
-                            portStartY += gapWidth_freeCAD_units
-                            portStopY -= gapWidth_freeCAD_units
-                        elif (currSetting.direction[0:2] == "XY" and currSetting.coplanarPropagation[0] == "y"):
-                            genScript += 'coplanarEVec = [1 0 0];\n'
-                            portStartX += gapWidth_freeCAD_units
-                            portStopX -= gapWidth_freeCAD_units
-                        elif (currSetting.direction[0:2] == "XZ" and currSetting.coplanarPropagation[0] == "x"):
-                            genScript += 'coplanarEVec = [0 0 1];\n'
-                            portStartZ += gapWidth_freeCAD_units
-                            portStopZ -= gapWidth_freeCAD_units
-                        elif (currSetting.direction[0:2] == "XZ" and currSetting.coplanarPropagation[0] == "z"):
-                            genScript += 'coplanarEVec = [1 0 0];\n'
-                            portStartX += gapWidth_freeCAD_units
-                            portStopX -= gapWidth_freeCAD_units
-                        elif (currSetting.direction[0:2] == "YZ" and currSetting.coplanarPropagation[0] == "y"):
-                            genScript += 'coplanarEVec = [0 0 1];\n'
-                            portStartZ += gapWidth_freeCAD_units
-                            portStopZ -= gapWidth_freeCAD_units
-                        elif (currSetting.direction[0:2] == "YZ" and currSetting.coplanarPropagation[0] == "z"):
-                            genScript += 'coplanarEVec = [0 1 0];\n'
-                            portStartY += gapWidth_freeCAD_units
-                            portStopY -= gapWidth_freeCAD_units
+                        if (coplanarEVecStr != None):
+                            genScript += f'coplanarEVec = {coplanarEVecStr};\n'
                         else:
                             genScript += 'display("ERROR cannot evaluate right direction check your simulation settings for coplanar port");\n'
                             genScript += 'coplanarEVec = %ERROR cannot evaluate right direction check your simulation settings ;\n'
@@ -974,11 +650,13 @@ class OctaveScriptLinesGenerator:
                             genScript += "portExcitationAmplitude = " + str(currSetting.excitationAmplitude) + ";\n"
                             genScript += f"coplanarEVec = coplanarEVec * portExcitationAmplitude;\n"
 
-                        genScript += 'portStart  = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStartX, portStartY, portStartZ)
-                        genScript += 'portStop = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStopX, portStopY, portStopZ)
-
-                        if (self.getModelCoordsType() == "cylindrical"):
-                            genScript += strPortCoordsCartesianToCylindrical
+                        bbCoords.XMin = portStartX
+                        bbCoords.YMin = portStartY
+                        bbCoords.ZMin = portStartZ
+                        bbCoords.XMax = portStopX
+                        bbCoords.YMax = portStopY
+                        bbCoords.ZMax = portStopZ
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
                         if currSetting.infiniteResistance:
                             genScript += 'portR = inf;\n'
@@ -1007,64 +685,26 @@ class OctaveScriptLinesGenerator:
                         genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'stripline'):
-                        portStartX = _r(sf * (bbCoords.XMin + bbCoords.XMax)/2)
-                        portStartY = _r(sf * (bbCoords.YMin + bbCoords.YMax)/2)
-                        portStartZ = _r(sf * (bbCoords.ZMin + bbCoords.ZMax)/2)
-                        portStopX = _r(sf * (bbCoords.XMin + bbCoords.XMax)/2)
-                        portStopY = _r(sf * (bbCoords.YMin + bbCoords.YMax)/2)
-                        portStopZ = _r(sf * (bbCoords.ZMin + bbCoords.ZMax)/2)
+                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, striplineHeight = currSetting.getStriplineStartStopAndHeight(bbCoords, sf)
 
-                        if (currSetting.striplinePropagation in ["x+", "y+"] and currSetting.direction == "XY plane"):
-                            portStartX = _r(sf * bbCoords.XMin)
-                            portStopX = _r(sf * bbCoords.XMax)
-                            portStartY = _r(sf * bbCoords.YMin)
-                            portStopY = _r(sf * bbCoords.YMax)
-                        elif (currSetting.striplinePropagation in ["x+", "z+"] and currSetting.direction == "XZ plane"):
-                            portStartX = _r(sf * bbCoords.XMin)
-                            portStopX = _r(sf * bbCoords.XMax)
-                            portStartZ = _r(sf * bbCoords.ZMin)
-                            portStopZ = _r(sf * bbCoords.ZMax)
-                        elif (currSetting.striplinePropagation in ["y+", "z+"] and currSetting.direction == "YZ plane"):
-                            portStartY = _r(sf * bbCoords.YMin)
-                            portStopY = _r(sf * bbCoords.YMax)
-                            portStartZ = _r(sf * bbCoords.ZMin)
-                            portStopZ = _r(sf * bbCoords.ZMax)
-                        elif (currSetting.striplinePropagation in ["x-", "y-"] and currSetting.direction == "XY plane"):
-                            portStartX = _r(sf * bbCoords.XMax)
-                            portStopX = _r(sf * bbCoords.XMin)
-                            portStartY = _r(sf * bbCoords.YMax)
-                            portStopY = _r(sf * bbCoords.YMin)
-                        elif (currSetting.striplinePropagation in ["x-", "z-"] and currSetting.direction == "XZ plane"):
-                            portStartX = _r(sf * bbCoords.XMax)
-                            portStopX = _r(sf * bbCoords.XMin)
-                            portStartZ = _r(sf * bbCoords.ZMax)
-                            portStopZ = _r(sf * bbCoords.ZMin)
-                        elif (currSetting.striplinePropagation in ["y-", "z-"] and currSetting.direction == "YZ plane"):
-                            portStartY = _r(sf * bbCoords.YMax)
-                            portStopY = _r(sf * bbCoords.YMin)
-                            portStartZ = _r(sf * bbCoords.ZMax)
-                            portStopZ = _r(sf * bbCoords.ZMin)
-
-                        striplineHeight =  0
                         if (currSetting.direction == "YZ plane"):
-                            striplineHeight = _r(sf * (bbCoords.XMax - bbCoords.XMin)/2)
                             genScript += 'striplineEVec = {};\n'.format(baseVectorStr.get('x'))
                         elif (currSetting.direction == "XZ plane"):
-                            striplineHeight = _r(sf * (bbCoords.YMax - bbCoords.YMin)/2)
                             genScript += 'striplineEVec = {};\n'.format(baseVectorStr.get('y'))
                         elif (currSetting.direction == "XY plane"):
-                            striplineHeight = _r(sf * (bbCoords.ZMax - bbCoords.ZMin)/2)
                             genScript += 'striplineEVec = {};\n'.format(baseVectorStr.get('z'))
 
                         if currSetting.excitationAmplitude != 0:
                             genScript += "portExcitationAmplitude = " + str(currSetting.excitationAmplitude) + ";\n"
                             genScript += 'striplineEVec = striplineEVec * portExcitationAmplitude;\n'
 
-                        genScript += 'portStart  = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStartX, portStartY, portStartZ)
-                        genScript += 'portStop = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStopX, portStopY, portStopZ)
-
-                        if (self.getModelCoordsType() == "cylindrical"):
-                            genScript += strPortCoordsCartesianToCylindrical
+                        bbCoords.XMin = portStartX
+                        bbCoords.YMin = portStartY
+                        bbCoords.ZMin = portStartZ
+                        bbCoords.XMax = portStopX
+                        bbCoords.YMax = portStopY
+                        bbCoords.ZMax = portStopZ
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
                         genScript += 'striplineDir = {};\n'.format(striplineDirStr.get(currSetting.striplinePropagation[0], '?'))  # use just first letter of propagation direction
                         genScript += 'striplineHeight = ' + str(striplineHeight) + ';\n'
@@ -1096,26 +736,15 @@ class OctaveScriptLinesGenerator:
                         genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'curve'):
-                        if (_bool(currSetting.direction) == False):
-                            portStartX = _r(sf * bbCoords.XMin)
-                            portStartY = _r(sf * bbCoords.YMin)
-                            portStartZ = _r(sf * bbCoords.ZMin)
-                            portStopX = _r(sf * bbCoords.XMax)
-                            portStopY = _r(sf * bbCoords.YMax)
-                            portStopZ = _r(sf * bbCoords.ZMax)
-                        else:
-                            portStartX = _r(sf * bbCoords.XMax)
-                            portStartY = _r(sf * bbCoords.YMax)
-                            portStartZ = _r(sf * bbCoords.ZMax)
-                            portStopX = _r(sf * bbCoords.XMin)
-                            portStopY = _r(sf * bbCoords.YMin)
-                            portStopZ = _r(sf * bbCoords.ZMin)
+                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ = currSetting.getCurveStartStop(bbCoords, sf)
 
-                        genScript += 'portStart  = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStartX, portStartY, portStartZ)
-                        genScript += 'portStop = [ {0:g}, {1:g}, {2:g} ];\n'.format(portStopX, portStopY, portStopZ)
-
-                        if (self.getModelCoordsType() == "cylindrical"):
-                            genScript += strPortCoordsCartesianToCylindrical
+                        bbCoords.XMin = portStartX
+                        bbCoords.YMin = portStartY
+                        bbCoords.ZMin = portStartZ
+                        bbCoords.XMax = portStopX
+                        bbCoords.YMax = portStopY
+                        bbCoords.ZMax = portStopZ
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
                         isActiveStr = {False: "", True: ", true"}
                         genScript_R = str(currSetting.R) + "*" + str(currSetting.getRUnits())
@@ -1158,7 +787,7 @@ class OctaveScriptLinesGenerator:
         #       with these options so to keep backward compatibility they are treated as positive direction in that directions.
         #
         baseVectorStr = {'x': '[1 0 0]', 'y': '[0 1 0]', 'z': '[0 0 1]', 'x+': '[1 0 0]', 'y+': '[0 1 0]', 'z+': '[0 0 1]', 'x-': '[-1 0 0]', 'y-': '[0 -1 0]', 'z-': '[0 0 -1]', 'XY plane, top layer': '[0 0 -1]', 'XY plane, bottom layer': '[0 0 1]', 'XZ plane, front layer': '[0 -1 0]', 'XZ plane, back layer': '[0 1 0]', 'YZ plane, right layer': '[-1 0 0]', 'YZ plane, left layer': '[1 0 0]',}
-        probeDirStr = {'x': '0', 'y': '1', 'z': '2', 'x+': '0', 'y+': '1', 'z+': '2', 'x-': '0', 'y-': '1', 'z-': '2',}
+        probeDirStr = {'x': '0', 'y': '1', 'z': '2', 'x+': '0', 'y+': '1', 'z+': '2', 'x-': '0', 'y-': '1', 'z-': '2', 'r+': '0', 'r-': '0', 'theta+': '1', 'theta-': '1'}
 
         genScript += "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n"
         genScript += "% PROBES\n"
@@ -1176,12 +805,9 @@ class OctaveScriptLinesGenerator:
 
                 freecadObjects = [i for i in objs if (i.Label) == childName]
 
-                # print(freecadObjects)
                 for obj in freecadObjects:
-                    print(f"\t{obj.Label}")
                     # BOUNDING BOX
                     bbCoords = obj.Shape.BoundBox
-                    print(f"\t\t{bbCoords}")
 
                     #
                     # PROBE openEMS GENERATION INTO VARIABLE
@@ -1194,6 +820,10 @@ class OctaveScriptLinesGenerator:
                             genScript += 'probeType = 0;\n'
                         elif currSetting.probeType == "current":
                             genScript += 'probeType = 1;\n'
+                        elif currSetting.probeType == "E field":
+                            genScript += 'probeType = 2;\n'
+                        elif currSetting.probeType == "H field":
+                            genScript += 'probeType = 3;\n'
                         else:
                             genScript += 'probeType = ?;    #ERROR probe code generate don\'t know type\n'
 
@@ -1219,42 +849,15 @@ class OctaveScriptLinesGenerator:
                                 self.cadHelpers.printWarning(f"probe octave code generator error, no frequencies defined for '{probeName}', using f0 instead\n")
 
                         genScript += "CSX = AddProbe(CSX, '" + probeName + "', probeType" + argStr + ");\n"
-                        genScript += 'probeStart = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMin), _r(sf * bbCoords.YMin), _r(sf * bbCoords.ZMin))
-                        genScript += 'probeStop  = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMax), _r(sf * bbCoords.YMax), _r(sf * bbCoords.ZMax))
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords, "probeStart", "probeStop")
                         genScript += "CSX = AddBox(CSX, '" + probeName + "', 0, probeStart, probeStop );\n"
                         genScript += "\n"
 
                     elif (currSetting.getType() == "dumpbox"):
                         dumpboxName = f"{currSetting.name}_{childName}"
 
-                        if currSetting.dumpboxDomain == "time":
-                            if currSetting.dumpboxType == "E field":
-                                genScript += 'dumpboxType = 0;\n'
-                            elif currSetting.dumpboxType == "H field":
-                                genScript += 'dumpboxType = 1;\n'
-                            elif currSetting.dumpboxType == "J field":
-                                genScript += 'dumpboxType = 3;\n'
-                            elif currSetting.dumpboxType == "D field":
-                                genScript += 'dumpboxType = 4;\n'
-                            elif currSetting.dumpboxType == "B field":
-                                genScript += 'dumpboxType = 5;\n'
-                            else:
-                                genScript += 'dumpboxType = ?;    #ERROR probe code generate don\'t know type\n'
-                        elif currSetting.dumpboxDomain == "frequency":
-                            if currSetting.dumpboxType == "E field":
-                                genScript += 'dumpboxType = 10;\n'
-                            elif currSetting.dumpboxType == "H field":
-                                genScript += 'dumpboxType = 11;\n'
-                            elif currSetting.dumpboxType == "J field":
-                                genScript += 'dumpboxType = 13;\n'
-                            elif currSetting.dumpboxType == "D field":
-                                genScript += 'dumpboxType = 14;\n'
-                            elif currSetting.dumpboxType == "B field":
-                                genScript += 'dumpboxType = 15;\n'
-                            else:
-                                genScript += 'dumpboxType = ?;    #ERROR probe code generate don\'t know type\n'
-                        else:
-                            genScript += "dumboxType = ?;   #code generator cannot find domain (time/frequency)\n"
+                        dumpType = currSetting.getDumpType()
+                        genScript += f'dumpboxType = {dumpType};\n'
 
                         argStr = ""
                         #
@@ -1290,8 +893,7 @@ class OctaveScriptLinesGenerator:
                         else:
                             genScript += "CSX = AddDump(CSX, '" + dumpboxName + "', 'DumpType', dumpboxType" + argStr + ");\n"
 
-                        genScript += 'dumpboxStart = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMin), _r(sf * bbCoords.YMin), _r(sf * bbCoords.ZMin))
-                        genScript += 'dumpboxStop  = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMax), _r(sf * bbCoords.YMax), _r(sf * bbCoords.ZMax))
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords, "dumpboxStart", "dumpboxStop")
                         genScript += "CSX = AddBox(CSX, '" + dumpboxName + "', 0, dumpboxStart, dumpboxStop );\n"
                         genScript += "\n"
 
@@ -1299,36 +901,22 @@ class OctaveScriptLinesGenerator:
                         dumpboxName = f"{currSetting.name}_{childName}"
 
                         genScript += "CSX = AddDump(CSX, '" + dumpboxName + "', 'DumpType', 0, 'DumpMode', 2);\n"
-                        genScript += 'dumpStart = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMin),
-                                                                                     _r(sf * bbCoords.YMin),
-                                                                                     _r(sf * bbCoords.ZMin))
-                        genScript += 'dumpStop  = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMax),
-                                                                                     _r(sf * bbCoords.YMax),
-                                                                                     _r(sf * bbCoords.ZMax))
-                        genScript += "CSX = AddBox(CSX, '" + dumpboxName + "', 0, dumpStart, dumpStop );\n"
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords, "dumpboxStart", "dumpboxStop")
+                        genScript += "CSX = AddBox(CSX, '" + dumpboxName + "', 0, dumpboxStart, dumpboxStop );\n"
 
                     elif (currSetting.getType() == 'ht dump'):
                         dumpboxName = f"{currSetting.name}_{childName}"
 
                         genScript += "CSX = AddDump(CSX, '" + dumpboxName + "', 'DumpType', 1, 'DumpMode', 2);\n"
-                        genScript += 'dumpStart = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMin),
-                                                                                     _r(sf * bbCoords.YMin),
-                                                                                     _r(sf * bbCoords.ZMin))
-                        genScript += 'dumpStop  = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMax),
-                                                                                     _r(sf * bbCoords.YMax),
-                                                                                     _r(sf * bbCoords.ZMax))
-                        genScript += "CSX = AddBox(CSX, '" + dumpboxName + "', 0, dumpStart, dumpStop );\n"
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords, "dumpboxStart", "dumpboxStop")
+                        genScript += "CSX = AddBox(CSX, '" + dumpboxName + "', 0, dumpboxStart, dumpboxStop );\n"
 
                     elif (currSetting.getType() == 'nf2ff box'):
                         dumpboxName = f"{currSetting.name} - {childName}"
                         dumpboxName = dumpboxName.replace(" ", "_")
 
-                        genScript += 'nf2ffStart = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMin),
-                                                                                      _r(sf * bbCoords.YMin),
-                                                                                      _r(sf * bbCoords.ZMin))
-                        genScript += 'nf2ffStop  = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMax),
-                                                                                      _r(sf * bbCoords.YMax),
-                                                                                      _r(sf * bbCoords.ZMax))
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords, "nf2ffStart", "nf2ffStop")
+
                         # genScript += 'nf2ffUnit = ' + currSetting.getUnitAsScriptLine() + ';\n'
                         genScript += "[CSX nf2ffBox{" + str(genNF2FFBoxCounter) + "}] = CreateNF2FFBox(CSX, '" + dumpboxName + "', nf2ffStart, nf2ffStop);\n"
                         # NF2FF grid lines are generated below via getNF2FFDefinitionsScriptLines()
@@ -1370,30 +958,43 @@ class OctaveScriptLinesGenerator:
                 freecadObjects = [i for i in objs if (i.Label) == childName]
                 for obj in freecadObjects:
                     # obj = FreeCAD Object class
-                    print(f"\t{obj.Label}")
 
                     # BOUNDING BOX
                     bbCoords = obj.Shape.BoundBox
 
-                    # PLACEMENT BOX
-                    print(f"\t\t{bbCoords}")
-
-                    genScript += 'lumpedPartStart = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMin),
-                                                                                       _r(sf * bbCoords.YMin),
-                                                                                       _r(sf * bbCoords.ZMin))
-                    genScript += 'lumpedPartStop  = [ {0:g}, {1:g}, {2:g} ];\n'.format(_r(sf * bbCoords.XMax),
-                                                                                       _r(sf * bbCoords.YMax),
-                                                                                       _r(sf * bbCoords.ZMax))
+                    genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords, "lumpedPartStart", "lumpedPartStop")
 
                     lumpedPartName = currentSetting.name
-                    lumpedPartParams = ''
+
+                    lumpedPartParams = ""
+
+                    direction = currentSetting.getDirection()
+                    if (direction == 'x'):
+                        lumpedPartParams += f"0"
+                    elif (direction == 'y'):
+                        lumpedPartParams += f"1"
+                    elif (direction == 'z'):
+                        lumpedPartParams += f"2"
+
                     if ('r' in currentSetting.getType().lower()):
-                        lumpedPartParams += ",'R', " + str(currentSetting.getR())
+                        lumpedPartParams += f", 'R', {currentSetting.getR()}"
                     if ('l' in currentSetting.getType().lower()):
-                        lumpedPartParams += ",'L', " + str(currentSetting.getL())
+                        lumpedPartParams += f", 'L', {currentSetting.getL()}"
                     if ('c' in currentSetting.getType().lower()):
-                        lumpedPartParams += ",'C', " + str(currentSetting.getC())
-                    lumpedPartParams = lumpedPartParams.strip(',')
+                        lumpedPartParams += f", 'C', {currentSetting.getC()}"
+
+                    lumpedPartParams += f", 'Caps', {'1' if currentSetting.getCapsEnabled() else '0'}"
+
+                    #
+                    #   WARNING: This was added just recently needs to be validated.
+                    #
+                    if (currentSetting.getCombinationType() == 'parallel'):
+                        #lumpedPartParams += f", 'LEtype', 0"
+                        pass
+                    elif (currentSetting.getCombinationType() == 'series'):
+                        lumpedPartParams += f", 'LEtype', 1"
+                    else:
+                        pass
 
                     #
                     #	getting item priority
@@ -1402,8 +1003,8 @@ class OctaveScriptLinesGenerator:
                     priorityIndex = self.getItemPriority(priorityItemName)
 
                     # WARNING: Caps param has hardwired value 1, will be generated small metal caps to connect part with circuit !!!
-                    genScript += "[CSX] = AddLumpedElement(CSX, '" + lumpedPartName + "', 2, 'Caps', 1, " + lumpedPartParams + ");\n"
-                    genScript += "[CSX] = AddBox(CSX, '" + lumpedPartName + "', " + str(priorityIndex) + ", lumpedPartStart, lumpedPartStop);\n"
+                    genScript += f"[CSX] = AddLumpedElement(CSX, '{lumpedPartName}', {lumpedPartParams});\n"
+                    genScript += f"[CSX] = AddBox(CSX, '{lumpedPartName}', {priorityIndex}, lumpedPartStart, lumpedPartStop);\n"
 
             genScript += "\n"
 
@@ -1504,7 +1105,7 @@ class OctaveScriptLinesGenerator:
             #
             #   Fixed Distance, Fixed Count mesh boundaries coords obtain
             #
-            if (gridSettingsInst.getType() in ['Fixed Distance', 'Fixed Count']):
+            if (gridSettingsInst.getType() in ['Fixed Distance', 'Fixed Count', 'User Defined']):
                 fcObject = fcObjects.get(FreeCADObjectName, None)
                 if (not fcObject):
                     print("Failed to resolve '{}'.".format(FreeCADObjectName))
@@ -1517,19 +1118,23 @@ class OctaveScriptLinesGenerator:
 
                 bbCoords = fcObject.Shape.BoundBox
 
-                # If generateLinesInside is selected, grid line region is shifted inward by lambda/20.
+                deltaX = 0
+                deltaY = 0
+                deltaZ = 0
                 if gridSettingsInst.generateLinesInside:
-                    delta = self.maxGridResolution_m * sf * 0.001   #LuboJ, added multiply by 0.001 because still lambda/20 for 4GHz is 3.75mm too much
-                    print("GRID generateLinesInside object detected, setting correction constant to " + str(delta) + "m (meters)")
-                else:
-                    delta = 0
+                    gridOffset = gridSettingsInst.getGridOffset()
+                    unitsAsNumber = gridSettingsInst.getUnitsAsNumber(gridOffset['units'])
+                    deltaX = gridOffset['x'] * unitsAsNumber
+                    deltaY = gridOffset['y'] * unitsAsNumber
+                    deltaZ = gridOffset['z'] * unitsAsNumber
+                    print(f"GRID generateLinesInside object detected, delta in X,Y,Z: {deltaX}, {deltaY}, {deltaZ}")
 
-                xmax = sf * bbCoords.XMax - np.sign(bbCoords.XMax - bbCoords.XMin) * delta
-                ymax = sf * bbCoords.YMax - np.sign(bbCoords.YMax - bbCoords.YMin) * delta
-                zmax = sf * bbCoords.ZMax - np.sign(bbCoords.ZMax - bbCoords.ZMin) * delta
-                xmin = sf * bbCoords.XMin + np.sign(bbCoords.XMax - bbCoords.XMin) * delta
-                ymin = sf * bbCoords.YMin + np.sign(bbCoords.YMax - bbCoords.YMin) * delta
-                zmin = sf * bbCoords.ZMin + np.sign(bbCoords.ZMax - bbCoords.ZMin) * delta
+                xmax = sf * bbCoords.XMax - np.sign(bbCoords.XMax - bbCoords.XMin) * deltaX
+                ymax = sf * bbCoords.YMax - np.sign(bbCoords.YMax - bbCoords.YMin) * deltaY
+                zmax = sf * bbCoords.ZMax - np.sign(bbCoords.ZMax - bbCoords.ZMin) * deltaZ
+                xmin = sf * bbCoords.XMin + np.sign(bbCoords.XMax - bbCoords.XMin) * deltaX
+                ymin = sf * bbCoords.YMin + np.sign(bbCoords.YMax - bbCoords.YMin) * deltaY
+                zmin = sf * bbCoords.ZMin + np.sign(bbCoords.ZMax - bbCoords.ZMin) * deltaZ
 
                 # Write grid definition.
                 genScript += "%% GRID - " + gridSettingsInst.getName() + " - " + FreeCADObjectName + ' (' + gridSettingsInst.getType() + ")\n"
@@ -1559,20 +1164,24 @@ class OctaveScriptLinesGenerator:
 
                     bbCoords = fcObject.Shape.BoundBox
 
-                    # If generateLinesInside is selected, grid line region is shifted inward by lambda/20.
+                    deltaX = 0
+                    deltaY = 0
+                    deltaZ = 0
                     if gridSettingsInst.generateLinesInside:
-                        delta = self.maxGridResolution_m * sf * 0.001  # LuboJ, added multiply by 0.001 because still lambda/20 for 4GHz is 3.75mm too much
-                        print("GRID generateLinesInside object detected, setting correction constant to " + str(delta) + "m (meters)")
-                    else:
-                        delta = 0
+                        gridOffset = gridSettingsInst.getGridOffset()
+                        unitsAsNumber = gridSettingsInst.getUnitsAsNumber(gridOffset['units'])
+                        deltaX = gridOffset['x'] * unitsAsNumber
+                        deltaY = gridOffset['y'] * unitsAsNumber
+                        deltaZ = gridOffset['z'] * unitsAsNumber
+                        print(f"GRID generateLinesInside object detected, delta in X,Y,Z: {deltaX}, {deltaY}, {deltaZ}")
 
                     #append boundary coordinates into list
-                    xList.append(sf * bbCoords.XMax - np.sign(bbCoords.XMax - bbCoords.XMin) * delta)
-                    yList.append(sf * bbCoords.YMax - np.sign(bbCoords.YMax - bbCoords.YMin) * delta)
-                    zList.append(sf * bbCoords.ZMax - np.sign(bbCoords.ZMax - bbCoords.ZMin) * delta)
-                    xList.append(sf * bbCoords.XMin + np.sign(bbCoords.XMax - bbCoords.XMin) * delta)
-                    yList.append(sf * bbCoords.YMin + np.sign(bbCoords.YMax - bbCoords.YMin) * delta)
-                    zList.append(sf * bbCoords.ZMin + np.sign(bbCoords.ZMax - bbCoords.ZMin) * delta)
+                    xList.append(sf * bbCoords.XMax - np.sign(bbCoords.XMax - bbCoords.XMin) * deltaX)
+                    yList.append(sf * bbCoords.YMax - np.sign(bbCoords.YMax - bbCoords.YMin) * deltaY)
+                    zList.append(sf * bbCoords.ZMax - np.sign(bbCoords.ZMax - bbCoords.ZMin) * deltaZ)
+                    xList.append(sf * bbCoords.XMin + np.sign(bbCoords.XMax - bbCoords.XMin) * deltaX)
+                    yList.append(sf * bbCoords.YMin + np.sign(bbCoords.YMax - bbCoords.YMin) * deltaY)
+                    zList.append(sf * bbCoords.ZMin + np.sign(bbCoords.ZMax - bbCoords.ZMin) * deltaZ)
 
                     # Write grid definition.
                     genScript += "%% GRID - " + gridSettingsInst.getName() + " - " + FreeCADObjectName + ' (' + gridSettingsInst.getType() + ")\n"
@@ -1590,71 +1199,10 @@ class OctaveScriptLinesGenerator:
             if (gridSettingsInst.coordsType == "cylindrical"):
                 #FROM GUI ARE GOING DEGREES
 
-                #radius must be chosen from all corners
-                polarR1 = (xmin ** 2 + ymin ** 2) ** .5
-                polarR2 = (xmax ** 2 + ymax ** 2) ** .5
-                polarR3 = (xmin ** 2 + ymax ** 2) ** .5
-                polarR4 = (xmax ** 2 + ymin ** 2) ** .5
-
-                #theta must be chosen from all corners
-                polarTheta1 = math.atan2(ymin, xmin)
-                polarTheta2 = math.atan2(ymax, xmax)
-                polarTheta3 = math.atan2(ymin, xmax)
-                polarTheta4 = math.atan2(ymax, xmin)
-
                 #
-                #   THERE IS DIFFERENCE WHEN COORD ORIGIN xy (0,0) IS INSIDE OBJECT SO HERE IS LITTLE REASSIGN if that happen
-                #       x is r (radius) in this case from 0-xmax
-                #       y is theta in this case 0-360deg
-                #       z stays as it is
+                #   Here calculate right r, theta, z from boundaries of object, it depends if origin lays inside boundaries or where object is positioned.
                 #
-                if (bbCoords.XMin <= 0 and bbCoords.YMin <= 0 and bbCoords.XMax >= 0 and bbCoords.YMax >= 0):
-                    #
-                    #   origin inside object boundaries
-                    #
-                    xmin = 0
-                    xmax = max(polarR1, polarR2, polarR3, polarR4)
-                    ymin = -math.pi
-                    ymax = math.pi
-                elif (np.sign(bbCoords.XMin) == np.sign(bbCoords.XMax) and np.sign(bbCoords.YMin) == np.sign(bbCoords.YMax)):
-                    #
-                    #   object boundaries are in some quarter of XY plane, this is simples OK case
-                    #
-                    xmin = min(polarR1, polarR2, polarR3, polarR4)
-                    xmax = max(polarR1, polarR2, polarR3, polarR4)
-                    ymin = min(polarTheta1, polarTheta2, polarTheta3, polarTheta4)
-                    ymax = max(polarTheta1, polarTheta2, polarTheta3, polarTheta4)
-                elif (np.sign(bbCoords.XMin) == np.sign(bbCoords.XMax) and np.sign(bbCoords.YMin) != np.sign(bbCoords.YMax)):
-                    #
-                    #   object boundaries are crossing X axis
-                    #
-                    aux_xmin = xmin
-                    aux_xmax = xmax
-
-                    xmin = min(abs(aux_xmin), abs(aux_xmax))
-                    xmax = max(abs(aux_xmin), abs(aux_xmax))
-                    ymin = polarTheta2-2*math.pi if np.sign(bbCoords.XMin) < 0 else polarTheta1
-                    ymax = polarTheta3 if np.sign(bbCoords.XMin) < 0 else polarTheta4
-                elif (np.sign(bbCoords.XMin) != np.sign(bbCoords.XMax) and np.sign(bbCoords.YMin) == np.sign(bbCoords.YMax)):
-                    #
-                    #   object boundaries are crossing Y axis
-                    #
-                    aux_ymin = ymin
-                    aux_ymax = ymax
-
-                    xmin = min(abs(aux_ymin), abs(aux_ymax))
-                    xmax = max(abs(aux_ymin), abs(aux_ymax))
-                    ymin = polarTheta4 if np.sign(bbCoords.YMin) < 0 else polarTheta3
-                    ymax = polarTheta2 if np.sign(bbCoords.YMin) < 0 else polarTheta1
-                else:
-                    # just for safety to have it right
-                    genScript += f"%WARNING there is some speecial case like objects are placed on grid and some solution for cylindrical coords for this object was chosen but PROBABLY IS WRONG! check this gridlines manualy please\n"
-
-                    xmin = min(polarR1, polarR2, polarR3, polarR4)
-                    xmax = max(polarR1, polarR2, polarR3, polarR4)
-                    ymin = min(polarTheta1, polarTheta2, polarTheta3, polarTheta4)
-                    ymax = max(polarTheta1, polarTheta2, polarTheta3, polarTheta4)
-                    self.guiHelpers.displayMessage("There is strange case of object position for grid generate, some coords for polar grid were generated. Maybe move objects to another place.")
+                xmin, xmax, ymin, ymax, zmin, zmax = gridSettingsInst.getCartesianAsCylindricalCoords(bbCoords, xmin, xmax, ymin, ymax, zmin, zmax)
 
                 if (gridSettingsInst.getType() == 'Smooth Mesh' and gridSettingsInst.unitsAngle == "deg"):
                     yParam = math.radians(gridSettingsInst.smoothMesh['yMaxRes'])
@@ -1671,7 +1219,7 @@ class OctaveScriptLinesGenerator:
                 if (gridSettingsInst.getType() == 'Smooth Mesh'):
                     yParam = gridSettingsInst.smoothMesh['yMaxRes']
                 elif (gridSettingsInst.getType() == 'User Defined'):
-                    pass                                                #user defined is jaust text, doesn't have ['y']
+                    pass                                                #user defined is just text, doesn't have ['y']
                 else:
                     yParam = gridSettingsInst.getXYZ(refUnit)['y']
 
@@ -2076,7 +1624,7 @@ class OctaveScriptLinesGenerator:
 
         # Show message or update status bar to inform user that exporting has finished.
 
-        self.guiHelpers.displayMessage('Simulation script written to: ' + fileName, forceModal=False)
+        self.guiHelpers.displayMessage('Simulation script written to: ' + fileName, forceModal=True)
         print('Simulation script written to: ' + fileName)
 
         return
@@ -2096,8 +1644,20 @@ class OctaveScriptLinesGenerator:
         genScript += "display(currDir);\n"
         genScript += "\n"
 
+        genScript += "%% setup FDTD parameter & excitation function\n"
+        genScript += "max_timesteps = " + str(self.form.simParamsMaxTimesteps.value()) + ";\n"
+        genScript += "min_decrement = " + str(self.form.simParamsMinDecrement.value()) + "; % 10*log10(min_decrement) dB  (i.e. 1E-5 means -50 dB)\n"
+        if (self.getModelCoordsType() == "cylindrical"):
+            genScript += "FDTD = InitFDTD( 'NrTS', max_timesteps, 'EndCriteria', min_decrement, 'CoordSystem', 1);\n"
+        else:
+            genScript += "FDTD = InitFDTD( 'NrTS', max_timesteps, 'EndCriteria', min_decrement);\n"
+        genScript += "\n"
+
         # List categories and items.
         itemsByClassName = self.getItemsByClassName()
+
+        # Write boundary conditions definitions.
+        genScript += self.getBoundaryConditionsScriptLines()
 
         # Write coordinate system definitions.
         genScript += self.getCoordinateSystemScriptLines()
@@ -2128,7 +1688,7 @@ class OctaveScriptLinesGenerator:
         #
         #   Current NF2FF box index
         #
-        print(f"writeNf2ffButtonClicked() > geerate script, getting nf2ff box index for '{nf2ffBoxName}'")
+        print(f"writeNf2ffButtonClicked() > generate script, getting nf2ff box index for '{nf2ffBoxName}'")
         currentNF2FFBoxIndex = self.internalNF2FFIndexNamesList[nf2ffBoxName.replace(" ", "_")]
         currentNF2FFInputPortIndex = self.internalPortIndexNamesList[nf2ffBoxInputPortName]
 
@@ -2200,12 +1760,12 @@ plot(thetaRange, 10*log10(directivity_CPLH(:,1)'),'r-.','LineWidth',2);
 legend('norm','CPRH','CPLH');
 
 %% dump to vtk
-DumpFF2VTK([Sim_Path '/3D_Pattern.vtk'],directivity,thetaRange,phiRange,'scale',1e-3);
+DumpFF2VTK([Sim_Path '/3D_Pattern_GAIN.vtk'],directivity,thetaRange,phiRange,'scale',1e-3);
 DumpFF2VTK([Sim_Path '/3D_Pattern_CPRH.vtk'],directivity_CPRH,thetaRange,phiRange,'scale',1e-3);
 DumpFF2VTK([Sim_Path '/3D_Pattern_CPLH.vtk'],directivity_CPLH,thetaRange,phiRange,'scale',1e-3);
 
 E_far_normalized = nf2ff.E_norm{1} / max(nf2ff.E_norm{1}(:)) * nf2ff.Dmax;
-DumpFF2VTK([Sim_Path '/3D_Pattern_normalized.vtk'],E_far_normalized,thetaRange,phiRange,1e-3);
+DumpFF2VTK([Sim_Path '/3D_Pattern_Efield_normalized.vtk'],E_far_normalized,thetaRange,phiRange,1e-3);
 """
 
         #
@@ -2261,24 +1821,41 @@ DumpFF2VTK([Sim_Path '/3D_Pattern_normalized.vtk'],E_far_normalized,thetaRange,p
         genScript += """%% postprocessing & do the plots
 freq = linspace( max([0,f0-fc]), f0+fc, 501 );
 
-port = calcPort( port, Sim_Path, freq);
-s11 = port{""" + str(self.internalPortIndexNamesList[portName]) + """}.uf.ref./ port{""" + str(self.internalPortIndexNamesList[portName]) + """}.uf.inc;
+port = calcPort(port, Sim_Path, freq);
+s11 = port{""" + str(self.internalPortIndexNamesList[portName]) + """}.uf.ref ./ port{""" + str(self.internalPortIndexNamesList[portName]) + """}.uf.inc;
 s11_dB = 20*log10(abs(s11));
+Zin = port{""" + str(self.internalPortIndexNamesList[portName]) + """}.uf.tot ./ port{""" + str(self.internalPortIndexNamesList[portName]) + """}.if.tot;
 
-plot( freq/1e6, 20*log10(abs(s11)), 'k-', 'Linewidth', 2 );
+% plot feed point impedance
+figure
+plotObj1 = plot( freq/1e6, real(Zin), 'k-', 'Linewidth', 2 );
+hold on
+grid on
+plot( freq/1e6, imag(Zin), 'r--', 'Linewidth', 2 );
+title( 'feed point impedance' );
+xlabel( 'frequency f / MHz' );
+ylabel( 'impedance Z_{in} / Ohm' );
+legend( 'real', 'imag' );
+
+figure
+plotObj2 = plot( freq/1e6, 20*log10(abs(s11)), 'k-', 'Linewidth', 2 );
 grid on
 title( 'reflection coefficient S_{11}' );
 xlabel( 'frequency f / MHz' );
 ylabel( 'reflection coefficient |S_{11}|' );
+
+% wait for plot windows to be closed
+waitfor(plotObj1);
+waitfor(plotObj2);
 
 %
 %   Write S11, real and imag Z_in into CSV file separated by ';'
 %
 filename = 'openEMS_simulation_s11_dB.csv';
 fid = fopen(filename, 'w');
-fprintf(fid, 'freq (MHz);s11 (dB);\\n');
+fprintf(fid, 'freq (MHz);s11 (dB);Z real (Ohm);Z imag (Ohm);Z abs (Ohm)\\n');
 fclose(fid)
-s11_dB = horzcat((freq/1e6)', s11_dB');
+s11_dB = horzcat((freq/1e6)', s11_dB', real(Zin)', imag(Zin)', abs(Zin)');
 dlmwrite(filename, s11_dB, '-append', 'delimiter', ';');
 """
 
@@ -2469,7 +2046,7 @@ dlmwrite(filename, s11_dB, '-append', 'delimiter', ';');
         genScript += "plot(freq/1e9,s21_dB,'r--','LineWidth',2);\n"
         genScript += "legend('S_{11}','S_{21}');\n"
         genScript += "ylabel('S-Parameter (dB)','FontSize',12);\n"
-        genScript += "xlabel('frequency (GHz) \\rightarrow','FontSize',12);\n"
+        genScript += "xlabel('frequency (GHz)','FontSize',12);\n"
         genScript += "ylim([-40 2]);\n"
         genScript += "\n"
 

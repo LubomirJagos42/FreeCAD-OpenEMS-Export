@@ -102,9 +102,9 @@ class GuiHelpers:
                                                                              QtCore.Qt.MatchRecursive)
             if len(gridParent) > 0:
                 if not _bool(gridParent[0].data(0, QtCore.Qt.UserRole).topPriorityLines):
-                    self.form.meshPriorityTreeView.topLevelItem(k).setDisabled(True)
+                    self.form.meshPriorityTreeView.topLevelItem(k).setBackground(0, QtGui.QColor('white'))
                 else:
-                    self.form.meshPriorityTreeView.topLevelItem(k).setDisabled(False)
+                    self.form.meshPriorityTreeView.topLevelItem(k).setBackground(0, QtGui.QColor('lightgray'))
 
         """
         # If grid item is set to have priority lines it means it should be highlighted in mesh priority widget
@@ -203,10 +203,29 @@ class GuiHelpers:
             if tabName == self.form.probeSpecificSettingsTab.tabText(index):
                 self.form.probeSpecificSettingsTab.setCurrentIndex(index)
 
-    def setComboboxItem(self, controlRef, text):
+    def setComboboxItem(self, controlRef, text, alternativeEquivalentValues = None):
         index = controlRef.findText(text, QtCore.Qt.MatchFixedString)
         if index >= 0:
             controlRef.setCurrentIndex(index)
+            print(f"setComboboxItem for {controlRef} to value {text} at index {index}")
+        else:
+            if (alternativeEquivalentValues != None):
+                #
+                #   if alternative values are provided trying to find them
+                #
+                for alternativeValueTuple in alternativeEquivalentValues:
+                    if (alternativeValueTuple[0] == text):
+                        print(f"WARNING: For {controlRef} instead {text} trying to use alternative equivalent value {alternativeValueTuple[1]}")
+                        self.setComboboxItem(controlRef, alternativeValueTuple[1])
+                    elif (alternativeValueTuple[1] == text):
+                        print(f"WARNING: For {controlRef} instead {text} trying to use alternative equivalent value {alternativeValueTuple[0]}")
+                        self.setComboboxItem(controlRef, alternativeValueTuple[0])
+                return
+            else:
+                print(f"WARNING: Cannot set for {controlRef} item {text}, wasn't found in items.")
+                return
+
+            print(f"WARNING: Cannot set for {controlRef} item {text}, alternative value was not found.")
 
     def hasPortSomeObjects(self, portName):
         """
