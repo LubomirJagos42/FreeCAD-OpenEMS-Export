@@ -36,7 +36,7 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
         elif (gridCoordsType == "cylindrical"):
             genScript += "CSX = InitCSX('CoordSystem',1); # Cylindrical coordinate system.\n"
         else:
-            genScript += "%%%%%% ERROR GRID COORDINATION SYSTEM TYPE UNKNOWN"				
+            genScript += "%%%%%% ERROR GRID COORDINATION SYSTEM TYPE UNKNOWN"
         """
 
         genScript += "def mesh():\n"
@@ -1436,6 +1436,8 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
                     genScript += "max_res = 0\n"
                     self.maxGridResolution_m = 0
                     pass
+                elif currSetting.getType() == 'step':
+                    genScript += 'FDTD.SetStepExcite(1)'
                 pass
 
                 genScript += "\n"
@@ -1844,7 +1846,7 @@ title('Frequency: {{}} GHz'.format(nf2ff.freq[0]/1e9))
 legend()
 
 show()
-  
+
 #
 # Dump radiation field to vtk file
 #
