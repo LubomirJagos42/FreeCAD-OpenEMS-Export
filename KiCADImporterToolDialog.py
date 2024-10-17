@@ -1,5 +1,5 @@
-from PySide2 import QtGui, QtCore, QtWidgets
-from PySide2.QtCore import Slot
+from PySide import QtGui, QtCore, QtWidgets
+from PySide.QtCore import Slot
 import os, sys
 import re
 
@@ -87,7 +87,7 @@ class KiCADImporterToolDialog(QtCore.QObject):
 ####################################################################################################################################################################
 # End of PANEL definition
 ####################################################################################################################################################################
- 
+
 if __name__ == "__main__":
 
 	if APP_CONTEXT in ["FreeCAD"]:

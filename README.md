@@ -28,3 +28,29 @@ To make long story short below is picture already defined simulation in plugin G
 The main purpose of this GUI is to made easy setup simulation and help to define mesh for it. Right meshing is crucial when using FDTD simulation, it has affect on results. There are some help function like displaying defined mesh lines in FreeCAD model, setting priorities for mesh gridlines and make mesh grid setting understandable for normal people.
 
 ![GUI example 1](./documentation_img/GUI_example_1.png)
+
+Installation
+============
+1. Clone this repository in a subfolder of the FreeCAD macros folder. If you don't know where such folder is, open FreeCAD, then *Macro→Macros...→User macros location*. (Windows default Macro directory: `C:\Users\<your_user_name>\AppData\Roaming\FreeCAD\Macro`.)
+2. Copy the `FreeCAD-OpenEMS-Export.FCMacro` file into the FreeCAD macros folder.
+
+Example directory structure after installation:
+```
+/path/to/FreeCAD/Macro
+├── FreeCAD-OpenEMS-Export
+│   ├── documentation
+│   ├── documentation_img
+│   ├── experiments
+│   ├── ExportOpenEMSDialog.py
+│   ├── FreeCAD-OpenEMS-Export.FCMacro
+│   ├── img
+│   ├── __init__.py
+│   ├── KiCADImporterToolDialog.py
+│   ├── LICENSE
+│   ├── README.md
+│   ├── test
+│   ├── ui
+│   ├── utils3rdParty
+│   └── utilsOpenEMS
+└── FreeCAD-OpenEMS-Export.FCMacro
+```

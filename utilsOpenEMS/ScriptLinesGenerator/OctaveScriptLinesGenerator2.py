@@ -2,7 +2,7 @@
 #
 #
 import os
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide import QtGui, QtCore, QtWidgets
 import numpy as np
 import re
 import math
@@ -62,7 +62,7 @@ class OctaveScriptLinesGenerator2(CommonScriptLinesGenerator):
         elif (gridCoordsType == "cylindrical"):
             genScript += "CSX = InitCSX('CoordSystem', 1); % Cylindrical coordinate system.\n"
         else:
-            genScript += "%%%%%% ERROR GRID COORDINATION SYSTEM TYPE UNKNOWN"				
+            genScript += "%%%%%% ERROR GRID COORDINATION SYSTEM TYPE UNKNOWN"
 
         genScript += "mesh.x = []; % mesh variable initialization (Note: x y z implies type Cartesian).\n"
         genScript += "mesh.y = [];\n"
