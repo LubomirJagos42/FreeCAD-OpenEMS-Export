@@ -197,13 +197,14 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		self.initLeftColumnTopLevelItems()
 		self.form.objectAssignmentLeftTreeWidget.itemDoubleClicked.connect(self.objectAssignmentLeftTreeWidgetItemDoubleClicked)	
-		
+		self.form.objectAssignmentLeftTreeWidget.itemSelectionChanged.connect(self.objectAssignmentLeftTreeWidgetItemSelectionChanged)
+
 		#########################################################################################################
 		#	RIGHT COLUMN - Simulation Object Assignment
 		#########################################################################################################
 		
 		self.form.objectAssignmentRightTreeWidget.itemSelectionChanged.connect(self.objectAssignmentRightTreeWidgetItemSelectionChanged)
-		
+
 		self.form.objectAssignmentRightTreeWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)  
 		self.form.objectAssignmentRightTreeWidget.customContextMenuRequested.connect(self.objectAssignmentRightTreeWidgetContextClicked)
 		self.form.objectAssignmentRightTreeWidget.itemDoubleClicked.connect(self.objectAssignmentRightTreeWidgetItemDoubleClicked)
@@ -846,13 +847,29 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			item.setText(0, itemNewName)
 
 	def objectAssignmentRightTreeWidgetItemSelectionChanged(self):
-		currItemLabel = self.form.objectAssignmentRightTreeWidget.currentItem().text(0)
-		print(currItemLabel)
+		currItem = self.form.objectAssignmentRightTreeWidget.currentItem()
+		currItemLabel = None
+
+		#check if there is some current item due this function is trigered also during deleting all items in right assignment widget and then currItem is None
+		if currItem:
+			currItemLabel = currItem.text(0)
+
 		if (currItemLabel):
 			self.cadHelpers.clearSelection()
 			self.cadHelpers.selectObjectByLabel(currItemLabel)
 
-			
+	def objectAssignmentLeftTreeWidgetItemSelectionChanged(self):
+		currItem = self.form.objectAssignmentLeftTreeWidget.currentItem()
+		currItemLabel = None
+
+		#check if there is some current item due this function is trigered also during deleting all items in right assignment widget and then currItem is None
+		if currItem:
+			currItemLabel = currItem.text(0)
+
+		if (currItemLabel):
+			self.cadHelpers.clearSelection()
+			self.cadHelpers.selectObjectByLabel(currItemLabel)
+
 	def objectAssignmentRightTreeWidgetContextClicked(self, event):
 		self.objAssignCtxMenu = QtWidgets.QMenu(self.form.objectAssignmentRightTreeWidget)
 		action_expand   = self.objAssignCtxMenu.addAction("Expand all")

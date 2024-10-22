@@ -975,10 +975,15 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
                 if gridSettingsInst.generateLinesInside:
                     gridOffset = gridSettingsInst.getGridOffset()
                     unitsAsNumber = gridSettingsInst.getUnitsAsNumber(gridOffset['units'])
-                    deltaX = gridOffset['x'] * unitsAsNumber
-                    deltaY = gridOffset['y'] * unitsAsNumber
-                    deltaZ = gridOffset['z'] * unitsAsNumber
-                    print(f"GRID generateLinesInside object detected, delta in X,Y,Z: {deltaX}, {deltaY}, {deltaZ}")
+                    if gridSettingsInst.xenabled:
+                        deltaX = gridOffset['x'] * unitsAsNumber * (1/self.getUnitLengthFromUI_m())
+                        print(f"GRID generateLinesInside object detected, delta in X: {deltaX}")
+                    if gridSettingsInst.yenabled:
+                        deltaY = gridOffset['y'] * unitsAsNumber * (1/self.getUnitLengthFromUI_m())
+                        print(f"GRID generateLinesInside object detected, delta in Y: {deltaY}")
+                    if gridSettingsInst.zenabled:
+                        deltaZ = gridOffset['z'] * unitsAsNumber * (1/self.getUnitLengthFromUI_m())
+                        print(f"GRID generateLinesInside object detected, delta in Z: {deltaZ}")
 
                 xmax = sf * bbCoords.XMax - np.sign(bbCoords.XMax - bbCoords.XMin) * deltaX
                 ymax = sf * bbCoords.YMax - np.sign(bbCoords.YMax - bbCoords.YMin) * deltaY
@@ -1021,10 +1026,15 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
                     if gridSettingsInst.generateLinesInside:
                         gridOffset = gridSettingsInst.getGridOffset()
                         unitsAsNumber = gridSettingsInst.getUnitsAsNumber(gridOffset['units'])
-                        deltaX = gridOffset['x'] * unitsAsNumber
-                        deltaY = gridOffset['y'] * unitsAsNumber
-                        deltaZ = gridOffset['z'] * unitsAsNumber
-                        print(f"GRID generateLinesInside object detected, delta in X,Y,Z: {deltaX}, {deltaY}, {deltaZ}")
+                        if gridSettingsInst.xenabled:
+                            deltaX = gridOffset['x'] * unitsAsNumber * (1 / self.getUnitLengthFromUI_m())
+                            print(f"GRID generateLinesInside object detected, delta in X: {deltaX}")
+                        if gridSettingsInst.yenabled:
+                            deltaY = gridOffset['y'] * unitsAsNumber * (1 / self.getUnitLengthFromUI_m())
+                            print(f"GRID generateLinesInside object detected, delta in Y: {deltaY}")
+                        if gridSettingsInst.zenabled:
+                            deltaZ = gridOffset['z'] * unitsAsNumber * (1 / self.getUnitLengthFromUI_m())
+                            print(f"GRID generateLinesInside object detected, delta in Z: {deltaZ}")
 
                     #append boundary coordinates into list
                     xList.append(sf * bbCoords.XMax - np.sign(bbCoords.XMax - bbCoords.XMin) * deltaX)
