@@ -6,7 +6,7 @@ from PySide2 import QtGui, QtCore, QtWidgets
 import numpy as np
 import re
 import math
-
+import logging
 from utilsOpenEMS.GlobalFunctions.GlobalFunctions import _bool, _r, _r2
 from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator2 import OctaveScriptLinesGenerator2
 from utilsOpenEMS.GuiHelpers.GuiHelpers import GuiHelpers
@@ -14,6 +14,7 @@ from utilsOpenEMS.GuiHelpers.FactoryCadInterface import FactoryCadInterface
 
 from utilsOpenEMS.ScriptLinesGenerator.CommonScriptLinesGenerator import CommonScriptLinesGenerator
 
+_log = logging.getLogger("freecad-openems")
 class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 
     #
@@ -36,7 +37,7 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
         elif (gridCoordsType == "cylindrical"):
             genScript += "CSX = InitCSX('CoordSystem',1); # Cylindrical coordinate system.\n"
         else:
-            genScript += "%%%%%% ERROR GRID COORDINATION SYSTEM TYPE UNKNOWN"				
+            genScript += "%%%%%% ERROR GRID COORDINATION SYSTEM TYPE UNKNOWN"
         """
 
         genScript += "def mesh():\n"
@@ -1380,69 +1381,114 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
         return genScript
 
     def getExcitationScriptLines(self, definitionsOnly=False):
-        genScript = ""
+        excitationCategory = self.form.objectAssignmentRightTreeWidget.findItems("Excitation", QtCore.Qt.MatchFixedString)
+        if len(excitationCategory) <= 0:
+            #  return early if no excitation is set
+            self.guiHelpers.displayMessage("Missing excitation, please define one.")
+            return ""
 
-        excitationCategory = self.form.objectAssignmentRightTreeWidget.findItems("Excitation",
-                                                                                 QtCore.Qt.MatchFixedString)
-        if len(excitationCategory) >= 0:
-            print("Excitation Settings detected")
-            print("#")
-            print("#EXCITATION")
+        if (excitationCategory[0].childCount() <= 0):
+            # Excitation isn't attached to anything
+            return ""
 
-            # FOR WHOLE SIMULATION THERE IS JUST ONE EXCITATION DEFINED, so first is taken!
-            if (excitationCategory[0].childCount() > 0):
-                item = excitationCategory[0].child(0)
-                currSetting = item.data(0, QtCore.Qt.UserRole)  # At index 0 is Default Excitation.
-                # Currently only 1 excitation is allowed. Multiple excitations could be managed by setting one of them as "selected" or "active", while all others are deactivated.
-                # This would help the user to manage different analysis scenarios / excitation ranges.
+        # FOR WHOLE SIMULATION THERE IS JUST ONE EXCITATION DEFINED, so first is taken!
+        item = excitationCategory[0].child(0)
+        currSetting = item.data(0, QtCore.Qt.UserRole)  # At index 0 is Default Excitation.
+        # Currently only 1 excitation is allowed. Multiple excitations could be managed by setting one of them as "selected" or "active", while all others are deactivated.
+        # This would help the user to manage different analysis scenarios / excitation ranges.
 
-                print("#name: " + currSetting.getName())
-                print("#type: " + currSetting.getType())
+        source_type = currSetting.getType()
 
-                genScript += "#######################################################################################################################################\n"
-                genScript += "# EXCITATION " + currSetting.getName() + "\n"
-                genScript += "#######################################################################################################################################\n"
+        print(f"Excitation Settings detected. File: {__file__}")
+        print(f"# EXCITATION {currSetting.getName()} {source_type} {currSetting}\n")
 
-                # EXCITATION FREQUENCY AND CELL MAXIMUM RESOLUTION CALCULATION (1/20th of minimal lambda - calculated based on maximum simulation frequency)
-                # maximum grid resolution is generated into script but NOT USED IN OCTAVE SCRIPT, instead is also calculated here into python variable and used in bounding box correction
-                if (currSetting.getType() == 'sinusodial'):
-                    genScript += "f0 = " + str(currSetting.sinusodial['f0']) + "*" + str(
-                        currSetting.getUnitsAsNumber(currSetting.units)) + "\n"
-                    if not definitionsOnly:
-                        genScript += "FDTD.SetSinusExcite(fc);\n"
-                    genScript += "max_res = C0 / f0 / 20\n"
-                    self.maxGridResolution_m = 3e8 / (
-                                currSetting.sinusodial['f0'] * currSetting.getUnitsAsNumber(currSetting.units) * 20)
-                    pass
-                elif (currSetting.getType() == 'gaussian'):
-                    genScript += "f0 = " + str(currSetting.gaussian['f0']) + "*" + str(
-                        currSetting.getUnitsAsNumber(currSetting.units)) + "\n"
-                    genScript += "fc = " + str(currSetting.gaussian['fc']) + "*" + str(
-                        currSetting.getUnitsAsNumber(currSetting.units)) + "\n"
-                    if not definitionsOnly:
-                        genScript += "FDTD.SetGaussExcite(f0, fc)\n"
-                    genScript += "max_res = C0 / (f0 + fc) / 20\n"
-                    self.maxGridResolution_m = 3e8 / ((currSetting.gaussian['f0'] + currSetting.gaussian[
-                        'fc']) * currSetting.getUnitsAsNumber(currSetting.units) * 20)
-                    pass
-                elif (currSetting.getType() == 'custom'):
-                    f0 = currSetting.custom['f0'] * currSetting.getUnitsAsNumber(currSetting.units)
-                    genScript += "f0 = " + str(currSetting.custom['f0']) + "*" + str(
-                        currSetting.getUnitsAsNumber(currSetting.units)) + "\n"
-                    genScript += "fc = 0.0;\n"
-                    if not definitionsOnly:
-                        genScript += "FDTD.SetCustomExcite(f0, '" + currSetting.custom['functionStr'].replace(
-                            'f0', str(f0)) + "' )\n"
-                    genScript += "max_res = 0\n"
-                    self.maxGridResolution_m = 0
-                    pass
-                pass
+        genScript = "#######################################################################################################################################\n"
+        genScript += f"# EXCITATION {currSetting.getName()} {source_type}\n"
+        genScript += f"# {__file__}\n"
+        genScript += "#######################################################################################################################################\n"
 
-                genScript += "\n"
-            else:
-                self.guiHelpers.displayMessage("Missing excitation, please define one.")
-                pass
-            pass
+        # EXCITATION FREQUENCY AND CELL MAXIMUM RESOLUTION CALCULATION (1/20th of minimal lambda - calculated based on maximum simulation frequency)
+        # maximum grid resolution is generated into script but NOT USED IN OCTAVE SCRIPT, instead is also calculated here into python variable and used in bounding box correction
+
+        units = currSetting.getUnitsAsNumber(currSetting.units)
+        c_ = 3e8
+
+        print("#name: " + currSetting.getName())
+        print("#type: " + source_type)
+
+        def _write_sinusoid_values(f0, units):
+            return f"f0 = {f0}*{units}\nmax_res = C0 / f0 / 20\n"
+
+        def _write_sinusoid_function():
+            return "FDTD.SetSinusExcite(f0)\n"
+
+        def _write_gaussian_values(f0, fc, units):
+            return f"f0 = {f0}*{units}\nfc = {fc}*{units}\nmax_res = C0 / (f0+fc) / 20\n"
+
+        def _write_gaussian_function():
+            return "FDTD.SetGaussExcite(f0, fc)\n"
+
+        def _write_custom_values(f0, fc, units):
+            return f"f0 = {f0}*{units}\nfc = {fc}*{units}\nmax_res = 0\n"
+
+        def _write_custom_function(f0, units, function):
+            func_str = function.replace('f0', float(f0)*float(units))
+            return f"FDTD.SetCustomExcite(f0, {func_str})\n"
+
+        def _write_dirac_values(fm, units):
+            return f"fm = {fm}*{units}\nmax_res = C0 / (fm) / 20\n"
+
+        def _write_dirac_function():
+            return "FDTD.SetDiracExcite(fm)\n"
+
+        def _write_step_values(fm, units):
+            return f"fm = {fm}*{units}\nmax_res = C0 / (fm) / 20\n"
+
+        def _write_step_function():
+            return "FDTD.SetStepExcite(fm)\n"
+
+        if (source_type == 'sinusodial'):
+            f0 = currSetting.sinusodial['f0']
+            genScript += _write_sinusoid_values(f0, units)
+            if not definitionsOnly:
+                genScript += _write_sinusoid_function()
+            self.maxGridResolution_m = c_ / (f0 * units * 20)
+
+        elif (source_type == 'gaussian'):
+            f0 = currSetting.gaussian['f0']
+            fc = currSetting.gaussian['fc']
+            genScript += _write_gaussian_values(f0=f0, fc=fc, units=units)
+            if not definitionsOnly:
+                genScript += _write_gaussian_function()
+            self.maxGridResolution_m = c_ / (f0 * units * 20)
+
+        elif (source_type == 'custom'):
+            f0 = currSetting.custom['f0']
+            functionStr = currSetting.custom['functionStr']
+            genScript += _write_custom_values(f0=f0, units=units)
+            if not definitionsOnly:
+                genScript += _write_custom_function(f0=f0, units=units, function=functionStr)
+            self.maxGridResolution_m = 0
+
+        elif (source_type == "step"):
+            fm = currSetting.step['fm']
+            genScript += _write_step_values(fm=fm, units=units)
+            if not definitionsOnly:
+                genScript += _write_step_function()
+            self.maxGridResolution_m = c_ / (fm * units * 20)
+
+        elif (source_type == "dirac"):
+            fm = currSetting.dirac['fm']
+            genScript += _write_dirac_values(fm=fm, units=units)
+            if not definitionsOnly:
+                genScript += _write_dirac_function()
+            self.maxGridResolution_m = c_ / (fm * units * 20)
+
+        else:
+            self.guiHelpers.displayMessage(f"Error: Excitation {source_type} is unknown")
+
+        _log.debug(genScript)
+        genScript += "\n"
         return genScript
 
     def getBoundaryConditionsScriptLines(self):
@@ -1844,7 +1890,7 @@ title('Frequency: {{}} GHz'.format(nf2ff.freq[0]/1e9))
 legend()
 
 show()
-  
+
 #
 # Dump radiation field to vtk file
 #

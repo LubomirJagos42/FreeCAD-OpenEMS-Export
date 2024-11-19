@@ -389,6 +389,27 @@ class IniValidator0v1:
                             }
                         }
                     },
+                    {
+                        'name': 'step',
+                        'mandatory': 'settings.value("type") == "step"',
+                        'allowedValues': {
+                            'fm': {
+                                'mandatory': True,
+                                'allowedValues': 'float'
+                            }
+                        }
+                    },
+                    {
+                        'name': 'dirac',
+                        'mandatory': 'settings.value("type") == "dirac"',
+                        'allowedValues': {
+                            'fm': {
+                                'mandatory': True,
+                                'allowedValues': 'float'
+                            }
+                        }
+                    },
+
                 ]
             },
             {

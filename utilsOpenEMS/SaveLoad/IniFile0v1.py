@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import json
@@ -22,6 +23,8 @@ from utilsOpenEMS.SettingsItem.FreeCADSettingsItem import FreeCADSettingsItem
 from utilsOpenEMS.GlobalFunctions.GlobalFunctions import _bool, _r
 
 from utilsOpenEMS.SaveLoad.IniValidator0v1 import IniValidator0v1
+
+_log = logging.getLogger("freecad-openems")
 
 class IniFile0v1:
 
@@ -157,15 +160,19 @@ class IniFile0v1:
         # SAVE EXCITATION
 
         excitationList = self.cadHelpers.getAllTreeWidgetItems(self.form.excitationSettingsTreeView)
-        for k in range(len(excitationList)):
-            print("Save new EXCITATION constants into file: " + excitationList[k].getName())
+        for excitation in excitationList:
+            print("Save new EXCITATION constants into file: " + excitation.getName())
 
-            settings.beginGroup("EXCITATION-" + excitationList[k].getName())
-            settings.setValue("type", excitationList[k].type)
-            settings.setValue("sinusodial", json.dumps(excitationList[k].sinusodial))
-            settings.setValue("gaussian", json.dumps(excitationList[k].gaussian))
-            settings.setValue("custom", json.dumps(excitationList[k].custom))
-            settings.setValue("units", excitationList[k].units)
+            msg = f"Save Excitation {excitation}"
+            _log.debug(msg)
+            settings.beginGroup("EXCITATION-" + excitation.getName())
+            settings.setValue("type", excitation.type)
+            settings.setValue("sinusodial", json.dumps(excitation.sinusodial))
+            settings.setValue("gaussian", json.dumps(excitation.gaussian))
+            settings.setValue("step", json.dumps(excitation.step))
+            settings.setValue("dirac", json.dumps(excitation.dirac))
+            settings.setValue("custom", json.dumps(excitation.custom))
+            settings.setValue("units", excitation.units)
             settings.endGroup()
 
         #
@@ -481,21 +488,31 @@ class IniFile0v1:
         print("Settings file groups:", end="")
         print(settings.childGroups())
         for settingsGroup in settings.childGroups():
-
             # extract category name from ini name
             itemNameReg = re.search("-(.*)", settingsGroup)
             itemName = itemNameReg.group(1)
 
             if (re.compile("EXCITATION").search(settingsGroup)):
                 settings.beginGroup(settingsGroup)
-                categorySettings = ExcitationSettingsItem()
-                categorySettings.name = itemName
-                categorySettings.type = settings.value('type')
-                categorySettings.sinusodial = json.loads(settings.value('sinusodial'))
-                categorySettings.gaussian = json.loads(settings.value('gaussian'))
-                categorySettings.custom = json.loads(settings.value('custom'))
-                categorySettings.units = settings.value('units')
+                kwargs = {
+                    'type': settings.value('type'),
+                    'units': settings.value('units')
+                }
+
+                for field in ('sinusodial', 'gaussian', 'custom', 'step', 'dirac'):
+                    try:
+                        kwargs[field] = json.loads(settings.value(field))
+                    except TypeError:
+                        pass
+                    except json.decoder.JSONDecodeError as e:
+                        msg = f"error loading {field} ({e})"
+                        _log.error(msg)
+
+                msg = f"Load Excitation {kwargs}"
+                _log.debug(msg)
+                categorySettings = ExcitationSettingsItem(name = itemName, **kwargs)
                 settings.endGroup()
+
                 print(f"loading EXCITATION - {categorySettings.name} - {categorySettings.type}")
 
             elif (re.compile("GRID").search(settingsGroup)):
@@ -816,9 +833,9 @@ class IniFile0v1:
                                         continue
 
                             #
-                            #	ERROR - here needs to be checked if freeCadObj was even found based on its Label if no try looking based on its ID from file,
-                            #	need to do this this way due backward compatibility
-                            #		- also FreeCAD should have set uniqe label for objects in Preferences
+                            #   ERROR - here needs to be checked if freeCadObj was even found based on its Label if no try looking based on its ID from file,
+                            #   need to do this this way due backward compatibility
+                            #       - also FreeCAD should have set uniqe label for objects in Preferences
                             #
                             # set unique FreeCAD inside name as ID
                             settingsItem.setFreeCadId(freeCadObj.Name)
@@ -834,7 +851,7 @@ class IniFile0v1:
                                 treeItem.setIcon(0, QtGui.QIcon(os.path.join(self.APP_DIR, "img", "object.svg")))
 
                             #
-                            #	THERE IS MISMATCH BETWEEN NAME STORED IN IN FILE AND FREECAD NAME
+                            #   THERE IS MISMATCH BETWEEN NAME STORED IN IN FILE AND FREECAD NAME
                             #
                             if errorLoadByName:
                                 treeItem.setIcon(0, QtGui.QIcon(os.path.join(self.APP_DIR, "img", "errorLoadObject.svg")))
@@ -958,7 +975,7 @@ class IniFile0v1:
                 print("POSTPROCESSING item settings found.")
                 settings.beginGroup(settingsGroup)
                 #
-                #	In case of error just continue and do nothing to correct values
+                #   In case of error just continue and do nothing to correct values
                 #
                 try:
                     self.guiHelpers.setComboboxItem(self.form.portNf2ffObjectList, settings.value("nf2ffObject"))

@@ -17,14 +17,14 @@ try:
 	import WebGui
 	import KiCADImporterToolDialog	#import for KiCAD Import Tool
 	APP_CONTEXT = "FreeCAD"
-except:
+except ImportError:
 	pass
 
 try:
 	import bpy
 	import uuid
 	APP_CONTEXT = "Blender"
-except:
+except ImportError:
 	pass
 
 print(f"APP_CONTEXT set to {APP_CONTEXT}")
@@ -109,8 +109,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		elif event.type() == QtCore.QEvent.WindowActivate and self.cadInterfaceType == "Blender":
 			self.blenderWindowActivatedHandler()
 		return super(ExportOpenEMSDialog, self).eventFilter(object, event)
-		
-	def __init__(self):		
+
+	def __init__(self):
 		QtCore.QObject.__init__(self)
 
 		self.APP_DIR = APP_DIR
@@ -135,7 +135,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form = self.cadHelpers.loadUI(path_to_ui, self)
 		# self.form.finished.connect(self.finished) # QDialog event
 		self.form.installEventFilter(self)
-		
+
 		# add a statusBar widget (comment to revert to QMessageBox if there are any problems)
 		self.statusBar = QtWidgets.QStatusBar()
 		self.statusBar.setStyleSheet("QStatusBar{border-top: 1px outset grey;}")
@@ -156,7 +156,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.octaveScriptGenerator = OctaveScriptLinesGenerator2(self.form, statusBar=self.statusBar)
 		self.pythonScriptGenerator = PythonScriptLinesGenerator2(self.form, statusBar = self.statusBar)
 
-		self.scriptGenerator = self.octaveScriptGenerator													#variable which store current script generator
+		self.scriptGenerator = self.octaveScriptGenerator #variable which store current script generator
 		#self.scriptGenerator2 = OctaveScriptLinesGenerator2(self.form, statusBar=self.statusBar)
 		#self.scriptGenerator3 = PythonScriptLinesGenerator2(self.form, statusBar=self.statusBar)
 
@@ -188,7 +188,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		self.form.moveLeftButton.clicked.connect(self.onMoveLeft)
 		self.form.moveRightButton.clicked.connect(self.onMoveRight)
-		
+
 		#########################################################################################################
 		#	Left Column - FreeCAD objects list
 		#########################################################################################################
@@ -196,16 +196,16 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.internalObjectNameLabelList = {}
 
 		self.initLeftColumnTopLevelItems()
-		self.form.objectAssignmentLeftTreeWidget.itemDoubleClicked.connect(self.objectAssignmentLeftTreeWidgetItemDoubleClicked)	
+		self.form.objectAssignmentLeftTreeWidget.itemDoubleClicked.connect(self.objectAssignmentLeftTreeWidgetItemDoubleClicked)
 		self.form.objectAssignmentLeftTreeWidget.itemSelectionChanged.connect(self.objectAssignmentLeftTreeWidgetItemSelectionChanged)
 
 		#########################################################################################################
 		#	RIGHT COLUMN - Simulation Object Assignment
 		#########################################################################################################
-		
+
 		self.form.objectAssignmentRightTreeWidget.itemSelectionChanged.connect(self.objectAssignmentRightTreeWidgetItemSelectionChanged)
 
-		self.form.objectAssignmentRightTreeWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)  
+		self.form.objectAssignmentRightTreeWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.form.objectAssignmentRightTreeWidget.customContextMenuRequested.connect(self.objectAssignmentRightTreeWidgetContextClicked)
 		self.form.objectAssignmentRightTreeWidget.itemDoubleClicked.connect(self.objectAssignmentRightTreeWidgetItemDoubleClicked)
 
@@ -252,23 +252,23 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.smoothMeshRadioButton.clicked.connect(self.smoothMeshRadioButtonClicked)
 
 		# Handle function for MATERIAL RADIO BUTTONS
-		self.form.materialUserDefinedRadioButton.toggled.connect(self.materialUserDeinedRadioButtonToggled)	
+		self.form.materialUserDefinedRadioButton.toggled.connect(self.materialUserDeinedRadioButtonToggled)
 		self.form.materialConductingSheetRadioButton.toggled.connect(self.materialConductingSheetRadioButtonToggled)
 
 		#
 		# Clicked on "Generate OpenEMS Script"
-		#		
+		#
 		self.form.generateOpenEMSScriptButton.clicked.connect(self.generateOpenEMSScriptButtonClicked)
 
 		#
 		# Clicked on BUTTONS FOR OBJECT PRIORITIES
-		#		
+		#
 		self.form.moveupPriorityButton.clicked.connect(self.moveupPriorityButtonClicked)
 		self.form.movedownPriorityButton.clicked.connect(self.movedownPriorityButtonClicked)
 
 		#
 		# Clicked on BUTTONS FOR MESH PRIORITIES
-		#		
+		#
 		self.form.moveupMeshPriorityButton.clicked.connect(self.moveupPriorityMeshButtonClicked)
 		self.form.movedownMeshPriorityButton.clicked.connect(self.movedownPriorityMeshButtonClicked)
 
@@ -286,7 +286,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#	- button "Display gridlines...."
 		#	- button "Create userdef..."
 		#	- select rectangular or cylindrical grid
-		#		
+		#
 		self.form.createUserdefGridLinesFromCurrentButton.clicked.connect(self.createUserdefGridLinesFromCurrentButtonClicked)
 		self.form.displayXYGridLinesInModelButton.clicked.connect(self.displayXYGridLinesInModelButtonClicked)
 		self.form.gridRectangularRadio.toggled.connect(self.gridCoordsTypeChoosed)
@@ -338,12 +338,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		#
 		# Material, Grid, Excitation, ... item changed handler functions.
-		#		
-		self.form.materialSettingsTreeView.currentItemChanged.connect(self.materialTreeWidgetItemChanged)	
-		self.form.excitationSettingsTreeView.currentItemChanged.connect(self.excitationTreeWidgetItemChanged)	
-		self.form.gridSettingsTreeView.currentItemChanged.connect(self.gridTreeWidgetItemChanged)	
+		#
+		self.form.materialSettingsTreeView.currentItemChanged.connect(self.materialTreeWidgetItemChanged)
+		self.form.excitationSettingsTreeView.currentItemChanged.connect(self.excitationTreeWidgetItemChanged)
+		self.form.gridSettingsTreeView.currentItemChanged.connect(self.gridTreeWidgetItemChanged)
 		self.form.portSettingsTreeView.currentItemChanged.connect(self.portTreeWidgetItemChanged)
-		self.form.lumpedPartTreeView.currentItemChanged.connect(self.lumpedPartTreeWidgetItemChanged)	
+		self.form.lumpedPartTreeView.currentItemChanged.connect(self.lumpedPartTreeWidgetItemChanged)
 		self.form.probeSettingsTreeView.currentItemChanged.connect(self.probeTreeWidgetItemChanged)
 
 		#
@@ -428,11 +428,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#
 		self.form.objectAssignmentFilterLeft.returnPressed.connect(self.applyObjectAssignmentFilter)
 
-		# MinDecrement changed 
+		# MinDecrement changed
 		self.form.simParamsMinDecrement.valueChanged.connect(self.simParamsMinDecrementValueChanged)
-		
+
 		### Other Initialization
-		
+
 		# initialize dB preview label with converted value
 		self.simParamsMinDecrementValueChanged(self.form.simParamsMinDecrement.value())
 
@@ -531,8 +531,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		# A new object has been created. Only the list of available objects needs to be updated.
 		filterStr = self.form.objectAssignmentFilterLeft.text()
 		self.initLeftColumnTopLevelItems(filterStr)
-		
-	
+
+
 	def freecadObjectChanged(self, obj, prop, enableReInitLeftColumn=True):
 		print("freecadObjectChanged :{} ('{}') property changed: {}".format(obj.FullName, obj.Label, prop))
 
@@ -573,9 +573,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.initLeftColumnTopLevelItems(filterStr)
 
 	def freecadBeforeObjectDeleted(self,obj):
-		# event is generated before object is being removed, so observing instances have to 
+		# event is generated before object is being removed, so observing instances have to
 		# (TODO) un-list the object without drawing upon the FreeCAD objects list, and
-		# (TODO) propagate changes to prevent corruption. 
+		# (TODO) propagate changes to prevent corruption.
 		#    Simple approach: delete dependent entries.
 		#    Advanced: remember and gray out deleted objects to allow settings to be restored when
 		#    the user brings the object back with Redo.
@@ -688,7 +688,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		if newValue == 0:
 			s = '( -inf dB )'
 		else:
-			s = '( ' + str(np.round(10 * np.log10(newValue), decimals=2)) + ' dB )' 
+			s = '( ' + str(np.round(10 * np.log10(newValue), decimals=2)) + ' dB )'
 		self.form.simParamsMinDecrementdBLabel.setText(s)
 
 	def BCxminCurrentIndexChanged(self, index):
@@ -730,14 +730,14 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				gridLineDirection = abs(gridLine.End - gridLine.Start)
 				if (gridLineDirection[0] > 0):
 					gridLineListX.append(gridLine)
-		
+
 
 		print("Discovered " + str(len(gridLineList)) + " gridlines in model.")
 		print("--> End creating user defined grid from 3D model.")
 		"""
 		self.guiHelpers.displayMessage("createUserdefGridLinesFromCurrentButtonClicked")
 
-	def displayXYGridLinesInModelButtonClicked(self):        
+	def displayXYGridLinesInModelButtonClicked(self):
 		print('displayXYGridLinesInModelButtonClicked: start draw whole XY grid for each object')
 
 		gridCategory = self.form.objectAssignmentRightTreeWidget.findItems("Grid", QtCore.Qt.MatchFixedString)[0]
@@ -784,7 +784,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 	def updateObjectAssignmentRightTreeWidgetItemData(self, groupName, itemName, data):
 		updatedItems = self.form.objectAssignmentRightTreeWidget.findItems(
-			itemName, 
+			itemName,
 			QtCore.Qt.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive
 			)
 
@@ -880,7 +880,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.form.objectAssignmentRightTreeWidget.expandAll()
 			if menu_action == actioN_collapse:
 				self.form.objectAssignmentRightTreeWidget.collapseAll()
-				
+
 	#
 	#	Handler for DOUBLE CLICK on grid item in FreeCAD objects list
 	#
@@ -919,7 +919,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			return
 
 		bbCoords = gridObj[0].Shape.BoundBox
-	
+
 		print("Start drawing aux grid for: " + currSetting.name)
 		print("Enabled coords: " + str(currSetting.xenabled) + " " + str(currSetting.yenabled) + " " + str(currSetting.zenabled))
 
@@ -949,7 +949,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 			elif (currSetting.getType() == 'Fixed Count'):
 
-	            #collecting Z coordinates where grid will be drawn, gird will be drawn in XY plane
+				#collecting Z coordinates where grid will be drawn, gird will be drawn in XY plane
 				zAuxGridCoordList = []
 				if (currSetting.zenabled):
 					if int(currSetting.getXYZ(refUnit)['z']) != 0:
@@ -958,7 +958,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							zlines = np.array([(bbCoords.ZMin + bbCoords.ZMax)/2])
 						else:
 							zlines = np.linspace(bbCoords.ZMin, bbCoords.ZMax, int(currSetting.getXYZ(refUnit)['z']))
-							
+
 						#collecting Z coordinates where grid layers will be drawn
 						for zGridLine in zlines:
 							zAuxGridCoordList.append(zGridLine)
@@ -967,26 +967,26 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				print(zAuxGridCoordList)
 				if len(zAuxGridCoordList) == 0:
 					zAuxGridCoordList.append(bbCoords.ZMax)
-	
+
 				for zAuxGridCoord in zAuxGridCoordList:
-					
+
 					bbPointsVectors = [self.cadHelpers.Vector(bbCoords.YMin, bbCoords.XMin, 0), self.cadHelpers.Vector(bbCoords.YMin, bbCoords.XMax, 0), self.cadHelpers.Vector(bbCoords.YMax, bbCoords.XMin, 0), self.cadHelpers.Vector(bbCoords.YMax, bbCoords.XMax, 0)]
 					angle1 = math.atan2(bbCoords.YMin, bbCoords.XMin) + 2*math.pi % (2*math.pi)
 					angle2 = math.atan2(bbCoords.YMin, bbCoords.XMax) + 2*math.pi % (2*math.pi)
 					angle3 = math.atan2(bbCoords.YMax, bbCoords.XMin) + 2*math.pi % (2*math.pi)
 					angle4 = math.atan2(bbCoords.YMax, bbCoords.XMax) + 2*math.pi % (2*math.pi)
-					
+
 					minAngle = min([angle1, angle2, angle3, angle4])
-					maxAngle = max([angle1, angle2, angle3, angle4])						
+					maxAngle = max([angle1, angle2, angle3, angle4])
 					radius = max([math.sqrt(modelMinX**2 + modelMinY**2), math.sqrt(modelMaxX**2 + modelMaxY**2)])
 
 					print("Calculate ylines for cylindrical coords.")
 					print("minAngle: " + str(minAngle))
 					print("maxAngle: " + str(maxAngle))
-					print("radius: " + str(radius))						
+					print("radius: " + str(radius))
 
 					#DRAW X LINES auxiliary grid in 3D view
-					if (currSetting.xenabled):						
+					if (currSetting.xenabled):
 						a = np.array([angle1, angle2, angle3, angle4])
 						indicesMin = a.argmin()
 						indicesMax = a.argmax()
@@ -1000,17 +1000,17 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							xlines = np.array([(minRadius + maxRadius)/2])
 						else:
 							xlines = np.linspace(minRadius, maxRadius, int(currSetting.getXYZ(refUnit)['x']))
-							
+
 						for xGridLine in xlines:
 							self.cadHelpers.drawDraftCircle("auxGridLine", self.cadHelpers.Vector(0,0,zAuxGridCoord), xGridLine)
 
 					#DRAW Y LINES auxiliary grid in 3D view
-					if (currSetting.yenabled):												
+					if (currSetting.yenabled):
 						if float(currSetting.getXYZ(refUnit)['y']) == 1:
 							ylines = np.array([(minAngle, maxAngle)/2])
 						else:
 							ylines = np.linspace(minAngle, maxAngle, int(currSetting.getXYZ(refUnit)['y']))
-							
+
 						print(ylines)
 
 						for yGridLine in ylines:
@@ -1025,7 +1025,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			print("Drawing GRID in Z axis.")
 
 			if (currSetting.getType() == 'Fixed Distance'):
-	
+
 				#here adding Z coordinates for which grid will be drawn so grid will be drawn in XY plane, so here are collected just Z coords for which it will be drawn
 				zAuxGridCoordList = []
 				if (currSetting.zenabled):
@@ -1035,7 +1035,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							zAuxGridCoordList.append(zGridLine)
 				if len(zAuxGridCoordList) == 0:
 					zAuxGridCoordList.append(bbCoords.ZMax)
-	
+
 				for zAuxGridCoord in zAuxGridCoordList:
 					#DRAW X LINES auxiliary grid in 3D view
 					if (currSetting.xenabled):
@@ -1044,7 +1044,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							for xGridLine in xlines:
 								#self.cadHelpers.drawDraftLine("auxGridLine", [xGridLine, bbCoords.YMin, zAuxGridCoord], [xGridLine, bbCoords.YMax, zAuxGridCoord])
 								self.cadHelpers.drawDraftLine("auxGridLine", [xGridLine, modelMinY, zAuxGridCoord], [xGridLine, modelMaxY, zAuxGridCoord])
-		
+
 					#DRAW Y LINES auxiliary grid in 3D view
 					if (currSetting.yenabled):
 						if float(currSetting.getXYZ(refUnit)['y']) != 0:
@@ -1052,9 +1052,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							for yGridLine in ylines:
 								#self.cadHelpers.drawDraftLine("auxGridLine", [bbCoords.XMin, yGridLine, zAuxGridCoord], [bbCoords.XMax, yGridLine, zAuxGridCoord])
 								self.cadHelpers.drawDraftLine("auxGridLine", [modelMinX, yGridLine, zAuxGridCoord], [modelMaxX, yGridLine, zAuxGridCoord])
-	
+
 			elif (currSetting.getType() == 'Fixed Count'):
-	
+
 	            #collecting Z coordinates where grid will be drawn, grid will be drawn in XY plane
 				zAuxGridCoordList = []
 				if (currSetting.zenabled):
@@ -1063,13 +1063,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							zlines = np.arange(bbCoords.ZMin, bbCoords.ZMax, int(currSetting.getXYZ(refUnit)['z']))
 						else:
 							zlines = np.array([(bbCoords.ZMin + bbCoords.ZMax)/2])
-							
+
 						#collecting Z coordinates where grid layers will be drawn
 						for zGridLine in zlines:
 							zAuxGridCoordList.append(zGridLine)
 				if len(zAuxGridCoordList) == 0:
 					zAuxGridCoordList.append(bbCoords.ZMax)
-	
+
 				for zAuxGridCoord in zAuxGridCoordList:
 					#DRAW X LINES auxiliary grid in 3D view
 					if (currSetting.xenabled):
@@ -1077,11 +1077,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							xlines = np.array([(bbCoords.XMin + bbCoords.XMax)/2])
 						else:
 							xlines = np.linspace(bbCoords.XMin, bbCoords.XMax, int(currSetting.getXYZ(refUnit)['x']))
-							
+
 						for xGridLine in xlines:
 							#self.cadHelpers.drawDraftLine("auxGridLine", [xGridLine, bbCoords.YMin, zAuxGridCoord], [xGridLine, bbCoords.YMax, zAuxGridCoord])
 							self.cadHelpers.drawDraftLine("auxGridLine", [xGridLine, modelMinY, zAuxGridCoord], [xGridLine, modelMaxY, zAuxGridCoord])
-		
+
 					#DRAW Y LINES auxiliary grid in 3D view
 					if (currSetting.yenabled):
 						if float(currSetting.getXYZ(refUnit)['y']) == 1:
@@ -1092,9 +1092,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 						for yGridLine in ylines:
 							#self.cadHelpers.drawDraftLine("auxGridLine", [bbCoords.XMin, yGridLine, zAuxGridCoord], [bbCoords.XMax, yGridLine, zAuxGridCoord])
 							self.cadHelpers.drawDraftLine("auxGridLine", [modelMinX, yGridLine, zAuxGridCoord], [modelMaxX, yGridLine, zAuxGridCoord])
-	
+
 			elif (currSetting.getType() == 'User Defined'):
-				#UNIT FOR MESH										
+				#UNIT FOR MESH
 				genScript += "meshUnit = " + currSetting.getUnitAsScriptLine() + "; % all length in mm\n"
 				genScript += "mesh = " + currSetting.getXYZ(refUnit) + ";\n"
 
@@ -1105,9 +1105,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			#######################################################################################################################################################################
 
 			print("Drawing GRID in X axis.")
-			
+
 			if (currSetting.getType() == 'Fixed Distance'):
-	
+
 				#here adding Z coordinates for which grid will be drawn so grid will be drawn in XY plane, so here are collected just Z coords for which it will be drawn
 				xAuxGridCoordList = []
 				if (currSetting.xenabled):
@@ -1117,7 +1117,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							xAuxGridCoordList.append(xGridLine)
 				if len(xAuxGridCoordList) == 0:
 					xAuxGridCoordList.append(bbCoords.XMax)
-	
+
 				for xAuxGridCoord in xAuxGridCoordList:
 					#DRAW Z LINES auxiliary grid in 3D view
 					if (currSetting.zenabled):
@@ -1125,16 +1125,16 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							zlines = np.arange(bbCoords.ZMin, bbCoords.ZMax, currSetting.getXYZ(refUnit)['z'])
 							for zGridLine in zlines:
 								self.cadHelpers.drawDraftLine("auxGridLine", [xAuxGridCoord, modelMinY, zGridLine], [xAuxGridCoord, modelMaxY, zGridLine])
-		
+
 					#DRAW Y LINES auxiliary grid in 3D view
 					if (currSetting.yenabled):
 						if float(currSetting.getXYZ(refUnit)['y']) != 0:
 							ylines = np.arange(bbCoords.YMin, bbCoords.YMax, currSetting.getXYZ(refUnit)['y'])
 							for yGridLine in ylines:
 								self.cadHelpers.drawDraftLine("auxGridLine", [xAuxGridCoord, yGridLine, modelMinZ], [xAuxGridCoord, yGridLine, modelMaxZ])
-	
+
 			elif (currSetting.getType() == 'Fixed Count'):
-	
+
 	            #collecting Z coordinates where grid will be drawn, grid will be drawn in XY plane
 				xAuxGridCoordList = []
 				if (currSetting.xenabled):
@@ -1143,13 +1143,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							xlines = np.array([(bbCoords.XMin + bbCoords.XMax)/2])
 						else:
 							xlines = np.arange(bbCoords.XMin, bbCoords.XMax, int(currSetting.getXYZ(refUnit)['x']))   #collecting Z coordinates where grid layers will be drawn
-							
+
 						for xGridLine in xlines:
 							xAuxGridCoordList.append(xGridLine)
 
 				if len(xAuxGridCoordList) == 0:
 					xAuxGridCoordList.append(bbCoords.XMax)
-	
+
 				for xAuxGridCoord in xAuxGridCoordList:
 					#DRAW X LINES auxiliary grid in 3D view
 					if (currSetting.zenabled):
@@ -1157,25 +1157,25 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							zlines = np.array([(bbCoords.ZMin + bbCoords.ZMax)/2])
 						else:
 							zlines = np.linspace(bbCoords.ZMin, bbCoords.ZMax, int(currSetting.getXYZ(refUnit)['z']))
-						
+
 						for zGridLine in zlines:
 							self.cadHelpers.drawDraftLine("auxGridLine", [xAuxGridCoord, modelMinY, zGridLine], [xAuxGridCoord, modelMaxY, zGridLine])
-		
+
 					#DRAW Y LINES auxiliary grid in 3D view
 					if (currSetting.yenabled):
 						if float(currSetting.getXYZ(refUnit)['y']) == 1:
 							ylines = np.array([(bbCoords.YMin + bbCoords.YMax)/2])
 						else:
 							ylines = np.linspace(bbCoords.YMin, bbCoords.YMax, int(currSetting.getXYZ(refUnit)['y']))
-						
+
 						for yGridLine in ylines:
 								self.cadHelpers.drawDraftLine("auxGridLine", [xAuxGridCoord, yGridLine, modelMinZ], [xAuxGridCoord, yGridLine, modelMaxZ])
-	
+
 			elif (currSetting.getType() == 'User Defined'):
-				#UNIT FOR MESH										
+				#UNIT FOR MESH
 				genScript += "meshUnit = " + currSetting.getUnitAsScriptLine() + "; % all length in mm\n"
 				genScript += "mesh = " + currSetting.getXYZ(refUnit) + ";\n"
-				
+
 		elif (currSetting.coordsType == 'rectangular' and currGridAxis == "y"):
 
 			#######################################################################################################################################################################
@@ -1185,7 +1185,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			print("Drawing GRID in Y axis.")
 
 			if (currSetting.getType() == 'Fixed Distance'):
-	
+
 				#here adding Z coordinates for which grid will be drawn so grid will be drawn in XY plane, so here are collected just Z coords for which it will be drawn
 				yAuxGridCoordList = []
 				if (currSetting.yenabled):
@@ -1195,7 +1195,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							yAuxGridCoordList.append(yGridLine)
 				if len(yAuxGridCoordList) == 0:
 					yAuxGridCoordList.append(bbCoords.YMax)
-	
+
 				for yAuxGridCoord in yAuxGridCoordList:
 					#DRAW Z LINES auxiliary grid in 3D view
 					if (currSetting.zenabled):
@@ -1203,16 +1203,16 @@ class ExportOpenEMSDialog(QtCore.QObject):
 							zlines = np.arange(bbCoords.ZMin, bbCoords.ZMax, currSetting.getXYZ(refUnit)['z'])
 							for zGridLine in zlines:
 								self.cadHelpers.drawDraftLine("auxGridLine", [modelMinX, yAuxGridCoord, zGridLine], [modelMaxX, yAuxGridCoord, zGridLine])
-		
+
 					#DRAW X LINES auxiliary grid in 3D view
 					if (currSetting.xenabled):
 						if float(currSetting.getXYZ(refUnit)['x']) != 0:
 							xlines = np.arange(bbCoords.XMin, bbCoords.XMax, currSetting.getXYZ(refUnit)['x'])
 							for xGridLine in xlines:
 								self.cadHelpers.drawDraftLine("auxGridLine", [xGridLine, yAuxGridCoord, modelMinZ], [xGridLine, yAuxGridCoord, modelMaxZ])
-	
+
 			elif (currSetting.getType() == 'Fixed Count'):
-	
+
 	            #collecting Z coordinates where grid will be drawn, grid will be drawn in XY plane
 				yAuxGridCoordList = []
 				if (currSetting.yenabled):
@@ -1227,7 +1227,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 				if len(yAuxGridCoordList) == 0:
 					yAuxGridCoordList.append(bbCoords.YMax)
-	
+
 				for yAuxGridCoord in yAuxGridCoordList:
 					#DRAW Z LINES auxiliary grid in 3D view
 					if (currSetting.zenabled):
@@ -1238,7 +1238,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 						for zGridLine in zlines:
 							self.cadHelpers.drawDraftLine("auxGridLine", [modelMinX, yAuxGridCoord, zGridLine], [modelMaxX, yAuxGridCoord, zGridLine])
-		
+
 					#DRAW X LINES auxiliary grid in 3D view
 					if (currSetting.xenabled):
 						if float(currSetting.getXYZ(refUnit)['x']) == 1:
@@ -1248,9 +1248,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 						for xGridLine in xlines:
 							self.cadHelpers.drawDraftLine("auxGridLine", [xGridLine, yAuxGridCoord, modelMinZ], [xGridLine, yAuxGridCoord, modelMaxZ])
-	
+
 			elif (currSetting.getType() == 'User Defined'):
-				#UNIT FOR MESH										
+				#UNIT FOR MESH
 				genScript += "meshUnit = " + currSetting.getUnitAsScriptLine() + "; % all length in mm\n"
 				genScript += "mesh = " + currSetting.getXYZ(refUnit) + ";\n"
 
@@ -1261,7 +1261,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 	#######################################################################################################################################################################
   	# END GRID DRAWING
 	#######################################################################################################################################################################
-	
+
 	def initLeftColumnTopLevelItems(self, filterStr = ""):
 		self.form.objectAssignmentLeftTreeWidget.clear()
 
@@ -1277,7 +1277,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			topItem.setData(0, QtCore.Qt.UserRole, itemData)
 			if (i.Name.find("Sketch") > -1):
 				topItem.setIcon(0, QtGui.QIcon(os.path.join(self.APP_DIR, "img", "wire.svg")))
-			elif (i.Name.find("Discretized_Edge") > -1): 
+			elif (i.Name.find("Discretized_Edge") > -1):
 				topItem.setIcon(0, QtGui.QIcon(os.path.join(self.APP_DIR, "img", "curve.svg")))
 			else:
 				topItem.setIcon(0, QtGui.QIcon(os.path.join(self.APP_DIR, "img", "object.svg")))
@@ -1772,12 +1772,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.guiHelpers.displayMessage("Script to display far field generated.")
 
 	# GRID SETTINGS
-	#   _____ _____  _____ _____     _____ ______ _______ _______ _____ _   _  _____  _____ 
+	#   _____ _____  _____ _____     _____ ______ _______ _______ _____ _   _  _____  _____
 	#  / ____|  __ \|_   _|  __ \   / ____|  ____|__   __|__   __|_   _| \ | |/ ____|/ ____|
-	# | |  __| |__) | | | | |  | | | (___ | |__     | |     | |    | | |  \| | |  __| (___  
-	# | | |_ |  _  /  | | | |  | |  \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \ 
+	# | |  __| |__) | | | | |  | | | (___ | |__     | |     | |    | | |  \| | |  __| (___
+	# | | |_ |  _  /  | | | |  | |  \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \
 	# | |__| | | \ \ _| |_| |__| |  ____) | |____   | |     | |   _| |_| |\  | |__| |____) |
-	#  \_____|_|  \_\_____|_____/  |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/ 
+	#  \_____|_|  \_\_____|_____/  |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/
 	#
 	def fixedCountRadioButtonClicked(self):
 		self.form.userDefinedGridLinesTextInput.setEnabled(False)
@@ -1876,9 +1876,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		gridItem.gridOffset['units'] = self.form.gridOffsetUnits.currentText()
 
 		return gridItem
-		
 
-	def gridSettingsAddButtonClicked(self):		
+
+	def gridSettingsAddButtonClicked(self):
 		settingsInst = self.getGridItemFromGui()
 
 		#check if all items have same type of coordinate system
@@ -1894,13 +1894,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 			#disable/enable grid plane drawing if rectangular, for cylindrical just axis z
 			if settingsInst.coordsType == "rectangular":
-				self.form.auxGridAxis.setEnabled(True)				
+				self.form.auxGridAxis.setEnabled(True)
 			else:
 				#set grid drawing plane to 'z' and disable chosing plane to draw grid
 				index = self.form.auxGridAxis.findText('z', QtCore.Qt.MatchFixedString)
 				if index >= 0:
 					 self.form.auxGridAxis.setCurrentIndex(index)
-				self.form.auxGridAxis.setEnabled(False)				
+				self.form.auxGridAxis.setEnabled(False)
 
 			self.guiHelpers.addSettingsItemGui(settingsInst)	#add item into gui tree views
 			self.guiHelpers.updateMeshPriorityDisableItems()	#update grid priority table at object assignment panel
@@ -1927,8 +1927,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.guiHelpers.updateMeshPriorityDisableItems()	#update grid priority table at object assignment panel
 
 	def gridSettingsUpdateButtonClicked(self):
-		### capture UI settings	
-		settingsInst = self.getGridItemFromGui() 
+		### capture UI settings
+		settingsInst = self.getGridItemFromGui()
 
 		### replace old with new settingsInst
 		selectedItems = self.form.gridSettingsTreeView.selectedItems()
@@ -2074,13 +2074,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 	#
 	# MATERIAL SETTINGS
-	#  __  __       _______ ______ _____  _____          _         _____ ______ _______ _______ _____ _   _  _____  _____ 
+	#  __  __       _______ ______ _____  _____          _         _____ ______ _______ _______ _____ _   _  _____  _____
 	# |  \/  |   /\|__   __|  ____|  __ \|_   _|   /\   | |       / ____|  ____|__   __|__   __|_   _| \ | |/ ____|/ ____|
-	# | \  / |  /  \  | |  | |__  | |__) | | |    /  \  | |      | (___ | |__     | |     | |    | | |  \| | |  __| (___  
-	# | |\/| | / /\ \ | |  |  __| |  _  /  | |   / /\ \ | |       \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \ 
+	# | \  / |  /  \  | |  | |__  | |__) | | |    /  \  | |      | (___ | |__     | |     | |    | | |  \| | |  __| (___
+	# | |\/| | / /\ \ | |  |  __| |  _  /  | |   / /\ \ | |       \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \
 	# | |  | |/ ____ \| |  | |____| | \ \ _| |_ / ____ \| |____   ____) | |____   | |     | |   _| |_| |\  | |__| |____) |
-	# |_|  |_/_/    \_\_|  |______|_|  \_\_____/_/    \_\______| |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/ 
-	#      
+	# |_|  |_/_/    \_\_|  |______|_|  \_\_____/_/    \_\______| |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/
+	#
 
 	def getMaterialItemFromGui(self):
 		name = self.form.materialSettingsNameInput.text()
@@ -2105,7 +2105,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		materialItem.constants['epsilon'] = epsilon
 		materialItem.constants['mue'] = mue
 		materialItem.constants['kappa'] = kappa
-		materialItem.constants['sigma'] = sigma	
+		materialItem.constants['sigma'] = sigma
 
 		materialItem.constants['conductingSheetThicknessValue'] = conductingSheetThicknessValue
 		materialItem.constants['conductingSheetThicknessUnits'] = conductingSheetThicknessUnits
@@ -2119,8 +2119,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			materialItem.type = "conducting sheet"
 
 		return materialItem
-		
-	
+
+
 	def materialSettingsAddButtonClicked(self):
 		materialItem = self.getMaterialItemFromGui()
 
@@ -2140,7 +2140,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		self.guiHelpers.addSettingsItemGui(materialItem)
 		self.guiSignals.materialsChanged.emit("add")
-			
+
 
 	def materialSettingsRemoveButtonClicked(self):
 		selectedItem = self.form.materialSettingsTreeView.selectedItems()[0]
@@ -2156,7 +2156,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			return
 
 		materialGroupWidgetItems = self.form.objectAssignmentRightTreeWidget.findItems(
-			selectedItem.text(0), 
+			selectedItem.text(0),
 			QtCore.Qt.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive
 			)
 
@@ -2395,20 +2395,18 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.cadHelpers.printError(traceback.format_exc())
 
 	# EXCITATION SETTINGS
-	#  ________   _______ _____ _______    _______ _____ ____  _   _    _____ ______ _______ _______ _____ _   _  _____  _____ 
+	#  ________   _______ _____ _______    _______ _____ ____  _   _    _____ ______ _______ _______ _____ _   _  _____  _____
 	# |  ____\ \ / / ____|_   _|__   __|/\|__   __|_   _/ __ \| \ | |  / ____|  ____|__   __|__   __|_   _| \ | |/ ____|/ ____|
-	# | |__   \ V / |      | |    | |  /  \  | |    | || |  | |  \| | | (___ | |__     | |     | |    | | |  \| | |  __| (___  
-	# |  __|   > <| |      | |    | | / /\ \ | |    | || |  | | . ` |  \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \ 
+	# | |__   \ V / |      | |    | |  /  \  | |    | || |  | |  \| | | (___ | |__     | |     | |    | | |  \| | |  __| (___
+	# |  __|   > <| |      | |    | | / /\ \ | |    | || |  | | . ` |  \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \
 	# | |____ / . \ |____ _| |_   | |/ ____ \| |   _| || |__| | |\  |  ____) | |____   | |     | |   _| |_| |\  | |__| |____) |
-	# |______/_/ \_\_____|_____|  |_/_/    \_\_|  |_____\____/|_| \_| |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/ 
-	#                                                                                                                          
-
+	# |______/_/ \_\_____|_____|  |_/_/    \_\_|  |_____\____/|_| \_| |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/
+	#
 	def getExcitationItemFromGui(self):
-		name = self.form.excitationSettingsNameInput.text()
-
-		excitationItem = ExcitationSettingsItem()
-		excitationItem.name = name
-		excitationItem.units = self.form.excitationUnitsNumberInput.currentText()
+		excitationItem = ExcitationSettingsItem(
+			name = self.form.excitationSettingsNameInput.text(),
+			units = self.form.excitationUnitsNumberInput.currentText()
+		)
 
 		if (self.form.sinusodialExcitationRadioButton.isChecked()):
 			excitationItem.type = 'sinusodial'
@@ -2421,8 +2419,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			excitationItem.gaussian['f0'] = self.form.gaussianExcitationF0NumberInput.value()
 		if (self.form.diracExcitationRadioButton.isChecked()):
 			excitationItem.type = 'dirac'
+			excitationItem.dirac = {}
+			excitationItem.dirac['fm'] = self.form.diracExcitationFmNumberInput.value()
 		if (self.form.stepExcitationRadioButton.isChecked()):
 			excitationItem.type = 'step'
+			excitationItem.step = {}
+			excitationItem.step['fm'] = self.form.stepExcitationFmNumberInput.value()
 		if (self.form.customExcitationRadioButton.isChecked()):
 			excitationItem.type = 'custom'
 			excitationItem.custom = {}
@@ -2443,9 +2445,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		if (isMoreThanOne):
 			self.guiHelpers.displayMessage("There could be just one excitation!")
 			return
-		
+
 		self.guiHelpers.addSettingsItemGui(settingsInst)
-		
+
 
 	def excitationSettingsRemoveButtonClicked(self):
 		selectedItem = self.form.excitationSettingsTreeView.selectedItems()[0]
@@ -2467,16 +2469,16 @@ class ExportOpenEMSDialog(QtCore.QObject):
 	def excitationSettingsUpdateButtonClicked(self):
 		### capture UI settings
 		settingsInst = self.getExcitationItemFromGui()
-	
+
 		### replace old with new settingsInst
 		selectedItems = self.form.excitationSettingsTreeView.selectedItems()
 		if len(selectedItems) != 1:
 			self.guiHelpers.displayMessage("Excitation ERROR during update.", forceModal=False)
 			return
 		selectedItems[0].setData(0, QtCore.Qt.UserRole, settingsInst)
-		
+
 		### update other UI elements to propagate changes
-		# replace oudated copy of settingsInst 
+		# replace oudated copy of settingsInst
 		self.updateObjectAssignmentRightTreeWidgetItemData("Excitation", selectedItems[0].text(0), settingsInst)
 
 		# emit rename signal
@@ -2486,13 +2488,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.guiHelpers.displayMessage("Excitation updated.", forceModal=False)
 
 	# PORT SETTINGS
-	#  _____   ____  _____ _______    _____ ______ _______ _______ _____ _   _  _____  _____ 
+	#  _____   ____  _____ _______    _____ ______ _______ _______ _____ _   _  _____  _____
 	# |  __ \ / __ \|  __ \__   __|  / ____|  ____|__   __|__   __|_   _| \ | |/ ____|/ ____|
-	# | |__) | |  | | |__) | | |    | (___ | |__     | |     | |    | | |  \| | |  __| (___  
-	# |  ___/| |  | |  _  /  | |     \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \ 
+	# | |__) | |  | | |__) | | |    | (___ | |__     | |     | |    | | |  \| | |  __| (___
+	# |  ___/| |  | |  _  /  | |     \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \
 	# | |    | |__| | | \ \  | |     ____) | |____   | |     | |   _| |_| |\  | |__| |____) |
-	# |_|     \____/|_|  \_\ |_|    |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/ 
-	#    
+	# |_|     \____/|_|  \_\ |_|    |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/
+	#
 
 	def getPortItemFromGui(self):
 		name = self.form.portSettingsNameInput.text()
@@ -2673,7 +2675,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 	def portSettingsUpdateButtonClicked(self):
 		### capture UI settings
 		settingsInst = self.getPortItemFromGui()
-	
+
 		### replace old with new settingsInst
 		selectedItems = self.form.portSettingsTreeView.selectedItems()
 		if len(selectedItems) != 1:
@@ -3101,15 +3103,15 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.guiHelpers.setComboboxItem(self.form.striplinePortPropagationComboBox, previousPropagationValue)
 
 	#  _     _    _ __  __ _____  ______ _____    _____        _____ _______            _   _   _
-	# | |   | |  | |  \/  |  __ \|  ____|  __ \  |  __ \ /\   |  __ \__   __|          | | | | (_)                
-	# | |   | |  | | \  / | |__) | |__  | |  | | | |__) /  \  | |__) | | |     ___  ___| |_| |_ _ _ __   __ _ ___ 
+	# | |   | |  | |  \/  |  __ \|  ____|  __ \  |  __ \ /\   |  __ \__   __|          | | | | (_)
+	# | |   | |  | | \  / | |__) | |__  | |  | | | |__) /  \  | |__) | | |     ___  ___| |_| |_ _ _ __   __ _ ___
 	# | |   | |  | | |\/| |  ___/|  __| | |  | | |  ___/ /\ \ |  _  /  | |    / __|/ _ \ __| __| | '_ \ / _` / __|
 	# | |___| |__| | |  | | |    | |____| |__| | | |  / ____ \| | \ \  | |    \__ \  __/ |_| |_| | | | | (_| \__ \
 	# |______\____/|_|  |_|_|    |______|_____/  |_| /_/    \_\_|  \_\ |_|    |___/\___|\__|\__|_|_| |_|\__, |___/
-	#                                                                                                    __/ |    
-	#                                                                                                   |___/    
+	#                                                                                                    __/ |
+	#                                                                                                   |___/
 	#
-	
+
 	def getLumpedPartItemFromGui(self):
 		name = self.form.lumpedPartSettingsNameInput.text()
 
@@ -3134,17 +3136,17 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		lumpedPartItem.params['combinationType'] = self.form.lumpedPartCombinationType.currentText()
 
 		return lumpedPartItem
-		
-	
+
+
 	def lumpedPartSettingsAddButtonClicked(self):
 		# capture UI settings
-		settingsInst = self.getLumpedPartItemFromGui()		
+		settingsInst = self.getLumpedPartItemFromGui()
 
 		#check for duplicity in names if there is some warning message displayed
 		isDuplicityName = self.checkTreeWidgetForDuplicityName(self.form.lumpedPartTreeView, settingsInst.name)
 		if (not isDuplicityName):
 			self.guiHelpers.addSettingsItemGui(settingsInst)
-			
+
 
 	def lumpedPartSettingsRemoveButtonClicked(self):
 		selectedItem = self.form.lumpedPartTreeView.selectedItems()[0]
@@ -3168,12 +3170,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		self.form.lumpedPartTreeView.invisibleRootItem().removeChild(selectedItem)
 		lumpedPartGroupItem.parent().removeChild(lumpedPartGroupItem)
-		
+
 
 	def lumpedPartSettingsUpdateButtonClicked(self):
 		### capture UI settings
-		settingsInst = self.getLumpedPartItemFromGui()		
-	
+		settingsInst = self.getLumpedPartItemFromGui()
+
 		### replace old with new settingsInst
 		selectedItems = self.form.lumpedPartTreeView.selectedItems()
 		if len(selectedItems) != 1:
@@ -3195,9 +3197,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 	#   _____________   ____________  ___    __       _____ _______________________   _____________
 	#  / ____/ ____/ | / / ____/ __ \/   |  / /      / ___// ____/_  __/_  __/  _/ | / / ____/ ___/
-	# / / __/ __/ /  |/ / __/ / /_/ / /| | / /       \__ \/ __/   / /   / /  / //  |/ / / __ \__ \ 
-	#/ /_/ / /___/ /|  / /___/ _, _/ ___ |/ /___    ___/ / /___  / /   / / _/ // /|  / /_/ /___/ / 
-	#\____/_____/_/ |_/_____/_/ |_/_/  |_/_____/   /____/_____/ /_/   /_/ /___/_/ |_/\____//____/  
+	# / / __/ __/ /  |/ / __/ / /_/ / /| | / /       \__ \/ __/   / /   / /  / //  |/ / / __ \__ \
+	#/ /_/ / /___/ /|  / /___/ _, _/ ___ |/ /___    ___/ / /___  / /   / / _/ // /|  / /_/ /___/ /
+	#\____/_____/_/ |_/_____/_/ |_/_/  |_/_____/   /____/_____/ /_/   /_/ /___/_/ |_/\____//____/
 	#
 	def materialTreeWidgetItemChanged(self, current, previous):
 		print("materialTreeWidgetItemChanged(): Material item changed.")
@@ -3346,27 +3348,31 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		if (currSetting.type == "sinusodial"):
 			self.form.sinusodialExcitationRadioButton.click()
 			self.form.sinusodialExcitationF0NumberInput.setValue(currSetting.sinusodial['f0'])
+
 		elif (currSetting.type == "gaussian"):
 			self.form.gaussianExcitationRadioButton.click()
 			self.form.gaussianExcitationF0NumberInput.setValue(currSetting.gaussian['f0'])
 			self.form.gaussianExcitationFcNumberInput.setValue(currSetting.gaussian['fc'])
-			pass
+
 		elif (currSetting.type == "dirac"):
 			self.form.diracExcitationRadioButton.click()
+			self.form.diracExcitationFmNumberInput.setValue(currSetting.dirac['fm'])
+
 		elif (currSetting.type == "step"):
 			self.form.stepExcitationRadioButton.click()
+			self.form.stepExcitationFmNumberInput.setValue(currSetting.step['fm'])
+
 		elif (currSetting.type == "custom"):
 			self.form.customExcitationRadioButton.click()
 			self.form.customExcitationTextInput.setText(currSetting.custom['functionStr'])
 			self.form.customExcitationF0NumberInput.setValue(currSetting.custom['f0'])
-			
+
 			index = self.form.excitationUnitsNumberInput.findText(currSetting.units, QtCore.Qt.MatchFixedString)
 			if index >= 0:
 				self.form.excitationUnitsNumberInput.setCurrentIndex(index)
-			pass
 		else:
 			return #no gui update
-			
+
 		index = self.form.excitationUnitsNumberInput.findText(currSetting.units, QtCore.Qt.MatchFixedString)
 		if index >= 0:
 			self.form.excitationUnitsNumberInput.setCurrentIndex(index)
@@ -3599,7 +3605,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 ####################################################################################################################################################################
 # End of PANEL definition
 ####################################################################################################################################################################
- 
+
 if __name__ == "__main__":
 	#
 	#	TODO:
@@ -3609,7 +3615,7 @@ if __name__ == "__main__":
 		"""
 			Finally this is running, it will create Misc tab on right side of View3D and there is button for open
 			addon to specify simulation.
-			
+
 			Found in forum here: https://blenderartists.org/t/parent-pyqt-window-widget-to-blenders-window/700722/17
 			related:			 https://blenderartists.org/t/bqt-custom-ui-for-add-ons-tool-in-blender-with-pyqt-or-pyside/1458808
 		"""

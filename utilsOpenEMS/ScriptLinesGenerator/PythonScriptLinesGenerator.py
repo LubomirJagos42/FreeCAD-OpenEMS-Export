@@ -39,7 +39,7 @@ class PythonScriptLinesGenerator(OctaveScriptLinesGenerator):
         elif (gridCoordsType == "cylindrical"):
             genScript += "CSX = InitCSX('CoordSystem',1); # Cylindrical coordinate system.\n"
         else:
-            genScript += "%%%%%% ERROR GRID COORDINATION SYSTEM TYPE UNKNOWN"				
+            genScript += "%%%%%% ERROR GRID COORDINATION SYSTEM TYPE UNKNOWN"
         """
         genScript += "FDTD.SetCoordSystem(0) # Cartesian coordinate system.\n"
         genScript += "def mesh():\n"
@@ -709,7 +709,7 @@ class PythonScriptLinesGenerator(OctaveScriptLinesGenerator):
                     genScript += "f0 = " + str(currSetting.sinusodial['f0']) + "*" + str(
                         currSetting.getUnitsAsNumber(currSetting.units)) + "\n"
                     if not definitionsOnly:
-                        genScript += "FDTD.SetSinusExcite(fc);\n"
+                        genScript += "FDTD.SetSinusExcite(f0);\n"
                     genScript += "max_res = C0 / f0 / 20\n"
                     self.maxGridResolution_m = 3e8 / (
                                 currSetting.sinusodial['f0'] * currSetting.getUnitsAsNumber(currSetting.units) * 20)

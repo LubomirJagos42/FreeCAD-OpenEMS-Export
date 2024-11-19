@@ -1916,13 +1916,36 @@ VALUES OF MESH.X,Y,Z WHEN USED</string>
                   </property>
                  </widget>
                 </item>
-                <item row="8" column="0">
+                <item row="9" column="0">
                  <widget class="QRadioButton" name="diracExcitationRadioButton">
                   <property name="text">
                    <string>Dirac impulse</string>
                   </property>
                   <property name="checked">
                    <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="1">
+                 <widget class="QLabel" name="dirac fm label">
+                  <property name="text">
+                    <string>Fm: Max frequency</string>
+                  </property>
+                 </widget>
+                </item>
+                 <item row="9" column="1">
+                 <widget class="QDoubleSpinBox" name="diracExcitationFmNumberInput">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="decimals">
+                   <number>5</number>
+                  </property>
+                  <property name="maximum">
+                   <double>1000000000000.000000000000000</double>
                   </property>
                  </widget>
                 </item>
@@ -1975,13 +1998,36 @@ VALUES OF MESH.X,Y,Z WHEN USED</string>
                   </property>
                  </spacer>
                 </item>
-                <item row="9" column="0">
+                <item row="11" column="0">
                  <widget class="QRadioButton" name="stepExcitationRadioButton">
                   <property name="text">
                    <string>Step function</string>
                   </property>
                   <property name="checked">
                    <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               <item row="10" column="1">
+                 <widget class="QLabel" name="step fm label">
+                  <property name="text">
+                    <string>Fm: Max frequency</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="11" column="1">
+                 <widget class="QDoubleSpinBox" name="stepExcitationFmNumberInput">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="decimals">
+                   <number>5</number>
+                  </property>
+                  <property name="maximum">
+                   <double>1000000000000.000000000000000</double>
                   </property>
                  </widget>
                 </item>
@@ -7910,6 +7956,10 @@ than min spacing</string>
   <tabstop>customExcitationRadioButton</tabstop>
   <tabstop>customExcitationTextInput</tabstop>
   <tabstop>customExcitationF0NumberInput</tabstop>
+  <tabstop>stepExcitationRadioButton</tabstop>
+  <tabstop>stepExcitationFmNumberInput</tabstop>
+  <tabstop>diracExcitationRadioButton</tabstop>
+  <tabstop>diracExcitationFmNumberInput</tabstop>
   <tabstop>excitationSettingsAddButton</tabstop>
   <tabstop>excitationSettingsRemoveButton</tabstop>
   <tabstop>excitationSettingsUpdateButton</tabstop>

@@ -14,13 +14,13 @@ class CadInterface:
             import FreeCADGui
             import Draft
             self.type = "FreeCAD"
-        except:
+        except ImportError:
             print("No FreeCAD interface available.")
 
         try:
             import bpy
             self.type = "Blender"
-        except:
+        except ImportError:
             print("No Blender interface available.")
 
         if self.type == "None":
