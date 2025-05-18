@@ -1413,7 +1413,7 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
                     genScript += "f0 = " + str(currSetting.sinusodial['f0']) + "*" + str(
                         currSetting.getUnitsAsNumber(currSetting.units)) + "\n"
                     if not definitionsOnly:
-                        genScript += "FDTD.SetSinusExcite(fc);\n"
+                        genScript += "FDTD.SetSinusExcite(f0);\n"
                     genScript += "max_res = C0 / f0 / 20\n"
                     self.maxGridResolution_m = 3e8 / (
                                 currSetting.sinusodial['f0'] * currSetting.getUnitsAsNumber(currSetting.units) * 20)
@@ -1439,6 +1439,16 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
                             'f0', str(f0)) + "' )\n"
                     genScript += "max_res = 0\n"
                     self.maxGridResolution_m = 0
+                    pass
+                elif (currSetting.getType() == 'dirac'):
+                    if not definitionsOnly:
+                        # genScript += "FDTD.SetDiracExcite(FDTD);\n"
+                        genScript += "# DIRAC EXCITATION USING PYTHON SCRIPT NOT IMPLEMENTED IN GUI YET\n"
+                    pass
+                elif (currSetting.getType() == 'step'):
+                    if not definitionsOnly:
+                        # genScript += "FDTD.SetStepExcite(FDTD);\n"
+                        genScript += "# STEP EXCITATION USING PYTHON SCRIPT NOT IMPLEMENTED IN GUI YET\n"
                     pass
                 pass
 
@@ -1590,12 +1600,19 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
         genScript += "max_timesteps = " + str(self.form.simParamsMaxTimesteps.value()) + "\n"
         genScript += "min_decrement = " + str(self.form.simParamsMinDecrement.value()) + " # 10*log10(min_decrement) dB  (i.e. 1E-5 means -50 dB)\n"
 
+        if self.form.simParamsOverSampling.value() > 1:
+            genScript += "simulation_oversampling = " + str(self.form.simParamsOverSampling.value()) + "\n"
+
         if (self.getModelCoordsType() == "cylindrical"):
             genScript += "CSX = CSXCAD.ContinuousStructure(CoordSystem=1)\n"
-            genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement, CoordSystem=1)\n"
+            genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement, CoordSystem=1"
         else:
             genScript += "CSX = CSXCAD.ContinuousStructure()\n"
-            genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement)\n"
+            genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement"
+
+        if self.form.simParamsOverSampling.value() > 1:
+            genScript += ", OverSampling=simulation_oversampling"
+        genScript += ")\n"
 
         genScript += "FDTD.SetCSX(CSX)\n"
         genScript += "\n"

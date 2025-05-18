@@ -346,6 +346,7 @@ class IniFile0v1:
         simulationSettings.params['min_gridspacing_x'] = self.form.genParamMinGridSpacingX.value()
         simulationSettings.params['min_gridspacing_y'] = self.form.genParamMinGridSpacingY.value()
         simulationSettings.params['min_gridspacing_z'] = self.form.genParamMinGridSpacingZ.value()
+        simulationSettings.params['OverSampling'] = self.form.simParamsOverSampling.value()
 
         simulationSettings.params['outputScriptType'] = 'octave'
         if self.form.radioButton_pythonType.isChecked():
@@ -737,18 +738,35 @@ class IniFile0v1:
 
                 #
                 #   try catch block here due backward compatibility, if error don't do anything about it and left default values set
+                #   this is for min_gridspacing settings
                 #
                 try:
                     self.form.genParamMinGridSpacingEnable.setCheckState(QtCore.Qt.Checked if simulationSettings.params.get('min_gridspacing_enable',False) else QtCore.Qt.Unchecked)
                     self.form.genParamMinGridSpacingX.setValue(simulationSettings.params['min_gridspacing_x'])
                     self.form.genParamMinGridSpacingY.setValue(simulationSettings.params['min_gridspacing_y'])
                     self.form.genParamMinGridSpacingZ.setValue(simulationSettings.params['min_gridspacing_z'])
+                except:
+                    pass
 
+                #
+                #   try catch block here due backward compatibility, if error don't do anything about it and left default values set
+                #   this is for simulation type setting
+                #
+                try:
                     self.form.radioButton_octaveType.setChecked(True)                                                       # by default octave type is checked
                     self.form.radioButton_octaveType.setChecked(simulationSettings.params['outputScriptType'] == 'octave')
                     if simulationSettings.params['outputScriptType'] == 'python':
                         self.form.radioButton_pythonType.setChecked(simulationSettings.params['outputScriptType'] == 'python')
                         self.form.radioButton_pythonType.clicked.emit()
+                except:
+                    pass
+
+                #
+                #   try catch block here due backward compatibility, if error don't do anything about it and left default values set
+                #   this is for simulation oversampling setting
+                #
+                try:
+                    self.form.simParamsOverSampling.setValue(simulationSettings.params['OverSampling'])
                 except:
                     pass
 

@@ -1574,12 +1574,18 @@ class OctaveScriptLinesGenerator2(CommonScriptLinesGenerator):
         genScript += "max_timesteps = " + str(self.form.simParamsMaxTimesteps.value()) + ";\n"
         genScript += "min_decrement = " + str(self.form.simParamsMinDecrement.value()) + "; % 10*log10(min_decrement) dB  (i.e. 1E-5 means -50 dB)\n"
 
-        if (self.getModelCoordsType() == "cylindrical"):
-            genScript += "FDTD = InitFDTD( 'NrTS', max_timesteps, 'EndCriteria', min_decrement, 'CoordSystem', 1);\n"
-        else:
-            genScript += "FDTD = InitFDTD( 'NrTS', max_timesteps, 'EndCriteria', min_decrement);\n"
+        if self.form.simParamsOverSampling.value() > 1:
+            genScript += "simulation_oversampling = " + str(self.form.simParamsOverSampling.value()) + ";\n"
 
-        genScript += "\n"
+        if (self.getModelCoordsType() == "cylindrical"):
+            genScript += "FDTD = InitFDTD( 'NrTS', max_timesteps, 'EndCriteria', min_decrement, 'CoordSystem', 1"
+        else:
+            genScript += "FDTD = InitFDTD( 'NrTS', max_timesteps, 'EndCriteria', min_decrement"
+
+        if self.form.simParamsOverSampling.value() > 1:
+            genScript += ", 'OverSampling', simulation_oversampling"
+
+        genScript += ");\n\n"
 
         print("======================== REPORT BEGIN ========================\n")
 
