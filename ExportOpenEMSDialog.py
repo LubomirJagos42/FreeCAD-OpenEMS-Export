@@ -51,7 +51,7 @@ else:
 	APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-path_to_ui = os.path.join(APP_DIR, "ui", "dialog.ui")
+path_to_ui = os.path.join(APP_DIR, "ui", "dialog_OpenEMS_Simulation_Creator.ui")
 
 from utilsOpenEMS.SettingsItem.SettingsItem import SettingsItem
 from utilsOpenEMS.SettingsItem.PortSettingsItem import PortSettingsItem
@@ -1543,43 +1543,55 @@ class ExportOpenEMSDialog(QtCore.QObject):
 	#	PRIORITY OBJECT LIST move item UP
 	#
 	def moveupPriorityButtonClicked(self):
-		currItemIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(self.form.objectAssignmentPriorityTreeView.currentItem())
-		if currItemIndex > 0:
-			takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(currItemIndex-1, takenItem)
-			self.form.objectAssignmentPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.objectAssignmentPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+
+			if selectedItemTopIndex > 0:
+				takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(selectedItemTopIndex - 1)
+				self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(selectedItemBottomIndex, takenItem)
 
 	#
 	#	PRIORITY OBJECT LIST move item DOWN
 	#
 	def movedownPriorityButtonClicked(self):
-		currItemIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(self.form.objectAssignmentPriorityTreeView.currentItem())
-		countAllItems = self.form.objectAssignmentPriorityTreeView.topLevelItemCount()
-		if currItemIndex < countAllItems-1:
-			takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(currItemIndex+1, takenItem)
-			self.form.objectAssignmentPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.objectAssignmentPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+			countAllItems = self.form.objectAssignmentPriorityTreeView.topLevelItemCount()
+
+			if selectedItemBottomIndex < countAllItems-1:
+				takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(selectedItemBottomIndex+1)
+				self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(selectedItemTopIndex, takenItem)
 
 	#
 	#	PRIORITY MESH LIST move item UP
 	#
 	def moveupPriorityMeshButtonClicked(self):
-		currItemIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(self.form.meshPriorityTreeView.currentItem())
-		if currItemIndex > 0:
-			takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.meshPriorityTreeView.insertTopLevelItem(currItemIndex-1, takenItem)
-			self.form.meshPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.meshPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+
+			if selectedItemTopIndex > 0:
+				takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(selectedItemTopIndex-1)
+				self.form.meshPriorityTreeView.insertTopLevelItem(selectedItemBottomIndex, takenItem)
 
 	#
 	#	PRIORITY MESH LIST move item DOWN
 	#
 	def movedownPriorityMeshButtonClicked(self):
-		currItemIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(self.form.meshPriorityTreeView.currentItem())
-		countAllItems = self.form.meshPriorityTreeView.topLevelItemCount()
-		if currItemIndex < countAllItems-1:
-			takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.meshPriorityTreeView.insertTopLevelItem(currItemIndex+1, takenItem)
-			self.form.meshPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.meshPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+			countAllItems = self.form.meshPriorityTreeView.topLevelItemCount()
+
+			if selectedItemBottomIndex < countAllItems-1:
+				takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(selectedItemBottomIndex+1)
+				self.form.meshPriorityTreeView.insertTopLevelItem(selectedItemTopIndex, takenItem)
 
 	def checkTreeWidgetForDuplicityName(self, refTreeWidget, itemName, ignoreSelectedItem=True):
 		isDuplicityName = False
