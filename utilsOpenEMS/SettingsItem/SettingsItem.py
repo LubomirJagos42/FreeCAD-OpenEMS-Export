@@ -15,7 +15,13 @@ class SettingsItem:
 	# basic type property common for all kind of settings
 	def getName(self):
 		return self.name
-
+	
+	def getValue(self, name, default_value=""):
+		try:
+			return self.params[name]
+		except:
+			return default_value
+	
 	@staticmethod
 	def getUnitsAsNumber(units):
 		if (units in ['pOhm','pH','pF', 'pm', 'pHz']):
