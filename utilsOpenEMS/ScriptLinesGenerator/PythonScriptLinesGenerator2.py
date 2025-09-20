@@ -1976,27 +1976,6 @@ Zin = port[{self.internalPortIndexNamesList[portName]}].uf_tot / port[{self.inte
 s11 = port[{self.internalPortIndexNamesList[portName]}].uf_ref / port[{self.internalPortIndexNamesList[portName]}].uf_inc
 s11_dB = 20.0*np.log10(np.abs(s11))
 
-# plot the feed point impedance
-figure()
-plot(freq / 1e6, np.real(Zin), 'k-', linewidth=2, label=r'$\Re(Z_{{in}})$')
-grid()
-plot(freq / 1e6, np.imag(Zin), 'r--', linewidth=2, label=r'$\Im(Z_{{in}})$')
-title('impedance of {portName}')
-xlabel('frequency (MHz)')
-ylabel('$Z (\\Omega)$')
-legend()
-
-# plot S11 parameter
-figure()
-plot(freq/1e6, s11_dB, 'k-', linewidth=2, label='$S_{{11}}$')
-grid()
-legend()
-title('S11-Parameter (dB) of {portName}')
-ylabel('S11 (dB)')
-xlabel('Frequency (MHz)')
-
-show()  #show all figures at once
-
 #
 #   Write S11, real and imag Z_in into CSV file separated by ';'
 #
