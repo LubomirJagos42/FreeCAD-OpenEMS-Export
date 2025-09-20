@@ -1096,70 +1096,73 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 			if (gridSettingsInst.getType() == 'Fixed Distance'):
 				if gridSettingsInst.xenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:g}) & (mesh.x <= {1:g})))\n".format(_r(xmin), _r(xmax))
-					genScript += "mesh.x = np.concatenate((mesh.x, arangeWithEndpoint({0:g},{1:g},{2:g})))\n".format(_r(xmin), _r(xmax), _r(gridSettingsInst.getXYZ(refUnit)['x']))
+						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:.15f}) & (mesh.x <= {1:.15f})))\n".format(_r(xmin), _r(xmax))
+					genScript += "mesh.x = np.concatenate((mesh.x, arangeWithEndpoint({0:.15f},{1:.15f},{2:.15f})))\n".format(_r(xmin), _r(xmax), _r(gridSettingsInst.getXYZ(refUnit)['x']))
 				if gridSettingsInst.yenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:g}) & (mesh.y <= {1:g})))\n".format(_r(ymin), _r(ymax))
-					genScript += "mesh.y = np.concatenate((mesh.y, arangeWithEndpoint({0:g},{1:g},{2:g})))\n".format(_r(ymin),_r(ymax),_r(yParam))
+						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:.15f}) & (mesh.y <= {1:.15f})))\n".format(_r(ymin), _r(ymax))
+					genScript += "mesh.y = np.concatenate((mesh.y, arangeWithEndpoint({0:.15f},{1:.15f},{2:.15f})))\n".format(_r(ymin),_r(ymax),_r(yParam))
 				if gridSettingsInst.zenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:g}) & (mesh.z <= {1:g})))\n".format(_r(zmin), _r(zmax))
-					genScript += "mesh.z = np.concatenate((mesh.z, arangeWithEndpoint({0:g},{1:g},{2:g})))\n".format(_r(zmin),_r(zmax),_r(gridSettingsInst.getXYZ(refUnit)['z']))
+						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:.15f}) & (mesh.z <= {1:.15f})))\n".format(_r(zmin), _r(zmax))
+					genScript += "mesh.z = np.concatenate((mesh.z, arangeWithEndpoint({0:.15f},{1:.15f},{2:.15f})))\n".format(_r(zmin),_r(zmax),_r(gridSettingsInst.getXYZ(refUnit)['z']))
 
 			elif (gridSettingsInst.getType() == 'Fixed Count'):
 				if gridSettingsInst.xenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:g}) & (mesh.x <= {1:g})))\n".format(_r(xmin), _r(xmax))
+						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:.15f}) & (mesh.x <= {1:.15f})))\n".format(_r(xmin), _r(xmax))
 					if (not gridSettingsInst.getXYZ()['x'] == 1):
-						genScript += "mesh.x = np.concatenate((mesh.x, linspace({0:g},{1:g},{2:g})))\n".format(_r(xmin), _r(xmax), _r(gridSettingsInst.getXYZ(refUnit)['x']))
+						genScript += "mesh.x = np.concatenate((mesh.x, np.linspace({0:.15f},{1:.15f},{2:g})))\n".format(_r(xmin), _r(xmax), _r(gridSettingsInst.getXYZ(refUnit)['x']))
 					else:
-						genScript += "mesh.x = np.append(mesh.x, {0:g})\n".format(_r((xmin + xmax) / 2))
+						genScript += "mesh.x = np.append(mesh.x, {0:.15f})\n".format(_r((xmin + xmax) / 2))
 
 				if gridSettingsInst.yenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:g}) & (mesh.y <= {1:g})))\n".format(_r(ymin), _r(ymax))
+						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:.15f}) & (mesh.y <= {1:.15f})))\n".format(_r(ymin), _r(ymax))
 					if (not gridSettingsInst.getXYZ()['y'] == 1):
-						genScript += "mesh.y = np.concatenate((mesh.y, linspace({0:g},{1:g},{2:g})))\n".format(_r(ymin), _r(ymax), _r(yParam))
+						genScript += "mesh.y = np.concatenate((mesh.y, np.linspace({0:.15f},{1:.15f},{2:g})))\n".format(_r(ymin), _r(ymax), _r(yParam))
 					else:
-						genScript += "mesh.y = np.append(mesh.y, {0:g})\n".format(_r((ymin + ymax) / 2))
+						genScript += "mesh.y = np.append(mesh.y, {0:.15f})\n".format(_r((ymin + ymax) / 2))
 
 				if gridSettingsInst.zenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:g}) & (mesh.z <= {1:g})))\n".format(_r(zmin), _r(zmax))
+						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:.15f}) & (mesh.z <= {1:.15f})))\n".format(_r(zmin), _r(zmax))
 					if (not gridSettingsInst.getXYZ()['z'] == 1):
-						genScript += "mesh.z = np.concatenate((mesh.z, linspace({0:g},{1:g},{2:g})))\n".format(_r(zmin), _r(zmax), _r(gridSettingsInst.getXYZ(refUnit)['z']))
+						genScript += "mesh.z = np.concatenate((mesh.z, np.linspace({0:.15f},{1:.15f},{2:g})))\n".format(_r(zmin), _r(zmax), _r(gridSettingsInst.getXYZ(refUnit)['z']))
 					else:
-						genScript += "mesh.z = np.append(mesh.z, {0:g})\n".format(_r((zmin + zmax) / 2))
+						genScript += "mesh.z = np.append(mesh.z, {0:.15f})\n".format(_r((zmin + zmax) / 2))
 
 			elif (gridSettingsInst.getType() == 'User Defined'):
 				if gridSettingsInst.xenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:g}) & (mesh.x <= {1:g})))\n".format(_r(xmin), _r(xmax))
+						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:.15f}) & (mesh.x <= {1:.15f})))\n".format(_r(xmin), _r(xmax))
 				if gridSettingsInst.yenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:g}) & (mesh.y <= {1:g})))\n".format(_r(ymin), _r(ymax))
+						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:.15f}) & (mesh.y <= {1:.15f})))\n".format(_r(ymin), _r(ymax))
 				if gridSettingsInst.zenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:g}) & (mesh.z <= {1:g})))\n".format(_r(zmin), _r(zmax))
+						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:.15f}) & (mesh.z <= {1:.15f})))\n".format(_r(zmin), _r(zmax))
 
-				genScript += "xmin = {0:g}\n".format(_r(xmin))
-				genScript += "xmax = {0:g}\n".format(_r(xmax))
-				genScript += "ymin = {0:g}\n".format(_r(ymin))
-				genScript += "ymax = {0:g}\n".format(_r(ymax))
-				genScript += "zmin = {0:g}\n".format(_r(zmin))
-				genScript += "zmax = {0:g}\n".format(_r(zmax))
+				genScript += "xmin = {0:.15f}\n".format(_r(xmin))
+				genScript += "xmax = {0:.15f}\n".format(_r(xmax))
+				genScript += "ymin = {0:.15f}\n".format(_r(ymin))
+				genScript += "ymax = {0:.15f}\n".format(_r(ymax))
+				genScript += "zmin = {0:.15f}\n".format(_r(zmin))
+				genScript += "zmax = {0:.15f}\n".format(_r(zmax))
 				genScript += gridSettingsInst.getXYZ() + "\n"
 
 			elif (gridSettingsInst.getType() == 'Smooth Mesh'):
-				#genScript += "smoothMesh = {}\n"
+				smoothMeshArrayString = "[{}]"
+				smoothMeshFormattedStrings = []
+				
 				if gridSettingsInst.xenabled:
 
 					#when top priority lines setting set, remove lines between min and max in ax direction
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:g}) & (mesh.x <= {1:g})))\n".format(_r(xList[0]), _r(xList[-1]))
-
-					genScript += f"smoothMesh.x = {str(xList)};\n"
+						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:.15f}) & (mesh.x <= {1:.15f})))\n".format(_r(xList[0]), _r(xList[-1]))
+					
+					smoothMeshFormattedStrings = [f"{x:.15f}" for x in xList]
+					genScript += f"smoothMesh.x = {smoothMeshArrayString.format(','.join(smoothMeshFormattedStrings))};\n"
 					if gridSettingsInst.smoothMesh['xMaxRes'] == 0:
 						genScript += "smoothMesh.x = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.x, max_res/unit) #max_res calculated in excitation part\n"
 					else:
@@ -1169,9 +1172,10 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 
 					#when top priority lines setting set, remove lines between min and max in ax direction
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:g}) & (mesh.y <= {1:g})))\n".format(_r(yList[0]), _r(yList[-1]))
-
-					genScript += f"smoothMesh.y = {str(yList)};\n"
+						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:.15f}) & (mesh.y <= {1:.15f})))\n".format(_r(yList[0]), _r(yList[-1]))
+					
+					smoothMeshFormattedStrings = [f"{x:.15f}" for x in yList]
+					genScript += f"smoothMesh.y = {smoothMeshArrayString.format(','.join(smoothMeshFormattedStrings))};\n"
 					if gridSettingsInst.smoothMesh['yMaxRes'] == 0:
 						genScript += "smoothMesh.y = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.y, max_res/unit) #max_res calculated in excitation part\n"
 					else:
@@ -1181,9 +1185,10 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 
 					#when top priority lines setting set, remove lines between min and max in ax direction
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:g}) & (mesh.z <= {1:g})))\n".format(_r(zList[0]), _r(zList[-1]))
-
-					genScript += f"smoothMesh.z = {str(zList)};\n"
+						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:.15f}) & (mesh.z <= {1:.15f})))\n".format(_r(zList[0]), _r(zList[-1]))
+					
+					smoothMeshFormattedStrings = [f"{x:.15f}" for x in zList]
+					genScript += f"smoothMesh.z = {smoothMeshArrayString.format(','.join(smoothMeshFormattedStrings))};\n"
 					if gridSettingsInst.smoothMesh['zMaxRes'] == 0:
 						genScript += "smoothMesh.z = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.z, max_res/unit) #max_res calculated in excitation part\n"
 					else:
@@ -1278,43 +1283,43 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 			if (gridSettingsInst.getType() == 'Fixed Distance'):
 				if gridSettingsInst.xenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:g}) & (mesh.x <= {1:g})))\n".format(_r(xmin), _r(xmax))
-					genScript += "mesh.x = np.concatenate((mesh.x, np.arange({0:g},{1:g},{2:g})))\n".format(_r(xmin), _r(xmax), _r(gridSettingsInst.getXYZ(refUnit)['x']))
+						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:.15f}) & (mesh.x <= {1:.15f})))\n".format(_r(xmin), _r(xmax))
+					genScript += "mesh.x = np.concatenate((mesh.x, np.arange({0:.15f},{1:.15f},{2:.15f})))\n".format(_r(xmin), _r(xmax), _r(gridSettingsInst.getXYZ(refUnit)['x']))
 				if gridSettingsInst.yenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:g}) & (mesh.y <= {1:g})))\n".format(_r(ymin), _r(ymax))
-					genScript += "mesh.y = np.concatenate((mesh.y, np.arange({0:g},{1:g},{2:g})))\n".format(_r(ymin),_r(ymax),_r(gridSettingsInst.getXYZ(refUnit)['y']))
+						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:.15f}) & (mesh.y <= {1:.15f})))\n".format(_r(ymin), _r(ymax))
+					genScript += "mesh.y = np.concatenate((mesh.y, np.arange({0:.15f},{1:.15f},{2:.15f})))\n".format(_r(ymin),_r(ymax),_r(gridSettingsInst.getXYZ(refUnit)['y']))
 				if gridSettingsInst.zenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:g}) & (mesh.z <= {1:g})))\n".format(_r(zmin), _r(zmax))
-					genScript += "mesh.z = np.concatenate((mesh.z, np.arange({0:g},{1:g},{2:g})))\n".format(_r(zmin),_r(zmax),_r(gridSettingsInst.getXYZ(refUnit)['z']))
+						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:.15f}) & (mesh.z <= {1:.15f})))\n".format(_r(zmin), _r(zmax))
+					genScript += "mesh.z = np.concatenate((mesh.z, np.arange({0:.15f},{1:.15f},{2:.15f})))\n".format(_r(zmin),_r(zmax),_r(gridSettingsInst.getXYZ(refUnit)['z']))
 
 			elif (gridSettingsInst.getType() == 'Fixed Count'):
 				if gridSettingsInst.xenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:g}) & (mesh.x <= {1:g})))\n".format(_r(xmin), _r(xmax))
+						genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:.15f}) & (mesh.x <= {1:.15f})))\n".format(_r(xmin), _r(xmax))
 					if (not gridSettingsInst.getXYZ()['x'] == 1):
-						genScript += "mesh.x = np.concatenate((mesh.x, linspace({0:g},{1:g},{2:g})))\n".format(_r(xmin), _r(xmax), _r(gridSettingsInst.getXYZ(refUnit)['x']))
+						genScript += "mesh.x = np.concatenate((mesh.x, np.linspace({0:.15f},{1:.15f},{2:g})))\n".format(_r(xmin), _r(xmax), _r(gridSettingsInst.getXYZ(refUnit)['x']))
 					else:
 						genScript += "mesh.x = np.append(mesh.x, {0:g})\n".format(_r((xmin + xmax) / 2))
 
 				if gridSettingsInst.yenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:g}) & (mesh.y <= {1:g})))\n".format(_r(ymin), _r(ymax))
+						genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:.15f}) & (mesh.y <= {1:.15f})))\n".format(_r(ymin), _r(ymax))
 					if (not gridSettingsInst.getXYZ()['y'] == 1):
-						genScript += "mesh.y = np.concatenate((mesh.y, linspace({0:g},{1:g},{2:g})))\n".format(_r(ymin), _r(ymax), _r(
+						genScript += "mesh.y = np.concatenate((mesh.y, np.linspace({0:.15f},{1:.15f},{2:.15f})))\n".format(_r(ymin), _r(ymax), _r(
 							gridSettingsInst.getXYZ(refUnit)['y']))
 					else:
 						genScript += "mesh.y = np.append(mesh.y, {0:g})\n".format(_r((ymin + ymax) / 2))
 
 				if gridSettingsInst.zenabled:
 					if gridSettingsInst.topPriorityLines:
-						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:g}) & (mesh.z <= {1:g})))\n".format(_r(zmin), _r(zmax))
+						genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:.15f}) & (mesh.z <= {1:.15f})))\n".format(_r(zmin), _r(zmax))
 					if (not gridSettingsInst.getXYZ()['z'] == 1):
-						genScript += "mesh.z = np.concatenate((mesh.z, linspace({0:g},{1:g},{2:g})))\n".format(_r(zmin), _r(zmax), _r(
+						genScript += "mesh.z = np.concatenate((mesh.z, np.linspace({0:.15f},{1:.15f},{2:g})))\n".format(_r(zmin), _r(zmax), _r(
 							gridSettingsInst.getXYZ(refUnit)['z']))
 					else:
-						genScript += "mesh.z = np.append(mesh.z, {0:g})\n".format(_r((zmin + zmax) / 2))
+						genScript += "mesh.z = np.append(mesh.z, {0:.15f})\n".format(_r((zmin + zmax) / 2))
 
 			elif (gridSettingsInst.getType() == 'User Defined'):
 				genScript += "mesh = " + gridSettingsInst.getXYZ() + ";\n"
@@ -1341,11 +1346,10 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 		genScript += "import math\n"
 		genScript += "import numpy as np\n"
 		genScript += "import os, tempfile, shutil\n"
-		genScript += "from pylab import *\n"
 		genScript += "import csv\n"
 		genScript += "import CSXCAD\n"
 		genScript += "from openEMS import openEMS\n"
-		genScript += "from openEMS.physical_constants import *\n"
+		genScript += "from openEMS import physical_constants\n"
 		genScript += "\n"
 
 		genScript += "#\n"
@@ -1419,7 +1423,7 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 						currSetting.getUnitsAsNumber(currSetting.units)) + "\n"
 					if not definitionsOnly:
 						genScript += "FDTD.SetSinusExcite(f0);\n"
-					genScript += "max_res = C0 / f0 / 20\n"
+					genScript += "physical_constants.C0 / f0 / 20\n"
 					self.maxGridResolution_m = 3e8 / (
 								currSetting.sinusodial['f0'] * currSetting.getUnitsAsNumber(currSetting.units) * 20)
 					pass
@@ -1430,7 +1434,7 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 						currSetting.getUnitsAsNumber(currSetting.units)) + "\n"
 					if not definitionsOnly:
 						genScript += "FDTD.SetGaussExcite(f0, fc)\n"
-					genScript += "max_res = C0 / (f0 + fc) / 20\n"
+					genScript += "max_res = physical_constants.C0 / (f0 + fc) / 20\n"
 					self.maxGridResolution_m = 3e8 / ((currSetting.gaussian['f0'] + currSetting.gaussian[
 						'fc']) * currSetting.getUnitsAsNumber(currSetting.units) * 20)
 					pass
@@ -1493,46 +1497,77 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 			minSpacingX = self.form.genParamMinGridSpacingX.value() / 1000 / self.getUnitLengthFromUI_m()
 			minSpacingY = self.form.genParamMinGridSpacingY.value() / 1000 / self.getUnitLengthFromUI_m()
 			minSpacingZ = self.form.genParamMinGridSpacingZ.value() / 1000 / self.getUnitLengthFromUI_m()
+			
+			genScript += """
+#######################################################################################################################################
+# MINIMAL GRIDLINES SPACING, removing gridlines which are closer as defined in GUI
+#######################################################################################################################################
+mesh.x = openEMS_grid.GetLines("x", True)
+mesh.y = openEMS_grid.GetLines("y", True)
+mesh.z = openEMS_grid.GetLines("z", True)
 
-			genScript += "#######################################################################################################################################\n"
-			genScript += "# MINIMAL GRIDLINES SPACING, removing gridlines which are closer as defined in GUI\n"
-			genScript += "#######################################################################################################################################\n"
-			genScript += 'mesh.x = openEMS_grid.GetLines("x", True)\n'
-			genScript += 'mesh.y = openEMS_grid.GetLines("y", True)\n'
-			genScript += 'mesh.z = openEMS_grid.GetLines("z", True)\n'
-			genScript += '\n'
-			genScript += 'openEMS_grid.ClearLines("x")\n'
-			genScript += 'openEMS_grid.ClearLines("y")\n'
-			genScript += 'openEMS_grid.ClearLines("z")\n'
-			genScript += '\n'
-			genScript += 'for k in range(len(mesh.x)-1):\n'
-			genScript += '\tif (not np.isinf(mesh.x[k]) and abs(mesh.x[k+1]-mesh.x[k]) <= ' + str(minSpacingX) + '):\n'
-			genScript += '\t\tprint("Removnig line at x: " + str(mesh.x[k+1]))\n'
-			genScript += '\t\tmesh.x[k+1] = np.inf\n'
-			genScript += '\n'
-			genScript += 'for k in range(len(mesh.y)-1):\n'
-			genScript += '\tif (not np.isinf(mesh.y[k]) and abs(mesh.y[k+1]-mesh.y[k]) <= ' + str(minSpacingY) + '):\n'
-			genScript += '\t\tprint("Removnig line at y: " + str(mesh.y[k+1]))\n'
-			genScript += '\t\tmesh.y[k+1] = np.inf\n'
-			genScript += '\n'
-			genScript += 'for k in range(len(mesh.z)-1):\n'
-			genScript += '\tif (not np.isinf(mesh.z[k]) and abs(mesh.z[k+1]-mesh.z[k]) <= ' + str(minSpacingZ) + '):\n'
-			genScript += '\t\tprint("Removnig line at z: " + str(mesh.z[k+1]))\n'
-			genScript += '\t\tmesh.z[k+1] = np.inf\n'
-			genScript += '\n'
+openEMS_grid.ClearLines("x")
+openEMS_grid.ClearLines("y")
+openEMS_grid.ClearLines("z")
 
-			genScript += 'mesh.x = mesh.x[~np.isinf(mesh.x)]\n'
-			genScript += 'mesh.y = mesh.y[~np.isinf(mesh.y)]\n'
-			genScript += 'mesh.z = mesh.z[~np.isinf(mesh.z)]\n'
-			genScript += '\n'
+mesh.x = np.sort(mesh.x)
+mesh.y = np.sort(mesh.y)
+mesh.z = np.sort(mesh.z)
 
-			genScript += "openEMS_grid.AddLine('x', mesh.x)\n"
-			genScript += "openEMS_grid.AddLine('y', mesh.y)\n"
-			genScript += "openEMS_grid.AddLine('z', mesh.z)\n"
-			genScript += '\n'
+mesh.x = np.unique(mesh.x)
+mesh.y = np.unique(mesh.y)
+mesh.z = np.unique(mesh.z)
+
+for k in range(len(mesh.x)-1):
+	if (not np.isinf(mesh.x[k]) and abs(mesh.x[k+1]-mesh.x[k]) <= {:.15f}):
+		print("Removing line at x: " + str(mesh.x[k+1]))
+		mesh.x[k+1] = np.inf
+
+for k in range(len(mesh.y)-1):
+	if (not np.isinf(mesh.y[k]) and abs(mesh.y[k+1]-mesh.y[k]) <= {:.15f}):
+		print("Removing line at y: " + str(mesh.y[k+1]))
+		mesh.y[k+1] = np.inf
+
+for k in range(len(mesh.z)-1):
+	if (not np.isinf(mesh.z[k]) and abs(mesh.z[k+1]-mesh.z[k]) <= {:.15f}):
+		print("Removing line at z: " + str(mesh.z[k+1]))
+		mesh.z[k+1] = np.inf
+
+mesh.x = mesh.x[~np.isinf(mesh.x)]
+mesh.y = mesh.y[~np.isinf(mesh.y)]
+mesh.z = mesh.z[~np.isinf(mesh.z)]
+
+openEMS_grid.AddLine('x', mesh.x)
+openEMS_grid.AddLine('y', mesh.y)
+openEMS_grid.AddLine('z', mesh.z)\n""".format(minSpacingX, minSpacingY, minSpacingZ)
 
 		return genScript
+		
+		
+	def getFDTDParametersAndExcitationSettingsScriptLines(self):
+		genScript = ""
+		genScript += "## setup FDTD parameter & excitation function\n"
+		genScript += "max_timesteps = " + str(self.form.simParamsMaxTimesteps.value()) + "\n"
+		genScript += "min_decrement = " + str(self.form.simParamsMinDecrement.value()) + " # 10*log10(min_decrement) dB  (i.e. 1E-5 means -50 dB)\n"
 
+		if self.form.simParamsOverSampling.value() > 1:
+			genScript += "simulation_oversampling = " + str(self.form.simParamsOverSampling.value()) + "\n"
+
+		if (self.getModelCoordsType() == "cylindrical"):
+			genScript += "CSX = CSXCAD.ContinuousStructure(CoordSystem=1)\n"
+			genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement, CoordSystem=1"
+		else:
+			genScript += "CSX = CSXCAD.ContinuousStructure()\n"
+			genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement"
+
+		if self.form.simParamsOverSampling.value() > 1:
+			genScript += ", OverSampling=simulation_oversampling"
+		genScript += ")\n"
+
+		genScript += "FDTD.SetCSX(CSX)\n"
+		genScript += "\n"
+		return genScript
+			
 	#########################################################################################################################
 	#                                  _                       _       _          _ _      _            _
 	#                                 | |                     (_)     | |        | (_)    | |          | |
@@ -1604,31 +1639,12 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 		genScript += "\tos.mkdir(Sim_Path)    # create empty simulation folder\n"
 		genScript += "\n"
 
-		genScript += "## setup FDTD parameter & excitation function\n"
-		genScript += "max_timesteps = " + str(self.form.simParamsMaxTimesteps.value()) + "\n"
-		genScript += "min_decrement = " + str(self.form.simParamsMinDecrement.value()) + " # 10*log10(min_decrement) dB  (i.e. 1E-5 means -50 dB)\n"
-
-		if self.form.simParamsOverSampling.value() > 1:
-			genScript += "simulation_oversampling = " + str(self.form.simParamsOverSampling.value()) + "\n"
-
-		if (self.getModelCoordsType() == "cylindrical"):
-			genScript += "CSX = CSXCAD.ContinuousStructure(CoordSystem=1)\n"
-			genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement, CoordSystem=1"
-		else:
-			genScript += "CSX = CSXCAD.ContinuousStructure()\n"
-			genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement"
-
-		if self.form.simParamsOverSampling.value() > 1:
-			genScript += ", OverSampling=simulation_oversampling"
-		genScript += ")\n"
-
-		genScript += "FDTD.SetCSX(CSX)\n"
-		genScript += "\n"
-
 		print("======================== REPORT BEGIN ========================\n")
 
 		self.reportFreeCADItemSettings(itemsByClassName.get("FreeCADSettingsItem", None))
-
+		
+		genScript += self.getFDTDParametersAndExcitationSettingsScriptLines()
+		
 		# Write boundary conditions definitions.
 		genScript += self.getBoundaryConditionsScriptLines()
 
@@ -1914,6 +1930,8 @@ generatorFunc_DumpFF2VTK(E_far_normalized, nf2ff.theta, nf2ff.phi, os.path.join(
 		self.guiHelpers.displayMessage('Script to display far field written into: ' + fileName, forceModal=False)
 
 	def drawS11ButtonClicked(self, outputDir=None, portName=""):
+		min_decrement = self.form.simParamsMinDecrement.value()
+		
 		genScript = ""
 		genScript += "# Plot S11\n"
 		genScript += "#\n"
@@ -1924,20 +1942,9 @@ generatorFunc_DumpFF2VTK(E_far_normalized, nf2ff.theta, nf2ff.phi, os.path.join(
 		genScript += "Sim_Path = os.path.join(currDir, r'simulation_output')\n"
 		genScript += "print(currDir)\n"
 		genScript += "\n"
-
-		genScript += "## setup FDTD parameter & excitation function\n"
-		genScript += "max_timesteps = " + str(self.form.simParamsMaxTimesteps.value()) + "\n"
-		genScript += "min_decrement = " + str(self.form.simParamsMinDecrement.value()) + " # 10*log10(min_decrement) dB  (i.e. 1E-5 means -50 dB)\n"
-
-		if (self.getModelCoordsType() == "cylindrical"):
-			genScript += "CSX = CSXCAD.ContinuousStructure(CoordSystem=1)\n"
-			genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement, CoordSystem=1)\n"
-		else:
-			genScript += "CSX = CSXCAD.ContinuousStructure()\n"
-			genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement)\n"
-
-		genScript += "FDTD.SetCSX(CSX)\n"
-		genScript += "\n"
+		
+		# Excitation and FDTD parameters
+		genScript += self.getFDTDParametersAndExcitationSettingsScriptLines()
 
 		# List categories and items.
 		itemsByClassName = self.getItemsByClassName()
@@ -2038,20 +2045,9 @@ with open(filename, 'w', newline='') as csvfile:
 		genScript += "Sim_Path = os.path.join(currDir, r'simulation_output')\n"
 		genScript += "print(currDir)\n"
 		genScript += "\n"
-
-		genScript += "## setup FDTD parameter & excitation function\n"
-		genScript += "max_timesteps = " + str(self.form.simParamsMaxTimesteps.value()) + "\n"
-		genScript += "min_decrement = " + str(self.form.simParamsMinDecrement.value()) + " # 10*log10(min_decrement) dB  (i.e. 1E-5 means -50 dB)\n"
-
-		if (self.getModelCoordsType() == "cylindrical"):
-			genScript += "CSX = CSXCAD.ContinuousStructure(CoordSystem=1)\n"
-			genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement, CoordSystem=1)\n"
-		else:
-			genScript += "CSX = CSXCAD.ContinuousStructure()\n"
-			genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement)\n"
-
-		genScript += "FDTD.SetCSX(CSX)\n"
-		genScript += "\n"
+		
+		# FDTD parameters and excitation
+		genScript += self.getFDTDParametersAndExcitationSettingsScriptLines()
 
 		# List categories and items.
 		itemsByClassName = self.getItemsByClassName()
