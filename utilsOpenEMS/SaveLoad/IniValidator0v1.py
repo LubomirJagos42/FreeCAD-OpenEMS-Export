@@ -597,6 +597,10 @@ class IniValidator0v1:
                                 'mandatory': True,
                                 'allowedValues': "int"
                             },
+                            'OverSampling': {
+                                'mandatory': False,
+                                'allowedValues': "int"
+                            },
                             'generateJustPreview': {
                                 'mandatory': True,
                                 'allowedValues': "bool"

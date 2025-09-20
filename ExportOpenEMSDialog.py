@@ -51,7 +51,7 @@ else:
 	APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-path_to_ui = os.path.join(APP_DIR, "ui", "dialog.ui")
+path_to_ui = os.path.join(APP_DIR, "ui", "dialog_OpenEMS_Simulation_Creator.ui")
 
 from utilsOpenEMS.SettingsItem.SettingsItem import SettingsItem
 from utilsOpenEMS.SettingsItem.PortSettingsItem import PortSettingsItem
@@ -62,9 +62,6 @@ from utilsOpenEMS.SettingsItem.MaterialSettingsItem import MaterialSettingsItem
 from utilsOpenEMS.SettingsItem.SimulationSettingsItem import SimulationSettingsItem
 from utilsOpenEMS.SettingsItem.GridSettingsItem import GridSettingsItem
 from utilsOpenEMS.SettingsItem.FreeCADSettingsItem import FreeCADSettingsItem
-
-from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator import OctaveScriptLinesGenerator
-from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator import PythonScriptLinesGenerator
 
 from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator2 import OctaveScriptLinesGenerator2	#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
 from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator2 import PythonScriptLinesGenerator2	#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
@@ -157,9 +154,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.pythonScriptGenerator = PythonScriptLinesGenerator2(self.form, statusBar = self.statusBar)
 
 		self.scriptGenerator = self.octaveScriptGenerator													#variable which store current script generator
-		#self.scriptGenerator2 = OctaveScriptLinesGenerator2(self.form, statusBar=self.statusBar)
-		#self.scriptGenerator3 = PythonScriptLinesGenerator2(self.form, statusBar=self.statusBar)
-
+		
 		#
 		#	Connect function to change script generator
 		#
@@ -791,6 +786,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#there can be more items in right column which has same name, like air under MAterials and Grid, so always is needed to compare if parent
 		#is same as parent from update function when this was called to update new settings
 		for item in updatedItems:
+			if item.parent() == None:
+				continue
+			
 			if item.parent().text(0) == groupName:
 				item.setData(0, QtCore.Qt.UserRole, data)
 
@@ -803,6 +801,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#there can be more items in right column which has same name, like air under MAterials and Grid, so always is needed to compare if parent
 		#is same as parent from update function when this was called to update new settings
 		for item in updatedItems:
+			if item.parent() == None:
+				continue
+			
 			if item.parent().text(0) == groupName:
 				item.setText(0, itemNewName)
 
@@ -861,10 +862,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 	def objectAssignmentLeftTreeWidgetItemSelectionChanged(self):
 		currItem = self.form.objectAssignmentLeftTreeWidget.currentItem()
 		currItemLabel = None
-
+		
+		
+		
 		#check if there is some current item due this function is trigered also during deleting all items in right assignment widget and then currItem is None
 		if currItem:
 			currItemLabel = currItem.text(0)
+			print("Object item selected: " + currItemLabel)
 
 		if (currItemLabel):
 			self.cadHelpers.clearSelection()
@@ -1543,43 +1547,55 @@ class ExportOpenEMSDialog(QtCore.QObject):
 	#	PRIORITY OBJECT LIST move item UP
 	#
 	def moveupPriorityButtonClicked(self):
-		currItemIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(self.form.objectAssignmentPriorityTreeView.currentItem())
-		if currItemIndex > 0:
-			takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(currItemIndex-1, takenItem)
-			self.form.objectAssignmentPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.objectAssignmentPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+
+			if selectedItemTopIndex > 0:
+				takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(selectedItemTopIndex - 1)
+				self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(selectedItemBottomIndex, takenItem)
 
 	#
 	#	PRIORITY OBJECT LIST move item DOWN
 	#
 	def movedownPriorityButtonClicked(self):
-		currItemIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(self.form.objectAssignmentPriorityTreeView.currentItem())
-		countAllItems = self.form.objectAssignmentPriorityTreeView.topLevelItemCount()
-		if currItemIndex < countAllItems-1:
-			takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(currItemIndex+1, takenItem)
-			self.form.objectAssignmentPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.objectAssignmentPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+			countAllItems = self.form.objectAssignmentPriorityTreeView.topLevelItemCount()
+
+			if selectedItemBottomIndex < countAllItems-1:
+				takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(selectedItemBottomIndex+1)
+				self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(selectedItemTopIndex, takenItem)
 
 	#
 	#	PRIORITY MESH LIST move item UP
 	#
 	def moveupPriorityMeshButtonClicked(self):
-		currItemIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(self.form.meshPriorityTreeView.currentItem())
-		if currItemIndex > 0:
-			takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.meshPriorityTreeView.insertTopLevelItem(currItemIndex-1, takenItem)
-			self.form.meshPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.meshPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+
+			if selectedItemTopIndex > 0:
+				takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(selectedItemTopIndex-1)
+				self.form.meshPriorityTreeView.insertTopLevelItem(selectedItemBottomIndex, takenItem)
 
 	#
 	#	PRIORITY MESH LIST move item DOWN
 	#
 	def movedownPriorityMeshButtonClicked(self):
-		currItemIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(self.form.meshPriorityTreeView.currentItem())
-		countAllItems = self.form.meshPriorityTreeView.topLevelItemCount()
-		if currItemIndex < countAllItems-1:
-			takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.meshPriorityTreeView.insertTopLevelItem(currItemIndex+1, takenItem)
-			self.form.meshPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.meshPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+			countAllItems = self.form.meshPriorityTreeView.topLevelItemCount()
+
+			if selectedItemBottomIndex < countAllItems-1:
+				takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(selectedItemBottomIndex+1)
+				self.form.meshPriorityTreeView.insertTopLevelItem(selectedItemTopIndex, takenItem)
 
 	def checkTreeWidgetForDuplicityName(self, refTreeWidget, itemName, ignoreSelectedItem=True):
 		isDuplicityName = False
@@ -2164,53 +2180,60 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		# and return particular material group item in tree view object
 		materialGroupItem = None
 		for item in materialGroupWidgetItems:
+			# We must check if the parent is actually not none 
+			# because a port with the name 'Probe' would match 
+			# the port entry in the objectAssignmentRightTreeWidget
+			if (item.parent() == None):
+				continue
+			
 			if (item.parent().text(0) == "Material"):
 				materialGroupItem = item
-		print("Currently removing material item: " + materialGroupItem.text(0))
+		
+		if materialGroupItem != None:
+			print("Currently removing material item: " + materialGroupItem.text(0))
+			#
+			# 1. There are microstrip, coaxial and other ports with material definition which must be removed first
+			#
+			portGroupWidgetItems = self.form.objectAssignmentRightTreeWidget.findItems(
+				"Port",
+				QtCore.Qt.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive
+			)[0]
+			portsWithMaterialToDelete = []	#there can be more microstrip ports with same material assignment but different parameters
+			for k in range(portGroupWidgetItems.childCount()):
+				item = portGroupWidgetItems.child(k)
+				if (item.data(0, QtCore.Qt.UserRole).type == "microstrip" and item.data(0, QtCore.Qt.UserRole).mslMaterial == selectedItem.text(0)):
+					portsWithMaterialToDelete.append(item)
+				if (item.data(0, QtCore.Qt.UserRole).type == "coaxial" and (item.data(0, QtCore.Qt.UserRole).coaxialMaterial == selectedItem.text(0) or item.data(0, QtCore.Qt.UserRole).coaxialConductorMaterial == selectedItem.text(0))):
+					portsWithMaterialToDelete.append(item)
+				if (item.data(0, QtCore.Qt.UserRole).type == "coplanar" and item.data(0, QtCore.Qt.UserRole).coplanarMaterial == selectedItem.text(0)):
+					portsWithMaterialToDelete.append(item)
 
-		#
-		# 1. There are microstrip, coaxial and other ports with material definition which must be removed first
-		#
-		portGroupWidgetItems = self.form.objectAssignmentRightTreeWidget.findItems(
-			"Port",
-			QtCore.Qt.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive
-		)[0]
-		portsWithMaterialToDelete = []	#there can be more microstrip ports with same material assignment but different parameters
-		for k in range(portGroupWidgetItems.childCount()):
-			item = portGroupWidgetItems.child(k)
-			if (item.data(0, QtCore.Qt.UserRole).type == "microstrip" and item.data(0, QtCore.Qt.UserRole).mslMaterial == selectedItem.text(0)):
-				portsWithMaterialToDelete.append(item)
-			if (item.data(0, QtCore.Qt.UserRole).type == "coaxial" and (item.data(0, QtCore.Qt.UserRole).coaxialMaterial == selectedItem.text(0) or item.data(0, QtCore.Qt.UserRole).coaxialConductorMaterial == selectedItem.text(0))):
-				portsWithMaterialToDelete.append(item)
-			if (item.data(0, QtCore.Qt.UserRole).type == "coplanar" and item.data(0, QtCore.Qt.UserRole).coplanarMaterial == selectedItem.text(0)):
-				portsWithMaterialToDelete.append(item)
+			message = f"This port is removed because material '{materialGroupItem.text(0)}' is removed:\n"
+			for portToRemove in portsWithMaterialToDelete:
+				message += f"{portToRemove.text(0)}\n"
+				print("\t" + message)
+			message += "\n"
+			message += "Do you want to continue?"
 
-		message = f"This port is removed because material '{materialGroupItem.text(0)}' is removed:\n"
-		for portToRemove in portsWithMaterialToDelete:
-			message += f"{portToRemove.text(0)}\n"
-			print("\t" + message)
-		message += "\n"
-		message += "Do you want to continue?"
+			#
+			#	2. If there are ports using materials which is going to be removed asked for confirmation to remove material and ports will be also removed
+			#
+			if (len(portsWithMaterialToDelete) > 0 and not self.guiHelpers.displayYesNoMessage(message)):
+				return
+			for portToRemove in portsWithMaterialToDelete:
+				self.portSettingsRemoveButtonClicked(portToRemove.text(0))
 
-		#
-		#	2. If there are ports using materials which is going to be removed asked for confirmation to remove material and ports will be also removed
-		#
-		if (len(portsWithMaterialToDelete) > 0 and not self.guiHelpers.displayYesNoMessage(message)):
-			return
-		for portToRemove in portsWithMaterialToDelete:
-			self.portSettingsRemoveButtonClicked(portToRemove.text(0))
+			#
+			# 3. Remove from Priority list (Object and Grid priority list)
+			#
+			priorityName = materialGroupItem.parent().text(0) + ", " + materialGroupItem.text(0);
+			self.guiHelpers.removePriorityName(priorityName)
 
-		#
-		# 3. Remove from Priority list (Object and Grid priority list)
-		#
-		priorityName = materialGroupItem.parent().text(0) + ", " + materialGroupItem.text(0);
-		self.guiHelpers.removePriorityName(priorityName)
-
-		#
-		# 4. Remove from Materials list
-		#
-		self.form.materialSettingsTreeView.invisibleRootItem().removeChild(selectedItem)
-		materialGroupItem.parent().removeChild(materialGroupItem)
+			#
+			# 4. Remove from Materials list
+			#
+			self.form.materialSettingsTreeView.invisibleRootItem().removeChild(selectedItem)
+			materialGroupItem.parent().removeChild(materialGroupItem)
 
 		self.guiSignals.materialsChanged.emit("remove")
 
@@ -2457,12 +2480,20 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			)
 		excitationGroupItem = None
 		for item in excitationGroupWidgetItems:
+			# We must check if the parent is actually not none 
+			# because a port with the name 'Probe' would match 
+			# the port entry in the objectAssignmentRightTreeWidget
+			if (item.parent() == None):
+				continue
+			
 			if (item.parent().text(0) == "Excitation"):
 				excitationGroupItem = item
-		print("Currently removing port item: " + excitationGroupItem.text(0))
+		
+		if excitationGroupItem != None:
+			print("Currently removing port item: " + excitationGroupItem.text(0))
 
-		self.form.excitationSettingsTreeView.invisibleRootItem().removeChild(selectedItem)
-		excitationGroupItem.parent().removeChild(excitationGroupItem)
+			self.form.excitationSettingsTreeView.invisibleRootItem().removeChild(selectedItem)
+			excitationGroupItem.parent().removeChild(excitationGroupItem)
 
 	def excitationSettingsUpdateButtonClicked(self):
 		### capture UI settings
@@ -2655,17 +2686,24 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			)
 		portGroupItem = None
 		for item in portGroupWidgetItems:
+			# We must check if the parent is actually not none 
+			# because a port with the name 'Port' would match 
+			# the port entry in the objectAssignmentRightTreeWidget
+			if (item.parent() == None):
+				continue
+			
 			if (item.parent().text(0) == "Port"):
 				portGroupItem = item
-		print("Currently removing port item: " + portGroupItem.text(0))
+		if portGroupItem != None:
+			print("Currently removing port item: " + portGroupItem.text(0))
 
-		# Removing from Priority List
-		priorityName = portGroupItem.parent().text(0) + ", " + portGroupItem.text(0);
-		self.guiHelpers.removePriorityName(priorityName)
+			# Removing from Priority List
+			priorityName = portGroupItem.parent().text(0) + ", " + portGroupItem.text(0);
+			self.guiHelpers.removePriorityName(priorityName)
 
-		# Removing from Object Assugnment Tree
-		self.form.portSettingsTreeView.invisibleRootItem().removeChild(selectedItem)
-		portGroupItem.parent().removeChild(portGroupItem)
+			# Removing from Object Assugnment Tree
+			self.form.portSettingsTreeView.invisibleRootItem().removeChild(selectedItem)
+			portGroupItem.parent().removeChild(portGroupItem)
 
 		# Emit signal about remove port to update comboboxes
 		self.guiSignals.portsChanged.emit("remove")
@@ -2869,13 +2907,21 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		)
 		probeGroupItem = None
 		for item in probeGroupWidgetItems:
+			# We must check if the parent is actually not none 
+			# because a port with the name 'Probe' would match 
+			# the port entry in the objectAssignmentRightTreeWidget
+			if (item.parent() == None):
+				continue
+			
 			if (item.parent().text(0) == "Probe"):
 				probeGroupItem = item
-		print("Currently removing probe item: " + probeGroupItem.text(0))
+				
+		if probeGroupItem != None:
+			print("Currently removing probe item: " + probeGroupItem.text(0))
 
-		# Removing from Object Assignment Tree
-		self.form.probeSettingsTreeView.invisibleRootItem().removeChild(selectedItem)
-		probeGroupItem.parent().removeChild(probeGroupItem)
+			# Removing from Object Assignment Tree
+			self.form.probeSettingsTreeView.invisibleRootItem().removeChild(selectedItem)
+			probeGroupItem.parent().removeChild(probeGroupItem)
 
 		# Emit signal about remove port to update comboboxes
 		self.guiSignals.probesChanged.emit("remove")
@@ -3156,19 +3202,26 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			)
 		lumpedPartGroupItem = None
 		for item in lumpedPartGroupWidgetItems:
+			# We must check if the parent is actually not none 
+			# because a port with the name 'Probe' would match 
+			# the port entry in the objectAssignmentRightTreeWidget
+			if (item.parent() == None):
+				continue
+			
 			if (item.parent().text(0) == "LumpedPart"):
 				lumpedPartGroupItem = item
-		print("Currently removing lumped part item: " + lumpedPartGroupItem.text(0))
-
-		###
-		#	Removing from Priority List
-		###
-		priorityName = lumpedPartGroupItem.parent().text(0) + ", " + lumpedPartGroupItem.text(0);
-		self.guiHelpers.removePriorityName(priorityName)
-
-		self.form.lumpedPartTreeView.invisibleRootItem().removeChild(selectedItem)
-		lumpedPartGroupItem.parent().removeChild(lumpedPartGroupItem)
 		
+		if lumpedPartGroupItem != None:
+			print("Currently removing lumped part item: " + lumpedPartGroupItem.text(0))
+			
+			###
+			#	Removing from Priority List
+			###
+			priorityName = lumpedPartGroupItem.parent().text(0) + ", " + lumpedPartGroupItem.text(0);
+			self.guiHelpers.removePriorityName(priorityName)
+
+			self.form.lumpedPartTreeView.invisibleRootItem().removeChild(selectedItem)
+			lumpedPartGroupItem.parent().removeChild(lumpedPartGroupItem)
 
 	def lumpedPartSettingsUpdateButtonClicked(self):
 		### capture UI settings

@@ -100,11 +100,11 @@ class GuiHelpers:
             itemNameFields = priorityItem.text(0).split(',')
             gridParent = self.form.objectAssignmentRightTreeWidget.findItems(itemNameFields[1].strip(),
                                                                              QtCore.Qt.MatchRecursive)
-            if len(gridParent) > 0:
-                if not _bool(gridParent[0].data(0, QtCore.Qt.UserRole).topPriorityLines):
-                    self.form.meshPriorityTreeView.topLevelItem(k).setBackground(0, QtGui.QColor('white'))
-                else:
-                    self.form.meshPriorityTreeView.topLevelItem(k).setBackground(0, QtGui.QColor('lightgray'))
+            # if len(gridParent) > 0:
+            #     if not _bool(gridParent[0].data(0, QtCore.Qt.UserRole).topPriorityLines):
+            #         self.form.meshPriorityTreeView.topLevelItem(k).setBackground(0, QtGui.QColor('white'))
+            #     else:
+            #         self.form.meshPriorityTreeView.topLevelItem(k).setBackground(0, QtGui.QColor('lightgray'))
 
         """
         # If grid item is set to have priority lines it means it should be highlighted in mesh priority widget
