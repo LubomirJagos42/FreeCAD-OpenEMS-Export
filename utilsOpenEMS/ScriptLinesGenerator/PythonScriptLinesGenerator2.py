@@ -6,6 +6,7 @@ from PySide2 import QtGui, QtCore, QtWidgets
 import numpy as np
 import re
 import math
+import decimal
 
 from utilsOpenEMS.GlobalFunctions.GlobalFunctions import _bool, _r, _r2
 from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator2 import OctaveScriptLinesGenerator2
