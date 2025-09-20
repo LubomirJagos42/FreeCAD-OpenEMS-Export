@@ -494,13 +494,14 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 					#
 
 					elif (currSetting.getType() == 'microstrip'):
+						print(bbCoords)
 						portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ = currSetting.getMicrostripStartStopCoords(bbCoords, sf)
-						bbCoords.Xmin = portStartX
-						bbCoords.Ymin = portStartY
-						bbCoords.Zmin = portStartZ
-						bbCoords.Xmax = portStopX
-						bbCoords.Ymax = portStopY
-						bbCoords.Zmax = portStopZ
+						# bbCoords.Xmin = portStartX
+						# bbCoords.Ymin = portStartY
+						# bbCoords.Zmin = portStartZ
+						# bbCoords.Xmax = portStopX
+						# bbCoords.Ymax = portStopY
+						# bbCoords.Zmax = portStopZ
 						genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
 						if currSetting.infiniteResistance:
