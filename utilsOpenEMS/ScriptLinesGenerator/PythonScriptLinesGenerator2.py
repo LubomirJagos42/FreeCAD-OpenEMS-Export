@@ -2082,7 +2082,7 @@ with open(filename, 'w', newline='') as csvfile:
 		genScript += "#\n"
 		genScript += "#   Write S11, real and imag Z_in into CSV file separated by ';'\n"
 		genScript += "#\n"
-		genScript += "filename = 'openEMS_simulation_s11_dB.csv'\n"
+		genScript += "filename = 'openEMS_simulation_s21_dB.csv'\n"
 		genScript += "\n"
 		genScript += "with open(filename, 'w', newline='') as csvfile:\n"
 		genScript += "\twriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)\n"
