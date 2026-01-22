@@ -2,7 +2,7 @@ import os
 import re
 import json
 
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide import QtGui, QtCore, QtWidgets
 
 from utilsOpenEMS.GuiHelpers.GuiSignals import GuiSignals
 
@@ -165,6 +165,7 @@ class IniFile0v1:
             settings.setValue("sinusodial", json.dumps(excitationList[k].sinusodial))
             settings.setValue("gaussian", json.dumps(excitationList[k].gaussian))
             settings.setValue("custom", json.dumps(excitationList[k].custom))
+            settings.setValue("sweep", json.dumps(excitationList[k].sweep))
             settings.setValue("units", excitationList[k].units)
             settings.endGroup()
 
@@ -322,6 +323,7 @@ class IniFile0v1:
         #
         simulationSettings = SimulationSettingsItem("Hardwired Name 1")
 
+        #write all settings from "Simulation Params" tab from openEMS tab
         simulationSettings.params['max_timestamps'] = self.form.simParamsMaxTimesteps.value()
         simulationSettings.params['min_decrement'] = self.form.simParamsMinDecrement.value()
 
@@ -348,14 +350,29 @@ class IniFile0v1:
         simulationSettings.params['min_gridspacing_z'] = self.form.genParamMinGridSpacingZ.value()
         simulationSettings.params['OverSampling'] = self.form.simParamsOverSampling.value()
 
+        #write all settings from "Simulation Params" tab from EMerge tab
+        simulationSettings.params['base_length_unit_m_emerge'] = self.form.simParamsDeltaUnitList_emerge.currentText()
+        simulationSettings.params['solverEngine_emerge'] = self.form.simParamsSolverEngine_emerge.currentText()
+
+
         simulationSettings.params['outputScriptType'] = 'octave'
         if self.form.radioButton_pythonType.isChecked():
             simulationSettings.params['outputScriptType'] = 'python'
 
-        # write parameters frp, above into JSON
+        #
+        #   Write parameters frp, above into JSON
+        #
         settings.beginGroup("SIMULATION-" + simulationSettings.name)
         settings.setValue("name", simulationSettings.name)
         settings.setValue("params", json.dumps(simulationSettings.params))
+        settings.endGroup()
+
+        #
+        #   SOLVER section
+        #
+        settings.beginGroup("SOLVER-settings1")
+        settings.setValue("solver", self.form.comboBox_solverType.currentText())
+        settings.setValue("engine", self.form.simParamsSolverEngine_emerge.currentText())
         settings.endGroup()
 
         # SAVE OBJECT ASSIGNMENTS
@@ -496,6 +513,15 @@ class IniFile0v1:
                 categorySettings.gaussian = json.loads(settings.value('gaussian'))
                 categorySettings.custom = json.loads(settings.value('custom'))
                 categorySettings.units = settings.value('units')
+
+                #
+                #   Jan2026 - added for emerge solver, therefore it's not present in old ini files
+                #
+                try:
+                    categorySettings.sweep = json.loads(settings.value('sweep'))
+                except:
+                    pass
+
                 settings.endGroup()
                 print(f"loading EXCITATION - {categorySettings.name} - {categorySettings.type}")
 
@@ -715,12 +741,9 @@ class IniFile0v1:
                 self.form.simParamsMaxTimesteps.setValue(simulationSettings.params['max_timestamps'])
                 self.form.simParamsMinDecrement.setValue(simulationSettings.params['min_decrement'])
                 self.form.generateJustPreviewCheckbox.setCheckState(QtCore.Qt.Checked if simulationSettings.params.get('generateJustPreview',False) else QtCore.Qt.Unchecked)
-                self.form.generateDebugPECCheckbox.setCheckState(
-                    QtCore.Qt.Checked if simulationSettings.params.get('generateDebugPEC', False) else QtCore.Qt.Unchecked)
-                self.form.octaveExecCommandList.setCurrentText(
-                    simulationSettings.params.get("mFileExecCommand", self.form.octaveExecCommandList.itemData(0)))
-                self.form.simParamsDeltaUnitList.setCurrentText(
-                    simulationSettings.params.get("base_length_unit_m", self.form.simParamsDeltaUnitList.itemData(0)))
+                self.form.generateDebugPECCheckbox.setCheckState(QtCore.Qt.Checked if simulationSettings.params.get('generateDebugPEC', False) else QtCore.Qt.Unchecked)
+                self.form.octaveExecCommandList.setCurrentText(simulationSettings.params.get("mFileExecCommand", self.form.octaveExecCommandList.itemData(0)))
+                self.form.simParamsDeltaUnitList.setCurrentText(simulationSettings.params.get("base_length_unit_m", self.form.simParamsDeltaUnitList.itemData(0)))
 
                 self.guiHelpers.setSimlationParamBC(self.form.BCxmin, simulationSettings.params['BCxmin'])
                 self.guiHelpers.setSimlationParamBC(self.form.BCxmax, simulationSettings.params['BCxmax'])
@@ -735,6 +758,13 @@ class IniFile0v1:
                 self.form.PMLymaxcells.setValue(simulationSettings.params['PMLymaxcells'])
                 self.form.PMLzmincells.setValue(simulationSettings.params['PMLzmincells'])
                 self.form.PMLzmaxcells.setValue(simulationSettings.params['PMLzmaxcells'])
+
+                #newly added params for emerge solver
+                try:
+                    self.form.simParamsDeltaUnitList_emerge.setCurrentText(simulationSettings.params['base_length_unit_m_emerge'])
+                    self.form.simParamsSolverEngine_emerge.setCurrentText(simulationSettings.params['solverEngine_emerge'])
+                except:
+                    pass
 
                 #
                 #   try catch block here due backward compatibility, if error don't do anything about it and left default values set
@@ -990,6 +1020,20 @@ class IniFile0v1:
 
                     self.guiHelpers.setComboboxItem(self.form.portNf2ffInput, settings.value("nf2ffInputPort"))
                     self.form.portNf2ffFreq.setValue(float(settings.value("nf2ffFreqValue")))
+                except:
+                    pass
+
+                settings.endGroup()
+                continue
+
+            elif (re.compile("SOLVER").search(settingsGroup)):
+                print("SOLVER item settings found.")
+                settings.beginGroup(settingsGroup)
+                #
+                #	In case of error just continue and do nothing to correct values
+                #
+                try:
+                    self.guiHelpers.setComboboxItem(self.form.comboBox_solverType, settings.value("solver"))
                 except:
                     pass
 
