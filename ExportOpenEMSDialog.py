@@ -1,5 +1,5 @@
-from PySide2 import QtGui, QtCore, QtWidgets
-from PySide2.QtCore import Slot
+from PySide import QtGui, QtCore, QtWidgets
+from PySide.QtCore import Slot
 import os, sys
 import re
 import random
@@ -10,14 +10,18 @@ import math
 import sys
 import traceback
 
+import webbrowser		#webbrowser is used to open help page and so
+
 APP_CONTEXT = "None"
 
 try:
 	import FreeCAD
-	import WebGui
+	#import WebGui	#this plugin was removed in 0.20 and later, it's used to display help
 	import KiCADImporterToolDialog	#import for KiCAD Import Tool
 	APP_CONTEXT = "FreeCAD"
-except:
+except Exception as e:
+	print(f"Error test if addon opened in FreeCAD")
+	print(e)
 	pass
 
 try:
@@ -34,10 +38,6 @@ print(f"APP_CONTEXT set to {APP_CONTEXT}")
 #
 APP_DIR = ''
 if APP_CONTEXT == 'Blender':
-	#
-	#	This here is because Blender pyhton is not providing right info about paths in __file__ when running from editor
-	#
-	import webbrowser
 
 	if hasattr(bpy.context, 'space_data') and bpy.context.space_data != None and bpy.context.space_data.type == "TEXT_EDITOR":
 		#this is when this file is run inside blender in text editor
@@ -51,7 +51,7 @@ else:
 	APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-path_to_ui = os.path.join(APP_DIR, "ui", "dialog.ui")
+path_to_ui = os.path.join(APP_DIR, "ui", "dialog_OpenEMS_Simulation_Creator.ui")
 
 from utilsOpenEMS.SettingsItem.SettingsItem import SettingsItem
 from utilsOpenEMS.SettingsItem.PortSettingsItem import PortSettingsItem
@@ -66,8 +66,9 @@ from utilsOpenEMS.SettingsItem.FreeCADSettingsItem import FreeCADSettingsItem
 from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator import OctaveScriptLinesGenerator
 from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator import PythonScriptLinesGenerator
 
-from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator2 import OctaveScriptLinesGenerator2	#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
-from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator2 import PythonScriptLinesGenerator2	#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
+from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator2 import OctaveScriptLinesGenerator2				#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
+from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator2 import PythonScriptLinesGenerator2				#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
+from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator3_emerge import PythonScriptLinesGenerator3_emerge	#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
 
 from utilsOpenEMS.GuiHelpers.GuiHelpers import GuiHelpers
 from utilsOpenEMS.GuiHelpers.FactoryCadInterface import FactoryCadInterface
@@ -159,6 +160,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.scriptGenerator = self.octaveScriptGenerator													#variable which store current script generator
 		#self.scriptGenerator2 = OctaveScriptLinesGenerator2(self.form, statusBar=self.statusBar)
 		#self.scriptGenerator3 = PythonScriptLinesGenerator2(self.form, statusBar=self.statusBar)
+
+		#
+		#	Modify UI based on solver type
+		#		- this UI was originaly developed for openEMS but now I am going to add support for EMerge solver
+		#		- emerge have just python interface, it's FEM so different grid definition is used therefore some UI needs to be disabled to not confues user
+		#
+		self.form.comboBox_solverType.currentIndexChanged.connect(self.updateUiBasedOnSolverType)
 
 		#
 		#	Connect function to change script generator
@@ -505,6 +513,40 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		print(f"----> init finished")
 
+	def updateUiBasedOnSolverType(self):
+		solverTypeStr = self.form.comboBox_solverType.currentText()
+		if (solverTypeStr.lower() == "openems"):
+			self.form.generateOpenEMSScriptButton.setText("Generate OpenEMS Files")
+			self.form.radioButton_octaveType.setEnabled(True)
+			self.form.groupBox_gridTab_coordinateType.setEnabled(True)
+
+			self.form.gridTab_gridSettings_emerge.setEnabled(False)
+			self.form.gridTab_gridSettings_openems.setEnabled(True)
+			self.form.tabWidget_gridTab_gridSettings.setCurrentIndex(0)
+
+			self.pythonScriptGenerator = PythonScriptLinesGenerator2(self.form, statusBar = self.statusBar)
+
+		elif (solverTypeStr.lower() == "emerge"):
+			self.form.generateOpenEMSScriptButton.setText("Generate EMerge Files")
+			self.form.radioButton_octaveType.setEnabled(False)
+			self.form.radioButton_pythonType.setChecked(True)
+			self.form.groupBox_gridTab_coordinateType.setEnabled(False)
+
+			self.form.gridTab_gridSettings_emerge.setEnabled(True)
+			self.form.gridTab_gridSettings_openems.setEnabled(False)
+			self.form.tabWidget_gridTab_gridSettings.setCurrentIndex(1)
+
+			self.form.excitationSettingsTab_tabWidget_emerge.setEnabled(True)
+			self.form.excitationSettingsTab_tabWidget_openems.setEnabled(False)
+			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(1)
+
+			self.pythonScriptGenerator = PythonScriptLinesGenerator3_emerge(self.form, statusBar=self.statusBar)
+
+		else:
+			pass
+
+		self.scriptGenerator = self.pythonScriptGenerator
+
 	def KiCADImportButtonClicked(self):
 		# if KiCAD import tool is not created create new one
 		if not hasattr(self, "KiCADImportTool"):
@@ -517,7 +559,10 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		Open index help html webpage inside freecad window.
 		:return:
 		"""
-		WebGui.openBrowser(f"{os.path.dirname(__file__)}\\documentation\\help\\index.html")
+		#deprecated in new FreeCAD 1.0.2
+		#WebGui.openBrowser(f"{os.path.dirname(__file__)}\\documentation\\help\\index.html")
+
+		webbrowser.open(f"{os.path.dirname(__file__)}\\documentation\\help\\index.html")
 
 	def openBlenderWebGuiHelp(self):
 		"""
@@ -1543,43 +1588,55 @@ class ExportOpenEMSDialog(QtCore.QObject):
 	#	PRIORITY OBJECT LIST move item UP
 	#
 	def moveupPriorityButtonClicked(self):
-		currItemIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(self.form.objectAssignmentPriorityTreeView.currentItem())
-		if currItemIndex > 0:
-			takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(currItemIndex-1, takenItem)
-			self.form.objectAssignmentPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.objectAssignmentPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+
+			if selectedItemTopIndex > 0:
+				takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(selectedItemTopIndex - 1)
+				self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(selectedItemBottomIndex, takenItem)
 
 	#
 	#	PRIORITY OBJECT LIST move item DOWN
 	#
 	def movedownPriorityButtonClicked(self):
-		currItemIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(self.form.objectAssignmentPriorityTreeView.currentItem())
-		countAllItems = self.form.objectAssignmentPriorityTreeView.topLevelItemCount()
-		if currItemIndex < countAllItems-1:
-			takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(currItemIndex+1, takenItem)
-			self.form.objectAssignmentPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.objectAssignmentPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.objectAssignmentPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+			countAllItems = self.form.objectAssignmentPriorityTreeView.topLevelItemCount()
+
+			if selectedItemBottomIndex < countAllItems-1:
+				takenItem = self.form.objectAssignmentPriorityTreeView.takeTopLevelItem(selectedItemBottomIndex+1)
+				self.form.objectAssignmentPriorityTreeView.insertTopLevelItem(selectedItemTopIndex, takenItem)
 
 	#
 	#	PRIORITY MESH LIST move item UP
 	#
 	def moveupPriorityMeshButtonClicked(self):
-		currItemIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(self.form.meshPriorityTreeView.currentItem())
-		if currItemIndex > 0:
-			takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.meshPriorityTreeView.insertTopLevelItem(currItemIndex-1, takenItem)
-			self.form.meshPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.meshPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+
+			if selectedItemTopIndex > 0:
+				takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(selectedItemTopIndex-1)
+				self.form.meshPriorityTreeView.insertTopLevelItem(selectedItemBottomIndex, takenItem)
 
 	#
 	#	PRIORITY MESH LIST move item DOWN
 	#
 	def movedownPriorityMeshButtonClicked(self):
-		currItemIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(self.form.meshPriorityTreeView.currentItem())
-		countAllItems = self.form.meshPriorityTreeView.topLevelItemCount()
-		if currItemIndex < countAllItems-1:
-			takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(currItemIndex)
-			self.form.meshPriorityTreeView.insertTopLevelItem(currItemIndex+1, takenItem)
-			self.form.meshPriorityTreeView.setCurrentItem(takenItem)
+		selectedItems = self.form.meshPriorityTreeView.selectedItems()
+		if selectedItems != None:
+			selectedItemTopIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[0])
+			selectedItemBottomIndex = self.form.meshPriorityTreeView.indexOfTopLevelItem(selectedItems[-1])
+			countAllItems = self.form.meshPriorityTreeView.topLevelItemCount()
+
+			if selectedItemBottomIndex < countAllItems-1:
+				takenItem = self.form.meshPriorityTreeView.takeTopLevelItem(selectedItemBottomIndex+1)
+				self.form.meshPriorityTreeView.insertTopLevelItem(selectedItemTopIndex, takenItem)
 
 	def checkTreeWidgetForDuplicityName(self, refTreeWidget, itemName, ignoreSelectedItem=True):
 		isDuplicityName = False
@@ -1591,6 +1648,10 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.guiHelpers.displayMessage("Please change name, item with this name already exists.", True)
 			iterator += 1
 		return isDuplicityName
+
+	def getSolverType(self):
+		solverType = self.form.comboBox_solverType.currentText()
+		return solverType
 
 	#
 	#	Save button clicked
@@ -1604,7 +1665,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		programname = os.path.basename(outputFile)
 		programbase, ext = os.path.splitext(programname)  # extract basename and ext from filename
 		programbase.replace(" ", "_")					#replace whitespaces to underscores, ie. "some file name 1" -> "some_file_name_1", octave has problem from gui to run files with spaces in name
-		self.simulationOutputDir = f"{os.path.dirname(outputFile)}/{programbase}_openEMS_simulation"
+
+		self.simulationOutputDir = f"{os.path.dirname(outputFile)}/{programbase}_{self.getSolverType()}_simulation"
 		print(f"-----> saveToFileSettingsButtonClicked, setting simulationOutputDir: {self.simulationOutputDir}")
 
 	def loadFromFileSettingsButtonClicked(self):
@@ -1615,7 +1677,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		programname = os.path.basename(outputFile)
 		programbase, ext = os.path.splitext(programname)  # extract basename and ext from filename
-		self.simulationOutputDir = f"{os.path.dirname(outputFile)}/{programbase}_openEMS_simulation"
+		self.simulationOutputDir = f"{os.path.dirname(outputFile)}/{programbase}_{self.getSolverType()}_simulation"
 		print(f"-----> loadFromFileSettingsButtonClicked, setting simulationOutputDir: {self.simulationOutputDir}")
 
 		#
@@ -1875,6 +1937,16 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		gridItem.gridOffset['z'] = self.form.gridOffsetZ.value()
 		gridItem.gridOffset['units'] = self.form.gridOffsetUnits.currentText()
 
+		#
+		#	New items for FEM simulation (emerge)
+		#
+		if (self.form.femGridMaxElementSizeRadio.isChecked()):
+			gridItem.type = "FEM Max Element Size"
+
+			gridItem.femMesh = {}
+			gridItem.femMesh['femMaxElementSizeUnits'] = self.form.femGridMaxElementSizeUnits.currentText()
+			gridItem.femMesh['femMaxElementSize'] = self.form.femGridMaxElementSizeValue.value()
+
 		return gridItem
 		
 
@@ -1899,7 +1971,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				#set grid drawing plane to 'z' and disable chosing plane to draw grid
 				index = self.form.auxGridAxis.findText('z', QtCore.Qt.MatchFixedString)
 				if index >= 0:
-					 self.form.auxGridAxis.setCurrentIndex(index)
+					self.form.auxGridAxis.setCurrentIndex(index)
 				self.form.auxGridAxis.setEnabled(False)				
 
 			self.guiHelpers.addSettingsItemGui(settingsInst)	#add item into gui tree views
@@ -2410,6 +2482,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		excitationItem.name = name
 		excitationItem.units = self.form.excitationUnitsNumberInput.currentText()
 
+		#
+		#	OpenEMS
+		#
 		if (self.form.sinusodialExcitationRadioButton.isChecked()):
 			excitationItem.type = 'sinusodial'
 			excitationItem.sinusodial = {}
@@ -2428,6 +2503,18 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			excitationItem.custom = {}
 			excitationItem.custom['functionStr'] = self.form.customExcitationTextInput.text()
 			excitationItem.custom['f0'] = self.form.customExcitationF0NumberInput.value()
+
+		#
+		#	EMerge
+		#
+		if (self.getSolverType().lower() == "emerge"):
+			excitationItem.type = 'sweep'
+			excitationItem.sweep = {}
+			excitationItem.sweep['fmin'] = self.form.sweepExcitationFmin.value()
+			excitationItem.sweep['fmax'] = self.form.sweepExcitationFmax.value()
+			excitationItem.sweep['npoints'] = self.form.sweepExcitationNPoints.value()
+			excitationItem.sweep['resolution'] = self.form.sweepExcitationResolution.value()
+
 		return excitationItem
 
 
@@ -3271,6 +3358,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.gridOffsetZ.setValue(0)
 		self.guiHelpers.setComboboxItem(self.form.gridOffsetUnits, 'um')
 
+		self.form.femGridMaxElementSizeValue.setValue(0)
+		self.form.femGridMaxElementSizeUnits.setCurrentIndex(2)
+
 		#set values in grid settings by actual selected item
 		currSetting = self.form.gridSettingsTreeView.currentItem().data(0, QtCore.Qt.UserRole)
 		self.form.gridSettingsNameInput.setText(currSetting.name)
@@ -3314,6 +3404,15 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			except:
 				pass
 
+		elif (currSetting.type == "FEM Max Element Size"):
+			try:
+				self.form.femGridMaxElementSizeRadio.click()
+
+				self.form.femGridMaxElementSizeValue.setValue(currSetting.femMesh['femMaxElementSize'])
+				self.guiHelpers.setComboboxItem(self.form.femGridMaxElementSizeUnits, currSetting.femMesh['femMaxElementSize'])
+			except:
+				pass
+
 		elif (currSetting.type == "User Defined"):
 			self.form.userDefinedRadioButton.click()
 			self.form.userDefinedGridLinesTextInput.setPlainText(currSetting.userDefined['data'])
@@ -3350,7 +3449,6 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.gaussianExcitationRadioButton.click()
 			self.form.gaussianExcitationF0NumberInput.setValue(currSetting.gaussian['f0'])
 			self.form.gaussianExcitationFcNumberInput.setValue(currSetting.gaussian['fc'])
-			pass
 		elif (currSetting.type == "dirac"):
 			self.form.diracExcitationRadioButton.click()
 		elif (currSetting.type == "step"):
@@ -3364,7 +3462,15 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			if index >= 0:
 				self.form.excitationUnitsNumberInput.setCurrentIndex(index)
 			pass
+		elif (currSetting.type == "sweep"):
+			self.form.sweepExcitationFmin.setValue(currSetting.sweep['fmin'])
+			self.form.sweepExcitationFmax.setValue(currSetting.sweep['fmax'])
+			self.form.sweepExcitationNPoints.setValue(currSetting.sweep['npoints'])
+			self.form.sweepExcitationResolution.setValue(currSetting.sweep['resolution'])
+
+			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(1)
 		else:
+			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(0)
 			return #no gui update
 			
 		index = self.form.excitationUnitsNumberInput.findText(currSetting.units, QtCore.Qt.MatchFixedString)

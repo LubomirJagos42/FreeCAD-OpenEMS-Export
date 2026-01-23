@@ -2,7 +2,7 @@ import os
 import re
 import json
 
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide import QtGui, QtCore, QtWidgets
 
 from utilsOpenEMS.GuiHelpers.GuiSignals import GuiSignals
 
@@ -145,6 +145,8 @@ class IniFile0v1:
                 settings.setValue("yenabled", gridList[k].yenabled)
                 settings.setValue("zenabled", gridList[k].zenabled)
                 settings.setValue("userDefined", json.dumps(gridList[k].userDefined))
+            elif (gridList[k].type == "FEM Max Element Size"):
+                settings.setValue("femMesh", json.dumps(gridList[k].femMesh))
 
             try:
                 settings.setValue("gridOffset", json.dumps(gridList[k].gridOffset))
@@ -165,6 +167,7 @@ class IniFile0v1:
             settings.setValue("sinusodial", json.dumps(excitationList[k].sinusodial))
             settings.setValue("gaussian", json.dumps(excitationList[k].gaussian))
             settings.setValue("custom", json.dumps(excitationList[k].custom))
+            settings.setValue("sweep", json.dumps(excitationList[k].sweep))
             settings.setValue("units", excitationList[k].units)
             settings.endGroup()
 
@@ -322,6 +325,7 @@ class IniFile0v1:
         #
         simulationSettings = SimulationSettingsItem("Hardwired Name 1")
 
+        #write all settings from "Simulation Params" tab from openEMS tab
         simulationSettings.params['max_timestamps'] = self.form.simParamsMaxTimesteps.value()
         simulationSettings.params['min_decrement'] = self.form.simParamsMinDecrement.value()
 
@@ -346,15 +350,31 @@ class IniFile0v1:
         simulationSettings.params['min_gridspacing_x'] = self.form.genParamMinGridSpacingX.value()
         simulationSettings.params['min_gridspacing_y'] = self.form.genParamMinGridSpacingY.value()
         simulationSettings.params['min_gridspacing_z'] = self.form.genParamMinGridSpacingZ.value()
+        simulationSettings.params['OverSampling'] = self.form.simParamsOverSampling.value()
+
+        #write all settings from "Simulation Params" tab from EMerge tab
+        simulationSettings.params['base_length_unit_m_emerge'] = self.form.simParamsDeltaUnitList_emerge.currentText()
+        simulationSettings.params['solverEngine_emerge'] = self.form.simParamsSolverEngine_emerge.currentText()
+
 
         simulationSettings.params['outputScriptType'] = 'octave'
         if self.form.radioButton_pythonType.isChecked():
             simulationSettings.params['outputScriptType'] = 'python'
 
-        # write parameters frp, above into JSON
+        #
+        #   Write parameters frp, above into JSON
+        #
         settings.beginGroup("SIMULATION-" + simulationSettings.name)
         settings.setValue("name", simulationSettings.name)
         settings.setValue("params", json.dumps(simulationSettings.params))
+        settings.endGroup()
+
+        #
+        #   SOLVER section
+        #
+        settings.beginGroup("SOLVER-settings1")
+        settings.setValue("solver", self.form.comboBox_solverType.currentText())
+        settings.setValue("engine", self.form.simParamsSolverEngine_emerge.currentText())
         settings.endGroup()
 
         # SAVE OBJECT ASSIGNMENTS
@@ -495,6 +515,15 @@ class IniFile0v1:
                 categorySettings.gaussian = json.loads(settings.value('gaussian'))
                 categorySettings.custom = json.loads(settings.value('custom'))
                 categorySettings.units = settings.value('units')
+
+                #
+                #   Jan2026 - added for emerge solver, therefore it's not present in old ini files
+                #
+                try:
+                    categorySettings.sweep = json.loads(settings.value('sweep'))
+                except:
+                    pass
+
                 settings.endGroup()
                 print(f"loading EXCITATION - {categorySettings.name} - {categorySettings.type}")
 
@@ -525,6 +554,11 @@ class IniFile0v1:
                         categorySettings.smoothMesh = json.loads(settings.value('smoothMesh'))
                     except Exception as e:
                         print(f"Error during load reading smooth mesh: {e}")
+                elif (categorySettings.type == "FEM Max Element Size"):
+                    try:
+                        categorySettings.femMesh = json.loads(settings.value('femMesh'))
+                    except Exception as e:
+                        print(f"Error during load reading fem mesh: {e}")
                 else:
                     print(f"Grid reading {categorySettings.type} cannot find aditional infor needed for settings, default values left set.")
 
@@ -714,12 +748,9 @@ class IniFile0v1:
                 self.form.simParamsMaxTimesteps.setValue(simulationSettings.params['max_timestamps'])
                 self.form.simParamsMinDecrement.setValue(simulationSettings.params['min_decrement'])
                 self.form.generateJustPreviewCheckbox.setCheckState(QtCore.Qt.Checked if simulationSettings.params.get('generateJustPreview',False) else QtCore.Qt.Unchecked)
-                self.form.generateDebugPECCheckbox.setCheckState(
-                    QtCore.Qt.Checked if simulationSettings.params.get('generateDebugPEC', False) else QtCore.Qt.Unchecked)
-                self.form.octaveExecCommandList.setCurrentText(
-                    simulationSettings.params.get("mFileExecCommand", self.form.octaveExecCommandList.itemData(0)))
-                self.form.simParamsDeltaUnitList.setCurrentText(
-                    simulationSettings.params.get("base_length_unit_m", self.form.simParamsDeltaUnitList.itemData(0)))
+                self.form.generateDebugPECCheckbox.setCheckState(QtCore.Qt.Checked if simulationSettings.params.get('generateDebugPEC', False) else QtCore.Qt.Unchecked)
+                self.form.octaveExecCommandList.setCurrentText(simulationSettings.params.get("mFileExecCommand", self.form.octaveExecCommandList.itemData(0)))
+                self.form.simParamsDeltaUnitList.setCurrentText(simulationSettings.params.get("base_length_unit_m", self.form.simParamsDeltaUnitList.itemData(0)))
 
                 self.guiHelpers.setSimlationParamBC(self.form.BCxmin, simulationSettings.params['BCxmin'])
                 self.guiHelpers.setSimlationParamBC(self.form.BCxmax, simulationSettings.params['BCxmax'])
@@ -735,20 +766,44 @@ class IniFile0v1:
                 self.form.PMLzmincells.setValue(simulationSettings.params['PMLzmincells'])
                 self.form.PMLzmaxcells.setValue(simulationSettings.params['PMLzmaxcells'])
 
+                #newly added params for emerge solver
+                try:
+                    self.form.simParamsDeltaUnitList_emerge.setCurrentText(simulationSettings.params['base_length_unit_m_emerge'])
+                    self.form.simParamsSolverEngine_emerge.setCurrentText(simulationSettings.params['solverEngine_emerge'])
+                except:
+                    pass
+
                 #
                 #   try catch block here due backward compatibility, if error don't do anything about it and left default values set
+                #   this is for min_gridspacing settings
                 #
                 try:
                     self.form.genParamMinGridSpacingEnable.setCheckState(QtCore.Qt.Checked if simulationSettings.params.get('min_gridspacing_enable',False) else QtCore.Qt.Unchecked)
                     self.form.genParamMinGridSpacingX.setValue(simulationSettings.params['min_gridspacing_x'])
                     self.form.genParamMinGridSpacingY.setValue(simulationSettings.params['min_gridspacing_y'])
                     self.form.genParamMinGridSpacingZ.setValue(simulationSettings.params['min_gridspacing_z'])
+                except:
+                    pass
 
+                #
+                #   try catch block here due backward compatibility, if error don't do anything about it and left default values set
+                #   this is for simulation type setting
+                #
+                try:
                     self.form.radioButton_octaveType.setChecked(True)                                                       # by default octave type is checked
                     self.form.radioButton_octaveType.setChecked(simulationSettings.params['outputScriptType'] == 'octave')
                     if simulationSettings.params['outputScriptType'] == 'python':
                         self.form.radioButton_pythonType.setChecked(simulationSettings.params['outputScriptType'] == 'python')
                         self.form.radioButton_pythonType.clicked.emit()
+                except:
+                    pass
+
+                #
+                #   try catch block here due backward compatibility, if error don't do anything about it and left default values set
+                #   this is for simulation oversampling setting
+                #
+                try:
+                    self.form.simParamsOverSampling.setValue(simulationSettings.params['OverSampling'])
                 except:
                     pass
 
@@ -972,6 +1027,20 @@ class IniFile0v1:
 
                     self.guiHelpers.setComboboxItem(self.form.portNf2ffInput, settings.value("nf2ffInputPort"))
                     self.form.portNf2ffFreq.setValue(float(settings.value("nf2ffFreqValue")))
+                except:
+                    pass
+
+                settings.endGroup()
+                continue
+
+            elif (re.compile("SOLVER").search(settingsGroup)):
+                print("SOLVER item settings found.")
+                settings.beginGroup(settingsGroup)
+                #
+                #	In case of error just continue and do nothing to correct values
+                #
+                try:
+                    self.guiHelpers.setComboboxItem(self.form.comboBox_solverType, settings.value("solver"))
                 except:
                     pass
 
