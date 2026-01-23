@@ -536,6 +536,10 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.gridTab_gridSettings_openems.setEnabled(False)
 			self.form.tabWidget_gridTab_gridSettings.setCurrentIndex(1)
 
+			self.form.excitationSettingsTab_tabWidget_emerge.setEnabled(True)
+			self.form.excitationSettingsTab_tabWidget_openems.setEnabled(False)
+			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(1)
+
 			self.pythonScriptGenerator = PythonScriptLinesGenerator3_emerge(self.form, statusBar=self.statusBar)
 
 		else:
@@ -1933,6 +1937,16 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		gridItem.gridOffset['z'] = self.form.gridOffsetZ.value()
 		gridItem.gridOffset['units'] = self.form.gridOffsetUnits.currentText()
 
+		#
+		#	New items for FEM simulation (emerge)
+		#
+		if (self.form.femGridMaxElementSizeRadio.isChecked()):
+			gridItem.type = "FEM Max Element Size"
+
+			gridItem.femMesh = {}
+			gridItem.femMesh['femMaxElementSizeUnits'] = self.form.femGridMaxElementSizeUnits.currentText()
+			gridItem.femMesh['femMaxElementSize'] = self.form.femGridMaxElementSizeValue.value()
+
 		return gridItem
 		
 
@@ -1957,7 +1971,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				#set grid drawing plane to 'z' and disable chosing plane to draw grid
 				index = self.form.auxGridAxis.findText('z', QtCore.Qt.MatchFixedString)
 				if index >= 0:
-					 self.form.auxGridAxis.setCurrentIndex(index)
+					self.form.auxGridAxis.setCurrentIndex(index)
 				self.form.auxGridAxis.setEnabled(False)				
 
 			self.guiHelpers.addSettingsItemGui(settingsInst)	#add item into gui tree views
@@ -3344,6 +3358,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.gridOffsetZ.setValue(0)
 		self.guiHelpers.setComboboxItem(self.form.gridOffsetUnits, 'um')
 
+		self.form.femGridMaxElementSizeValue.setValue(0)
+		self.form.femGridMaxElementSizeUnits.setCurrentIndex(2)
+
 		#set values in grid settings by actual selected item
 		currSetting = self.form.gridSettingsTreeView.currentItem().data(0, QtCore.Qt.UserRole)
 		self.form.gridSettingsNameInput.setText(currSetting.name)
@@ -3384,6 +3401,15 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.form.smoothMeshXMaxRes.setValue(currSetting.smoothMesh['xMaxRes'])
 				self.form.smoothMeshYMaxRes.setValue(currSetting.smoothMesh['yMaxRes'])
 				self.form.smoothMeshZMaxRes.setValue(currSetting.smoothMesh['zMaxRes'])
+			except:
+				pass
+
+		elif (currSetting.type == "FEM Max Element Size"):
+			try:
+				self.form.femGridMaxElementSizeRadio.click()
+
+				self.form.femGridMaxElementSizeValue.setValue(currSetting.femMesh['femMaxElementSize'])
+				self.guiHelpers.setComboboxItem(self.form.femGridMaxElementSizeUnits, currSetting.femMesh['femMaxElementSize'])
 			except:
 				pass
 

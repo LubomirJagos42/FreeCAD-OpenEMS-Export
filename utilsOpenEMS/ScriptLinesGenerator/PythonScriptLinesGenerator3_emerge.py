@@ -282,7 +282,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
                         currDir, baseName = self.getCurrDir()
                         stepModelFileName = childName + "_gen_model.step"
 
-                        genScript += f"{materialPythonVariable}['objects'].append(em.geo.step.STEPItems(name='{childName}', filename=os.path.join(currDir,'{stepModelFileName}'), unit=mm))\n"
+                        genScript += f"{materialPythonVariable}['objects'].append({{'name': '{childName}', 'value': em.geo.step.STEPItems(name='{childName}', filename=os.path.join(currDir,'{stepModelFileName}'), unit=mm)}})\n"
 
                         #
                         #   Going through each concrete material items and generate their .step files
@@ -484,12 +484,23 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
                         else:
                             genScript += 'portDirection = None\n'
 
-                        genScript += f"portObj = em.geo.Box(w, h, th, position=tuple(portStart))\n"
-                        self.portBoundaryConditionScriptLinesBuffer.append(f"port[{str(genScriptPortCount)}] = simulationObj.mw.bc.LumpedPort(portObj, {str(genScriptPortCount)}, width=w, height=th, direction=portDirection, Z0=portR)\n")
+                        genScript += f"port[{str(genScriptPortCount)}] = {{}}\n"
+                        genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(w, h, th, position=tuple(portStart))\n"
+                        genScript += f"port[{str(genScriptPortCount)}]['w'] = w\n"
+                        genScript += f"port[{str(genScriptPortCount)}]['h'] = h\n"
+                        genScript += f"port[{str(genScriptPortCount)}]['th'] = th\n"
+                        genScript += f"port[{str(genScriptPortCount)}]['portStart'] = portStart\n"
+                        genScript += f"port[{str(genScriptPortCount)}]['portStop'] = portStop\n"
+                        genScript += f"port[{str(genScriptPortCount)}]['portR'] = portR\n"
+                        genScript += f"port[{str(genScriptPortCount)}]['portDirection'] = portDirection\n"
+                        genScript += f"port[{str(genScriptPortCount)}]['portExcitationAmplitude'] = portExcitationAmplitude\n"
+
+                        portVariableName = f"port[{str(genScriptPortCount)}]"
+                        self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'])\n")
 
                         internalPortName = currSetting.name + " - " + obj.Label
                         self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
-                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount};\n'
+                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount}\n'
                         genScriptPortCount += 1
 
                     #
@@ -967,7 +978,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
             #
             #   Fixed Distance, Fixed Count mesh boundaries coords obtain
             #
-            if (gridSettingsInst.getType() in ['Fixed Distance', 'Fixed Count', 'User Defined']):
+            if (gridSettingsInst.getType() in ['FEM Max Element Size']):
                 fcObject = fcObjects.get(FreeCADObjectName, None)
                 if (not fcObject):
                     print("Failed to resolve '{}'.".format(FreeCADObjectName))
@@ -978,225 +989,18 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
                 if (not "Shape" in dir(fcObject)):
                     continue
 
-                bbCoords = fcObject.Shape.BoundBox
-
-                deltaX = 0
-                deltaY = 0
-                deltaZ = 0
-                if gridSettingsInst.generateLinesInside:
-                    gridOffset = gridSettingsInst.getGridOffset()
-                    unitsAsNumber = gridSettingsInst.getUnitsAsNumber(gridOffset['units'])
-                    if gridSettingsInst.xenabled:
-                        deltaX = gridOffset['x'] * unitsAsNumber * (1/self.getUnitLengthFromUI_m())
-                        print(f"GRID generateLinesInside object detected, delta in X: {deltaX}")
-                    if gridSettingsInst.yenabled:
-                        deltaY = gridOffset['y'] * unitsAsNumber * (1/self.getUnitLengthFromUI_m())
-                        print(f"GRID generateLinesInside object detected, delta in Y: {deltaY}")
-                    if gridSettingsInst.zenabled:
-                        deltaZ = gridOffset['z'] * unitsAsNumber * (1/self.getUnitLengthFromUI_m())
-                        print(f"GRID generateLinesInside object detected, delta in Z: {deltaZ}")
-
-                xmax = sf * bbCoords.XMax - np.sign(bbCoords.XMax - bbCoords.XMin) * deltaX
-                ymax = sf * bbCoords.YMax - np.sign(bbCoords.YMax - bbCoords.YMin) * deltaY
-                zmax = sf * bbCoords.ZMax - np.sign(bbCoords.ZMax - bbCoords.ZMin) * deltaZ
-                xmin = sf * bbCoords.XMin + np.sign(bbCoords.XMax - bbCoords.XMin) * deltaX
-                ymin = sf * bbCoords.YMin + np.sign(bbCoords.YMax - bbCoords.YMin) * deltaY
-                zmin = sf * bbCoords.ZMin + np.sign(bbCoords.ZMax - bbCoords.ZMin) * deltaZ
-
-                # Write grid definition.
-                genScript += "## GRID - " + gridSettingsInst.getName() + " - " + FreeCADObjectName + ' (' + gridSettingsInst.getType() + ")\n"
-
-            #
-            #   Smooth Mesh boundaries coords obtain
-            #
-            elif (gridSettingsInst.getType() == "Smooth Mesh"):
-
-                xList = []
-                yList = []
-                zList = []
-
-                #iterate over grid smooth mesh category freecad children
-                for k in range(gridCategoryObj.childCount()):
-                    FreeCADObjectName = gridCategoryObj.child(k).text(0)
-
-                    fcObject = fcObjects.get(FreeCADObjectName, None)
-                    if (not fcObject):
-                        print("Smooth Mesh - Failed to resolve '{}'.".format(FreeCADObjectName))
-                        continue
-
-                    ### Produce script output.
-
-                    if (not "Shape" in dir(fcObject)):
-                        continue
-
-                    bbCoords = fcObject.Shape.BoundBox
-
-                    deltaX = 0
-                    deltaY = 0
-                    deltaZ = 0
-                    if gridSettingsInst.generateLinesInside:
-                        gridOffset = gridSettingsInst.getGridOffset()
-                        unitsAsNumber = gridSettingsInst.getUnitsAsNumber(gridOffset['units'])
-                        if gridSettingsInst.xenabled:
-                            deltaX = gridOffset['x'] * unitsAsNumber * (1 / self.getUnitLengthFromUI_m())
-                            print(f"GRID generateLinesInside object detected, delta in X: {deltaX}")
-                        if gridSettingsInst.yenabled:
-                            deltaY = gridOffset['y'] * unitsAsNumber * (1 / self.getUnitLengthFromUI_m())
-                            print(f"GRID generateLinesInside object detected, delta in Y: {deltaY}")
-                        if gridSettingsInst.zenabled:
-                            deltaZ = gridOffset['z'] * unitsAsNumber * (1 / self.getUnitLengthFromUI_m())
-                            print(f"GRID generateLinesInside object detected, delta in Z: {deltaZ}")
-
-                    #append boundary coordinates into list
-                    xList.append(sf * bbCoords.XMax - np.sign(bbCoords.XMax - bbCoords.XMin) * deltaX)
-                    yList.append(sf * bbCoords.YMax - np.sign(bbCoords.YMax - bbCoords.YMin) * deltaY)
-                    zList.append(sf * bbCoords.ZMax - np.sign(bbCoords.ZMax - bbCoords.ZMin) * deltaZ)
-                    xList.append(sf * bbCoords.XMin + np.sign(bbCoords.XMax - bbCoords.XMin) * deltaX)
-                    yList.append(sf * bbCoords.YMin + np.sign(bbCoords.YMax - bbCoords.YMin) * deltaY)
-                    zList.append(sf * bbCoords.ZMin + np.sign(bbCoords.ZMax - bbCoords.ZMin) * deltaZ)
-
-                    # Write grid definition.
-                    genScript += "## GRID - " + gridSettingsInst.getName() + " - " + FreeCADObjectName + ' (' + gridSettingsInst.getType() + ")\n"
-
-                #order from min -> max coordinates in each list
-                xList.sort()
-                yList.sort()
-                zList.sort()
-
-            #
-            #   Real octave mesh lines code generate starts here
-            #
-
-            #in case of cylindrical coordinates convert xyz to theta,r,z
-            if (gridSettingsInst.coordsType == "cylindrical"):
-                #FROM GUI ARE GOING DEGREES
-
-                #
-                #   Here calculate right r, theta, z from boundaries of object, it depends if origin lays inside boundaries or where object is positioned.
-                #
-                xmin, xmax, ymin, ymax, zmin, zmax = gridSettingsInst.getCartesianAsCylindricalCoords(bbCoords, xmin, xmax, ymin, ymax, zmin, zmax)
-
-                if (gridSettingsInst.getType() == 'Smooth Mesh' and gridSettingsInst.unitsAngle == "deg"):
-                    yParam = math.radians(gridSettingsInst.smoothMesh['yMaxRes'])
-                elif (gridSettingsInst.getType() == 'Fixed Distance' and gridSettingsInst.unitsAngle == "deg"):
-                    yParam = math.radians(gridSettingsInst.getXYZ(refUnit)['y'])
-                elif (gridSettingsInst.getType() == 'User Defined'):
-                    pass  # user defined is jaust text, doesn't have ['y']
-                else:
-                    yParam = gridSettingsInst.getXYZ(refUnit)['y']
-
-                #z coordinate stays as was
-
-            else:
-                if (gridSettingsInst.getType() == 'Smooth Mesh'):
-                    yParam = gridSettingsInst.smoothMesh['yMaxRes']
-                elif (gridSettingsInst.getType() == 'User Defined'):
-                    pass                                                #user defined is just text, doesn't have ['y']
-                else:
-                    yParam = gridSettingsInst.getXYZ(refUnit)['y']
-
-            if (gridSettingsInst.getType() == 'Fixed Distance'):
-                if gridSettingsInst.xenabled:
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:g}) & (mesh.x <= {1:g})))\n".format(_r(xmin), _r(xmax))
-                    genScript += "mesh.x = np.concatenate((mesh.x, arangeWithEndpoint({0:g},{1:g},{2:g})))\n".format(_r(xmin), _r(xmax), _r(gridSettingsInst.getXYZ(refUnit)['x']))
-                if gridSettingsInst.yenabled:
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:g}) & (mesh.y <= {1:g})))\n".format(_r(ymin), _r(ymax))
-                    genScript += "mesh.y = np.concatenate((mesh.y, arangeWithEndpoint({0:g},{1:g},{2:g})))\n".format(_r(ymin),_r(ymax),_r(yParam))
-                if gridSettingsInst.zenabled:
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:g}) & (mesh.z <= {1:g})))\n".format(_r(zmin), _r(zmax))
-                    genScript += "mesh.z = np.concatenate((mesh.z, arangeWithEndpoint({0:g},{1:g},{2:g})))\n".format(_r(zmin),_r(zmax),_r(gridSettingsInst.getXYZ(refUnit)['z']))
-
-            elif (gridSettingsInst.getType() == 'Fixed Count'):
-                if gridSettingsInst.xenabled:
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:g}) & (mesh.x <= {1:g})))\n".format(_r(xmin), _r(xmax))
-                    if (not gridSettingsInst.getXYZ()['x'] == 1):
-                        genScript += "mesh.x = np.concatenate((mesh.x, linspace({0:g},{1:g},{2:g})))\n".format(_r(xmin), _r(xmax), _r(gridSettingsInst.getXYZ(refUnit)['x']))
-                    else:
-                        genScript += "mesh.x = np.append(mesh.x, {0:g})\n".format(_r((xmin + xmax) / 2))
-
-                if gridSettingsInst.yenabled:
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:g}) & (mesh.y <= {1:g})))\n".format(_r(ymin), _r(ymax))
-                    if (not gridSettingsInst.getXYZ()['y'] == 1):
-                        genScript += "mesh.y = np.concatenate((mesh.y, linspace({0:g},{1:g},{2:g})))\n".format(_r(ymin), _r(ymax), _r(yParam))
-                    else:
-                        genScript += "mesh.y = np.append(mesh.y, {0:g})\n".format(_r((ymin + ymax) / 2))
-
-                if gridSettingsInst.zenabled:
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:g}) & (mesh.z <= {1:g})))\n".format(_r(zmin), _r(zmax))
-                    if (not gridSettingsInst.getXYZ()['z'] == 1):
-                        genScript += "mesh.z = np.concatenate((mesh.z, linspace({0:g},{1:g},{2:g})))\n".format(_r(zmin), _r(zmax), _r(gridSettingsInst.getXYZ(refUnit)['z']))
-                    else:
-                        genScript += "mesh.z = np.append(mesh.z, {0:g})\n".format(_r((zmin + zmax) / 2))
-
-            elif (gridSettingsInst.getType() == 'User Defined'):
-                if gridSettingsInst.xenabled:
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:g}) & (mesh.x <= {1:g})))\n".format(_r(xmin), _r(xmax))
-                if gridSettingsInst.yenabled:
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:g}) & (mesh.y <= {1:g})))\n".format(_r(ymin), _r(ymax))
-                if gridSettingsInst.zenabled:
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:g}) & (mesh.z <= {1:g})))\n".format(_r(zmin), _r(zmax))
-
-                genScript += "xmin = {0:g}\n".format(_r(xmin))
-                genScript += "xmax = {0:g}\n".format(_r(xmax))
-                genScript += "ymin = {0:g}\n".format(_r(ymin))
-                genScript += "ymax = {0:g}\n".format(_r(ymax))
-                genScript += "zmin = {0:g}\n".format(_r(zmin))
-                genScript += "zmax = {0:g}\n".format(_r(zmax))
-                genScript += gridSettingsInst.getXYZ() + "\n"
-
-            elif (gridSettingsInst.getType() == 'Smooth Mesh'):
-                genScript += "smoothMesh = {}\n"
-                if gridSettingsInst.xenabled:
-
-                    #when top priority lines setting set, remove lines between min and max in ax direction
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:g}) & (mesh.x <= {1:g})))\n".format(_r(xList[0]), _r(xList[-1]))
-
-                    genScript += f"smoothMesh.x = {str(xList)};\n"
-                    if gridSettingsInst.smoothMesh['xMaxRes'] == 0:
-                        genScript += "smoothMesh.x = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.x, max_res/unit) #max_res calculated in excitation part\n"
-                    else:
-                        genScript += f"smoothMesh.x = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.x, {gridSettingsInst.smoothMesh['xMaxRes']})\n"
-                    genScript += "mesh.x = np.concatenate((mesh.x, smoothMesh.x))\n"
-                if gridSettingsInst.yenabled:
-
-                    #when top priority lines setting set, remove lines between min and max in ax direction
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:g}) & (mesh.y <= {1:g})))\n".format(_r(yList[0]), _r(yList[-1]))
-
-                    genScript += f"smoothMesh.y = {str(yList)};\n"
-                    if gridSettingsInst.smoothMesh['yMaxRes'] == 0:
-                        genScript += "smoothMesh.y = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.y, max_res/unit) #max_res calculated in excitation part\n"
-                    else:
-                        genScript += f"smoothMesh.y = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.y, {yParam})\n"
-                    genScript += "mesh.y = np.concatenate((mesh.y, smoothMesh.y))\n"
-                if gridSettingsInst.zenabled:
-
-                    #when top priority lines setting set, remove lines between min and max in ax direction
-                    if gridSettingsInst.topPriorityLines:
-                        genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:g}) & (mesh.z <= {1:g})))\n".format(_r(zList[0]), _r(zList[-1]))
-
-                    genScript += f"smoothMesh.z = {str(zList)};\n"
-                    if gridSettingsInst.smoothMesh['zMaxRes'] == 0:
-                        genScript += "smoothMesh.z = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.z, max_res/unit) #max_res calculated in excitation part\n"
-                    else:
-                        genScript += f"smoothMesh.z = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.z, {gridSettingsInst.smoothMesh['zMaxRes']})\n"
-                    genScript += "mesh.z = np.concatenate((mesh.z, smoothMesh.z))\n"
+                genScript += f"#\tmax element size for '{FreeCADObjectName}'\n"
+                genScript += f"#\n"
+                genScript += f"for materialName in materialList:\n"
+                genScript += f"\tfor stepObj in materialList[materialName]['objects']:\n"
+                genScript += f"\t\tif stepObj['name'] == '{FreeCADObjectName}':\n"
+                genScript += f"\t\t\tstepObjGroup = stepObj['value']\n"
+                genScript += f"\t\t\tfor stepSubObj in stepObjGroup.objects:\n"
+                genScript += f"\t\t\t\tsimulationObj.mesher.set_boundary_size(stepSubObj, {gridSettingsInst.femMesh['femMaxElementSize']} * {gridSettingsInst.femMesh['femMaxElementSizeUnits']})\n"
+                genScript += f"\n"
 
             genScript += "\n"
 
-        genScript += "openEMS_grid.AddLine('x', mesh.x)\n"
-        genScript += "openEMS_grid.AddLine('y', mesh.y)\n"
-        genScript += "openEMS_grid.AddLine('z', mesh.z)\n"
         genScript += "\n"
 
         return genScript
@@ -1344,6 +1148,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
         genScript += "import numpy as np\n"
         genScript += "import emerge as em\n"
         genScript += "import os, tempfile, shutil\n"
+        genScript += "from emerge.plot import smith, plot_sp\n"
         genScript += "#\n"
 
         genScript += "# Change current path to script file folder\n"
@@ -1386,7 +1191,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
                 if (currSetting.getType() == 'sweep'):
                     genScript += f"fmin = {str(currSetting.sweep['fmin'])}*{str(currSetting.getUnitsAsNumber(currSetting.units))}\n"
                     genScript += f"fmax = {str(currSetting.sweep['fmax'])}*{str(currSetting.getUnitsAsNumber(currSetting.units))}\n"
-                    genScript += f"resolution = {str(currSetting.sweep['resolution'])}*{str(currSetting.getUnitsAsNumber(currSetting.units))}\n"
+                    genScript += f"resolution = {str(currSetting.sweep['resolution'])}\n"
                     genScript += f"npoints = {str(currSetting.sweep['npoints'])}\n"
                     genScript += f"simulationObj.mw.set_frequency_range(fmin, fmax, npoints)\n"
                     genScript += f"simulationObj.mw.set_resolution(resolution)\n"
@@ -1528,7 +1333,12 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
         print("======================== REPORT BEGIN ========================\n")
 
         genScript += "# --- Unit definitions -----------------------------------------------------\n"
+        genScript += "m = 1.0\n"
+        genScript += "cm = 0.01\n"
         genScript += "mm = 0.001  # meters per millimeter\n"
+        genScript += "um = 0.000001\n"
+        genScript += "nm = 0.000000001\n"
+        genScript += "\n"
         genScript += "pF = 1e-12  # picofarad in farads\n"
         genScript += "fF = 1e-15  # femtofarad in farads\n"
         genScript += "pH = 1e-12  # picohenry in henrys\n"
@@ -1567,26 +1377,16 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
 
         genScript += f"for materialName in materialList:\n"
         genScript += f"\tfor stepObj in materialList[materialName]['objects']:\n"
-        genScript += f"\t\tfor stepSubObj in stepObj.objects:\n"
+        genScript += f"\t\tstepObjGroup = stepObj['value']\n"
+        genScript += f"\t\tfor stepSubObj in stepObjGroup.objects:\n"
         genScript += f"\t\t\tstepSubObj.set_material(materialList[materialName]['definition'])\n"
-        genScript += f"\n"
-        genScript += f"\n"
-        genScript += f"\n"
-        genScript += f"#\n"
-        genScript += f"#\tEXPERIMENTAL REFINEMENT FOR PEC MESH this is temporary!!!\n"
-        genScript += f"#\n"
-        genScript += f"for materialName in materialList:\n"
-        genScript += f"\tfor stepObj in materialList[materialName]['objects']:\n"
-        genScript += f"\t\tfor stepSubObj in stepObj.objects:\n"
-        genScript += f"\t\t\tif (materialName == 'PEC'):\n"
-        genScript += f"\t\t\t\tsimulationObj.mesher.set_boundary_size(stepSubObj, 2 * mm)\n"
         genScript += f"\n"
 
         # Write port definitions.
         genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None))
 
-        # Write lumped part definitions.
-        # genScript += self.getLumpedPartDefinitionsScriptLines(itemsByClassName.get("LumpedPartSettingsItem", None))
+        # Write grid definitions.
+        genScript += self.getOrderedGridDefinitionsScriptLines(itemsByClassName.get("GridSettingsItem", None))
 
         # Write probes definitions
         # genScript += self.getProbeDefinitionsScriptLines(itemsByClassName.get("ProbeSettingsItem", None))
