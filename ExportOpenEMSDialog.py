@@ -1,5 +1,5 @@
 from PySide import QtGui, QtCore, QtWidgets
-from PySide.QtCore import Slot
+from PySide.QtCore import Slot, QTimer
 import os, sys
 import re
 import random
@@ -160,13 +160,6 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.scriptGenerator = self.octaveScriptGenerator													#variable which store current script generator
 		#self.scriptGenerator2 = OctaveScriptLinesGenerator2(self.form, statusBar=self.statusBar)
 		#self.scriptGenerator3 = PythonScriptLinesGenerator2(self.form, statusBar=self.statusBar)
-
-		#
-		#	Modify UI based on solver type
-		#		- this UI was originaly developed for openEMS but now I am going to add support for EMerge solver
-		#		- emerge have just python interface, it's FEM so different grid definition is used therefore some UI needs to be disabled to not confues user
-		#
-		self.form.comboBox_solverType.currentIndexChanged.connect(self.updateUiBasedOnSolverType)
 
 		#
 		#	Connect function to change script generator
@@ -511,6 +504,14 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.guiSignals.lumpedPartRenamed.connect(self.lumpedPartRenamed)
 		self.guiSignals.probeRenamed.connect(self.probeRenamed)
 
+		#
+		#	Modify UI based on solver type
+		#		- this UI was originaly developed for openEMS but now I am going to add support for EMerge solver
+		#		- emerge have just python interface, it's FEM so different grid definition is used therefore some UI needs to be disabled to not confues user
+		#
+		self.form.comboBox_solverType.currentIndexChanged.connect(self.updateUiBasedOnSolverType)
+		QTimer.singleShot(0, self.updateUiBasedOnSolverType)	#update gui based on solver type after start
+
 		print(f"----> init finished")
 
 	def updateUiBasedOnSolverType(self):
@@ -524,7 +525,20 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.gridTab_gridSettings_openems.setEnabled(True)
 			self.form.tabWidget_gridTab_gridSettings.setCurrentIndex(0)
 
+			self.form.simulationParamsTab_tabWidget.setCurrentIndex(0)
+			self.form.simulationParamsTab_tabWidget_openEMSTab.setEnabled(True)
+			self.form.simulationParamsTab_tabWidget_emergeTab.setEnabled(False)
+
+			#disable main BoundaryConditions tab, not applicable for FDTD simulation in openEMS
+			self.form.boundaryConditionsTab.setEnabled(False)
+
 			self.pythonScriptGenerator = PythonScriptLinesGenerator2(self.form, statusBar = self.statusBar)
+
+			#hide boundary conditions in right tree widget, not applicable for openEMS
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "BoundaryConditions", False)
+
+			boundaryConditionTabIndex = self.form.openEMSTab.indexOf(self.form.boundaryConditionsTab)
+			self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "")
 
 		elif (solverTypeStr.lower() == "emerge"):
 			self.form.generateOpenEMSScriptButton.setText("Generate EMerge Files")
@@ -540,7 +554,20 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.excitationSettingsTab_tabWidget_openems.setEnabled(False)
 			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(1)
 
+			self.form.simulationParamsTab_tabWidget.setCurrentIndex(1)
+			self.form.simulationParamsTab_tabWidget_openEMSTab.setEnabled(False)
+			self.form.simulationParamsTab_tabWidget_emergeTab.setEnabled(True)
+
+			#enable main BoundaryConditions tab, just for FEM simulations
+			self.form.boundaryConditionsTab.setEnabled(True)
+
 			self.pythonScriptGenerator = PythonScriptLinesGenerator3_emerge(self.form, statusBar=self.statusBar)
+
+			# display boundary conditions in right tree widget, applicable for FEM EMerge only
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "BoundaryConditions", True)
+
+			boundaryConditionTabIndex = self.form.openEMSTab.indexOf(self.form.boundaryConditionsTab)
+			self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "Boundary Conditions")
 
 		else:
 			pass

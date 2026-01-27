@@ -28,6 +28,11 @@ class GuiHelpers:
         return msgBox.exec() == QtWidgets.QMessageBox.Save
 
     def initRightColumnTopLevelItems(self):
+        # BOUNDARY CONDITIONS - FEM only, this is for emerge solver or palace solver
+        topItem = QtWidgets.QTreeWidgetItem(["BoundaryConditions"])
+        topItem.setIcon(0, QtGui.QIcon(os.path.join(self.APP_DIR, "img", "boundaryConditions.svg")))
+        self.form.objectAssignmentRightTreeWidget.insertTopLevelItem(0, topItem)
+
         # MATERIALS
         topItem = QtWidgets.QTreeWidgetItem(["Material"])
         topItem.setIcon(0, QtGui.QIcon(os.path.join(self.APP_DIR, "img", "material.svg")))
@@ -255,3 +260,9 @@ class GuiHelpers:
                 gridGroupItem = item
 
         return gridGroupItem
+
+    def setVisibleTreeWidgetItem(self, treeWidgetRef, search_text, isVisible):
+        for i in range(treeWidgetRef.topLevelItemCount()):
+            item = treeWidgetRef.topLevelItem(i)
+            if search_text.lower() in item.text(0).lower():
+                item.setHidden(not isVisible)

@@ -590,7 +590,7 @@
                <property name="currentIndex">
                 <number>0</number>
                </property>
-               <widget class="QWidget" name="gridTab_gridSettings_openems" native="true">
+               <widget class="QWidget" name="gridTab_gridSettings_openems">
                 <attribute name="title">
                  <string>openEMS grid</string>
                 </attribute>
@@ -1132,7 +1132,7 @@ in grid units</string>
                  </item>
                 </layout>
                </widget>
-               <widget class="QWidget" name="gridTab_gridSettings_emerge" native="true">
+               <widget class="QWidget" name="gridTab_gridSettings_emerge">
                 <attribute name="title">
                  <string>FEM grid</string>
                 </attribute>
@@ -1553,6 +1553,40 @@ VALUES OF MESH.X,Y,Z WHEN USED</string>
                     </property>
                    </widget>
                   </item>
+                  <item row="3" column="1">
+                   <widget class="QLabel" name="label_120">
+                    <property name="text">
+                     <string>tan delta (dissipation factor)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QDoubleSpinBox" name="materialEpsilonNumberInput">
+                    <property name="maximum">
+                     <double>1000000.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>1.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="4">
+                   <widget class="QDoubleSpinBox" name="materialSigmaNumberInput"/>
+                  </item>
+                  <item row="0" column="5">
+                   <widget class="QLabel" name="label_9">
+                    <property name="text">
+                     <string>Kappa</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="5">
+                   <widget class="QDoubleSpinBox" name="materialKappaNumberInput">
+                    <property name="decimals">
+                     <number>9</number>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="0" column="3">
                    <widget class="QLabel" name="label_8">
                     <property name="text">
@@ -1567,26 +1601,6 @@ VALUES OF MESH.X,Y,Z WHEN USED</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="1">
-                   <widget class="QDoubleSpinBox" name="materialEpsilonNumberInput">
-                    <property name="maximum">
-                     <double>1000000.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>1.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="5">
-                   <widget class="QLabel" name="label_9">
-                    <property name="text">
-                     <string>Kappa</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="4">
-                   <widget class="QDoubleSpinBox" name="materialSigmaNumberInput"/>
-                  </item>
                   <item row="2" column="3">
                    <widget class="QDoubleSpinBox" name="materialMueNumberInput">
                     <property name="decimals">
@@ -1600,10 +1614,19 @@ VALUES OF MESH.X,Y,Z WHEN USED</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="5">
-                   <widget class="QDoubleSpinBox" name="materialKappaNumberInput">
+                  <item row="4" column="1">
+                   <widget class="QDoubleSpinBox" name="materialTanDeltaNumberInput">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="decimals">
-                     <number>9</number>
+                     <number>4</number>
+                    </property>
+                    <property name="maximum">
+                     <double>1000000.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.000000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -6466,7 +6489,7 @@ no TM modes.</string>
            <item>
             <widget class="QTabWidget" name="simulationParamsTab_tabWidget">
              <property name="currentIndex">
-              <number>1</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="simulationParamsTab_tabWidget_openEMSTab">
               <attribute name="title">
@@ -7223,6 +7246,185 @@ than min spacing</string>
               </layout>
              </widget>
             </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="boundaryConditionsTab">
+          <property name="accessibleName">
+           <string/>
+          </property>
+          <attribute name="title">
+           <string>Boundary Conditions</string>
+          </attribute>
+          <layout class="QHBoxLayout" name="horizontalLayout_61">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_42">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QTreeWidget" name="boundaryConditionSettingsTreeView">
+               <column>
+                <property name="text">
+                 <string>Boundary Conditions Settings List</string>
+                </property>
+               </column>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_62">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QPushButton" name="boundaryConditionSettingsAddButton">
+                 <property name="text">
+                  <string>+</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="boundaryConditionSettingsRemoveButton">
+                 <property name="text">
+                  <string>-</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_53">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="boundaryConditionSettingsUpdateButton">
+                 <property name="text">
+                  <string>Update</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_41">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
+             <property name="topMargin">
+              <number>5</number>
+             </property>
+             <property name="rightMargin">
+              <number>5</number>
+             </property>
+             <property name="bottomMargin">
+              <number>5</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_121">
+               <property name="text">
+                <string>Boundary Settings Name</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="boundaryConditionSettingsNameInput"/>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_10">
+               <property name="title">
+                <string>Boundary Condition Type</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_26">
+                <item row="0" column="1">
+                 <spacer name="horizontalSpacer_52">
+                  <property name="orientation">
+                   <enum>Qt::Orientation::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QComboBox" name="boundaryConditionTypeCombobox">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="currentIndex">
+                   <number>3</number>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>PEC</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>PMC</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Robin</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Absorbing</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_34">
+               <property name="orientation">
+                <enum>Qt::Orientation::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
