@@ -16,6 +16,7 @@ from utilsOpenEMS.SettingsItem.ExcitationSettingsItem import ExcitationSettingsI
 from utilsOpenEMS.SettingsItem.LumpedPartSettingsItem import LumpedPartSettingsItem
 from utilsOpenEMS.SettingsItem.MaterialSettingsItem import MaterialSettingsItem
 from utilsOpenEMS.SettingsItem.SimulationSettingsItem import SimulationSettingsItem
+from utilsOpenEMS.SettingsItem.BoundaryConditionSettingsItem import BoundaryConditionSettingsItem
 from utilsOpenEMS.SettingsItem.GridSettingsItem import GridSettingsItem
 from utilsOpenEMS.SettingsItem.FreeCADSettingsItem import FreeCADSettingsItem
 
@@ -377,6 +378,28 @@ class IniFile0v1:
         settings.setValue("engine", self.form.simParamsSolverEngine_emerge.currentText())
         settings.endGroup()
 
+        # SAVE LUMPED PART SETTINGS
+
+        lumpedPartList = self.cadHelpers.getAllTreeWidgetItems(self.form.lumpedPartTreeView)
+        print("Lumped part list contains " + str(len(lumpedPartList)) + " items.")
+        for k in range(len(lumpedPartList)):
+            print("Saving new LUMPED PART " + lumpedPartList[k].getName())
+
+            settings.beginGroup("LUMPEDPART-" + lumpedPartList[k].getName())
+            settings.setValue("params", json.dumps(lumpedPartList[k].params))
+            settings.endGroup()
+
+        # SAVE BOUNDARY CONDITION SETTINGS
+
+        boundaryConditionList = self.cadHelpers.getAllTreeWidgetItems(self.form.boundaryConditionSettingsTreeView)
+        print("Boundary condition list contains " + str(len(boundaryConditionList)) + " items.")
+        for k in range(len(boundaryConditionList)):
+            print("Saving new LUMPED PART " + boundaryConditionList[k].getName())
+
+            settings.beginGroup("BOUNDARYCONDITION-" + boundaryConditionList[k].getName())
+            settings.setValue("type", json.dumps(boundaryConditionList[k].type))
+            settings.endGroup()
+
         # SAVE OBJECT ASSIGNMENTS
 
         topItemsCount = self.form.objectAssignmentRightTreeWidget.topLevelItemCount()
@@ -405,17 +428,6 @@ class IniFile0v1:
                     settings.endGroup()
 
                     objCounter += 1
-
-        # SAVE LUMPED PART SETTINGS
-
-        lumpedPartList = self.cadHelpers.getAllTreeWidgetItems(self.form.lumpedPartTreeView)
-        print("Lumped part list contains " + str(len(lumpedPartList)) + " items.")
-        for k in range(len(lumpedPartList)):
-            print("Saving new LUMPED PART " + lumpedPartList[k].getName())
-
-            settings.beginGroup("LUMPEDPART-" + lumpedPartList[k].getName())
-            settings.setValue("params", json.dumps(lumpedPartList[k].params))
-            settings.endGroup()
 
         # SAVE PRIORITY OBJECT LIST SETTINGS
 
@@ -462,12 +474,8 @@ class IniFile0v1:
         return
 
 
-    #  _      ____          _____     _____ ______ _______ _______ _____ _   _  _____  _____
-    # | |    / __ \   /\   |  __ \   / ____|  ____|__   __|__   __|_   _| \ | |/ ____|/ ____|
-    # | |   | |  | | /  \  | |  | | | (___ | |__     | |     | |    | | |  \| | |  __| (___
-    # | |   | |  | |/ /\ \ | |  | |  \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \
-    # | |___| |__| / ____ \| |__| |  ____) | |____   | |     | |   _| |_| |\  | |__| |____) |
-    # |______\____/_/    \_\_____/  |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/
+    ##
+    #   LOAD SETTINGS METHOD
     #
     def read(self, filename=None):
         print("Load current values from file.")
@@ -918,6 +926,15 @@ class IniFile0v1:
                 if (not "combinationType" in categorySettings.params.keys()):
                     categorySettings.params["combinationType"] = None
                     print(f"WARNING: {os.path.basename(__file__)}: read(): LumpedPart: {itemName}: setting default value for combinationType to None")
+
+                settings.endGroup()
+
+            elif (re.compile("BOUNDARYCONDITION").search(settingsGroup)):
+                print("BoundaryCondition item settings found.")
+                settings.beginGroup(settingsGroup)
+                categorySettings = BoundaryConditionSettingsItem()
+                categorySettings.name = itemName
+                categorySettings.type = settings.value('type')
 
                 settings.endGroup()
 

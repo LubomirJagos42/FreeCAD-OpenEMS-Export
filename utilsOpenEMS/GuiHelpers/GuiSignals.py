@@ -15,4 +15,5 @@ class GuiSignals(QObject):
     portRenamed = Signal(str, str)
     lumpedPartRenamed = Signal(str, str)
     probeRenamed = Signal(str, str)
+    boundaryConditionRenamed = Signal(str, str)
 

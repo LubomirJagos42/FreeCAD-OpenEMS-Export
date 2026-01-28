@@ -57,7 +57,7 @@ class GridSettingsItem(SettingsItem):
         self.fixedDistance = {'x': 0, 'y': 0, 'z': 0} if fixedDistance is None else fixedDistance
         self.smoothMesh = {'xMaxRes': 0, 'yMaxRes': 0, 'zMaxRes': 0} if smoothMeshDefault is None else smoothMeshDefault
         self.userDefined = {'data': ""} if userDefined is None else userDefined
-        self.femMesh = {'femMaxElementSize': 0, 'femMaxElementSizeUnits': 'mm'} if femMeshDefault is None else femMeshDefault
+        self.femMesh = {'femMaxElementSize': 1.0, 'femMaxElementSizeUnits': 'mm'} if femMeshDefault is None else femMeshDefault
 
         self.generateLinesInside = False
         self.gridOffset = {'x': 0, 'y': 0, 'z': 0, 'units': 'um'} if gridOffset is None else gridOffset

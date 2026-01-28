@@ -428,6 +428,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
         genScript += "#######################################################################################################################################\n"
         genScript += "port = {}\n"
         genScript += "portNamesAndNumbersList = {}\n"
+        genScript += "\n"
+        genScript += "\n"
 
         for [item, currSetting] in items:
 
@@ -484,6 +486,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
                         else:
                             genScript += 'portDirection = None\n'
 
+                        genScript += f"\n"
                         genScript += f"port[{str(genScriptPortCount)}] = {{}}\n"
                         genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(w, h, th, position=tuple(portStart))\n"
                         genScript += f"port[{str(genScriptPortCount)}]['w'] = w\n"
@@ -866,6 +869,52 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
 
                     #
                     #	getting item priority
+                    #
+                    priorityItemName = item.parent().text(0) + ", " + item.text(0) + ", " + childName
+                    priorityIndex = self.getItemPriority(priorityItemName)
+
+                    # WARNING: Caps param has hardwired value 1, will be generated small metal caps to connect part with circuit !!!
+                    genScript += f"lumpedPart = CSX.AddLumpedElement({lumpedPartParams});\n"
+                    genScript += f"lumpedPart.AddBox(lumpedPartStart, lumpedPartStop, priority={priorityIndex});\n"
+
+            genScript += "\n"
+
+        return genScript
+
+    def getBoundaryConditionScriptLines(self, items):
+        genScript = ""
+        if not items:
+            return genScript
+
+        refUnit = self.getUnitLengthFromUI_m()  # Coordinates need to be given in drawing units
+        sf = self.getFreeCADUnitLength_m() / refUnit  # scaling factor for FreeCAD units to drawing units
+
+        genScript += "#######################################################################################################################################\n"
+        genScript += "# BOUNDARY CONDITIONS PART\n"
+        genScript += "#######################################################################################################################################\n"
+
+        for [item, currentSetting] in items:
+            genScript += "# BOUNDARY CONDITION: " + currentSetting.getName() + "\n"
+
+            # traverse through all children item for this particular lumped part settings
+            objs = self.cadHelpers.getObjects()
+            objsExport = []
+            for k in range(item.childCount()):
+                childName = item.child(k).text(0)
+                print("#BOUNDARY CONDITION: " + currentSetting.getType())
+
+                freecadObjects = [i for i in objs if (i.Label) == childName]
+                for obj in freecadObjects:
+                    # obj = FreeCAD Object class
+
+                    # BOUNDING BOX
+                    bbCoords = obj.Shape.BoundBox
+
+                    genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords, "bcStart", "bcStop")
+
+                    #
+                    #	getting item priority
+                    #       for now this is not used as I am not sure how to use it in EMerge
                     #
                     priorityItemName = item.parent().text(0) + ", " + item.text(0) + ", " + childName
                     priorityIndex = self.getItemPriority(priorityItemName)
@@ -1375,6 +1424,9 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
         # Write material definitions.
         genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None), outputDir)
 
+        genScript += f"#\n"
+        genScript += f"# Takes materialList structure and assign each geometric object material\n"
+        genScript += f"#\n"
         genScript += f"for materialName in materialList:\n"
         genScript += f"\tfor stepObj in materialList[materialName]['objects']:\n"
         genScript += f"\t\tstepObjGroup = stepObj['value']\n"
@@ -1394,14 +1446,34 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
         # Write NF2FF probe grid definitions.
         genScript += self.getNF2FFDefinitionsScriptLines(itemsByClassName.get("ProbeSettingsItem", None))
 
+        genScript += "#\n"
+        genScript += "# First mesh must be created on existing geometry\n"
+        genScript += "#\n"
         genScript += "simulationObj.commit_geometry()\n"
         genScript += "simulationObj.generate_mesh()\n"
         genScript += "\n"
+        genScript += "\n"
 
+        genScript += "#\n"
+        genScript += "# Now follows boundary condition definition\n"
+        genScript += "#\n"
+
+        #
+        #   Port are added when geometry is created because they must be meshed but then there is also needed to create boundary condition for them
+        #
         for portBcScriptLine in self.portBoundaryConditionScriptLinesBuffer:
             genScript += portBcScriptLine
         genScript += "\n"
 
+        #
+        #   Genereate code to define boundary conditions
+        #       - they must lay on some already existing mesh!
+        #
+        genScript += self.getBoundaryConditionScriptLines(itemsByClassName.get("BoundaryConditionSettingsItem", None))
+
+        #
+        #   Display model in window first as volumes, then it displays mesh.
+        #
         genScript += "simulationObj.view()\n"
         genScript += "simulationObj.view(plot_mesh=True, volume_mesh=False)\n"
         genScript += "\n"

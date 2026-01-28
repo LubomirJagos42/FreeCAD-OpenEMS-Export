@@ -343,7 +343,7 @@
                 <enum>QAbstractItemView::SelectionMode::ContiguousSelection</enum>
                </property>
                <attribute name="headerVisible">
-                <bool>false</bool>
+                <bool>true</bool>
                </attribute>
                <column>
                 <property name="text">
@@ -401,7 +401,7 @@
                 <enum>QAbstractItemView::SelectionMode::ContiguousSelection</enum>
                </property>
                <attribute name="headerVisible">
-                <bool>false</bool>
+                <bool>true</bool>
                </attribute>
                <attribute name="headerCascadingSectionResizes">
                 <bool>false</bool>
@@ -7202,7 +7202,7 @@ than min spacing</string>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_115">
                  <property name="text">
-                  <string>geometry units</string>
+                  <string>solver engine</string>
                  </property>
                 </widget>
                </item>
@@ -7249,7 +7249,7 @@ than min spacing</string>
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="boundaryConditionsTab">
+         <widget class="QWidget" name="boundaryConditionTab">
           <property name="accessibleName">
            <string/>
           </property>
