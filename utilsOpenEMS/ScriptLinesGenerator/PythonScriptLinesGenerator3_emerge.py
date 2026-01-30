@@ -482,15 +482,20 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                         genScript += f"\n"
                         genScript += f"port[{str(genScriptPortCount)}] = {{}}\n"
 
+                        portVariableName = f"port[{str(genScriptPortCount)}]"
+
                         if bbCoords.XLength == 0 or bbCoords.YLength == 0 or bbCoords.ZLength == 0:
                             if bbCoords.XLength == 0:
                                 genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[0,h,0], v=[0,0,th])\n"
+                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['h'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'])\n")
                             elif bbCoords.YLength == 0:
                                 genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[w,0,0], v=[0,0,th])\n"
+                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'])\n")
                             elif bbCoords.ZLength == 0:
                                 genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[w,0,0], v=[0,h,0])\n"
+                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['h'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'])\n")
                         else:
-                            genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(name='port_{str(genScriptPortCount)}', width=w, heigth=h, depth=th, position=tuple(portStart))\n"
+                            genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(name='port_{str(genScriptPortCount)}', width=w, height=h, depth=th, position=tuple(portStart))\n"
 
                         genScript += f"port[{str(genScriptPortCount)}]['w'] = w\n"
                         genScript += f"port[{str(genScriptPortCount)}]['h'] = h\n"
@@ -500,9 +505,6 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                         genScript += f"port[{str(genScriptPortCount)}]['portR'] = portR\n"
                         genScript += f"port[{str(genScriptPortCount)}]['portDirection'] = portDirection\n"
                         genScript += f"port[{str(genScriptPortCount)}]['portExcitationAmplitude'] = portExcitationAmplitude\n"
-
-                        portVariableName = f"port[{str(genScriptPortCount)}]"
-                        self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'])\n")
 
                         internalPortName = currSetting.name + " - " + obj.Label
                         self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
