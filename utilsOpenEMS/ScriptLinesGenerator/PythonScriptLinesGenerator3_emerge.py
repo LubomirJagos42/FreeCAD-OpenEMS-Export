@@ -13,10 +13,10 @@ from utilsOpenEMS.GuiHelpers.GuiHelpers import GuiHelpers
 from utilsOpenEMS.GuiHelpers.FactoryCadInterface import FactoryCadInterface
 
 from utilsOpenEMS.ScriptLinesGenerator.CommonScriptLinesGenerator import CommonScriptLinesGenerator
-from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator2 import PythonScriptLinesGenerator2
+from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator2_openems import PythonScriptLinesGenerator2_openems
 
 
-class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
+class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
 
     #
     #   constructor, get access to form GUI
@@ -98,11 +98,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
                 genScript += f"## MATERIAL - {currSetting.getName()}\n"
                 materialPythonVariable = f"materialList['{currSetting.getName()}']"
 
-                genScript += f"{materialPythonVariable} = {{'definition': None, 'objects': []}}\n"
-
                 if (currSetting.type == 'metal'):
-                    genScript += f"{materialPythonVariable}['definition'] = em.Material(name='{currSetting.getName()}', _metal=True)\n"
-                    genScript += "\n"
+                    genScript += f"{materialPythonVariable} = em.Material(name='{currSetting.getName()}', _metal=True)\n"
                     self.internalMaterialIndexNamesList[currSetting.getName()] = materialPythonVariable
                 elif (currSetting.type == 'userdefined'):
                     self.internalMaterialIndexNamesList[currSetting.getName()] = materialPythonVariable
@@ -117,7 +114,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
                     if str(currSetting.constants['sigma']) != "0":
                         smp_args.append(f"cond={str(currSetting.constants['sigma'])}")
 
-                    genScript += f"{materialPythonVariable}['definition'] = em.Material(name='{currSetting.getName()}', " + ", ".join(smp_args) + ")\n"
+                    genScript += f"{materialPythonVariable} = em.Material(name='{currSetting.getName()}', " + ", ".join(smp_args) + ")\n"
 
                 # first print all current material children names
                 for k in range(item.childCount()):
@@ -138,6 +135,17 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
 
                     # getting reference to FreeCAD object
                     freeCadObj = [i for i in self.cadHelpers.getObjects() if (i.Label) == childName][0]
+
+                    #
+                    #   Set color of material by object, this can overwite it color multiple time, what to do, good enough for now
+                    #
+                    colorStr = ""
+                    colorTuple = freeCadObj.ViewObject.DiffuseColor[0]
+                    colorStr += "#" + format(int(255 * colorTuple[0]), '02x') + format(int(255 * colorTuple[1]), '02x') + format(int(255 * colorTuple[2]), '02x')
+                    genScript += f"{materialPythonVariable}.color = '{colorStr}'\n"
+                    genScript += f"{materialPythonVariable}._color_rgb = ({colorTuple[0]}, {colorTuple[1]}, {colorTuple[2]})\n"
+                    genScript += f"{materialPythonVariable}.opacity = {1.0 - freeCadObj.ViewObject.Transparency}\n"
+                    genScript += f"\n"
 
                     #
                     #   HERE IS OBJECT GENERATOR THERE ARE FEW SPECIAL CASES WHICH ARE HANDLED FIRST AND IF OBJECT IS NORMAL STRUCTURE AT THE END IS GENERATED AS .stl FILR:
@@ -276,29 +284,14 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
 
                     else:
                         #
-                        #	Adding part as STL model, first export it into file and that file load using octave openEMS function
-                        #
-
-                        currDir, baseName = self.getCurrDir()
-                        stepModelFileName = childName + "_gen_model.step"
-
-                        genScript += f"{materialPythonVariable}['objects'].append({{'name': '{childName}', 'value': em.geo.step.STEPItems(name='{childName}', filename=os.path.join(currDir,'{stepModelFileName}'), unit=mm)}})\n"
-
-                        #
                         #   Going through each concrete material items and generate their .step files
                         #
-                        currDir = os.path.dirname(self.cadHelpers.getCurrDocumentFileName())
-                        partToExport = [i for i in self.cadHelpers.getObjects() if (i.Label) == childName]
-
-                        #
-                        #   Set color of material by object, this can overwite it color multiple time, what to do, good enough for now
-                        #
-                        colorStr = ""
-                        colorTuple = partToExport[-1].ViewObject.DiffuseColor[0]
-                        colorStr += "#" + format(int(255*colorTuple[0]), '02x') + format(int(255*colorTuple[1]), '02x') + format(int(255*colorTuple[2]), '02x')
-                        genScript += f"{materialPythonVariable}['definition'].color = '{colorStr}'\n"
-                        genScript += f"{materialPythonVariable}['definition']._color_rgb = ({colorTuple[0]}, {colorTuple[1]}, {colorTuple[2]})\n"
-                        genScript += f"{materialPythonVariable}['definition'].opacity = {1.0 - partToExport[-1].ViewObject.Transparency}\n"
+                        currDir, baseName = self.getCurrDir()
+                        stepModelFileName = childName + "_gen_model.step"
+                        genScript += f"stepObjectGroup = em.geo.step.STEPItems(name='{childName}', filename=os.path.join(currDir,'{stepModelFileName}'), unit=mm)\n"
+                        genScript += f"for geoObj in stepObjectGroup.objects:\n"
+                        genScript += f"\tgeoObj.prio_set({objModelPriority})\n"
+                        genScript += f"\tgeoObj.set_material({materialPythonVariable})\n"
 
                         #output directory path construction, if there is no parameter for output dir then output is in current freecad file dir
                         if (not outputDir is None):
@@ -306,7 +299,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
                         else:
                             exportFileName = os.path.join(currDir, stepModelFileName)
 
-                        self.cadHelpers.exportSTEP(partToExport, exportFileName)
+                        self.cadHelpers.exportSTEP([freeCadObj], exportFileName)
                         print("Material object exported as STEP into: " + stepModelFileName)
 
                 genScript += "\n"   #newline after each COMPLETE material category code generated
@@ -488,7 +481,17 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
 
                         genScript += f"\n"
                         genScript += f"port[{str(genScriptPortCount)}] = {{}}\n"
-                        genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(w, h, th, position=tuple(portStart))\n"
+
+                        if bbCoords.XLength == 0 or bbCoords.YLength == 0 or bbCoords.ZLength == 0:
+                            if bbCoords.XLength == 0:
+                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[0,h,0], v=[0,0,th])\n"
+                            elif bbCoords.YLength == 0:
+                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[w,0,0], v=[0,0,th])\n"
+                            elif bbCoords.ZLength == 0:
+                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[w,0,0], v=[0,h,0])\n"
+                        else:
+                            genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(name='port_{str(genScriptPortCount)}', width=w, heigth=h, depth=th, position=tuple(portStart))\n"
+
                         genScript += f"port[{str(genScriptPortCount)}]['w'] = w\n"
                         genScript += f"port[{str(genScriptPortCount)}]['h'] = h\n"
                         genScript += f"port[{str(genScriptPortCount)}]['th'] = th\n"
@@ -894,14 +897,15 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
         genScript += "#######################################################################################################################################\n"
 
         for [item, currentSetting] in items:
-            genScript += "# BOUNDARY CONDITION: " + currentSetting.getName() + "\n"
+            genScript += "# BOUNDARY CONDITION NAME: " + currentSetting.getName() + "\n"
+            genScript += "# TYPE: " + currentSetting.getType() + "\n"
 
             # traverse through all children item for this particular lumped part settings
             objs = self.cadHelpers.getObjects()
             objsExport = []
             for k in range(item.childCount()):
                 childName = item.child(k).text(0)
-                print("#BOUNDARY CONDITION: " + currentSetting.getType())
+                print("#BOUNDARY CONDITION TYPE: " + currentSetting.getType())
 
                 freecadObjects = [i for i in objs if (i.Label) == childName]
                 for obj in freecadObjects:
@@ -920,8 +924,20 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
                     priorityIndex = self.getItemPriority(priorityItemName)
 
                     # WARNING: Caps param has hardwired value 1, will be generated small metal caps to connect part with circuit !!!
-                    genScript += f"lumpedPart = CSX.AddLumpedElement({lumpedPartParams});\n"
-                    genScript += f"lumpedPart.AddBox(lumpedPartStart, lumpedPartStop, priority={priorityIndex});\n"
+                    # genScript += f"lumpedPart = CSX.AddLumpedElement({lumpedPartParams});\n"
+                    # genScript += f"lumpedPart.AddBox(lumpedPartStart, lumpedPartStop, priority={priorityIndex});\n"
+
+
+                    bcType = currentSetting.getType().lower()
+                    if  bcType == "absorbing":
+                        genScript += f"# model.mw.bc.AbsorbingBoundary(boundary_selection)"
+                    elif bcType == "pec":
+                        genScript += f"# model.mw.bc.PECBoundary(boundary_selection)"
+                    else:
+                        genScript += f"# ERROR: Unknown boundary condition type \"{currentSetting.getType()}\""
+
+                    genScript += f"\n"
+
 
             genScript += "\n"
 
@@ -1040,12 +1056,10 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
 
                 genScript += f"#\tmax element size for '{FreeCADObjectName}'\n"
                 genScript += f"#\n"
-                genScript += f"for materialName in materialList:\n"
-                genScript += f"\tfor stepObj in materialList[materialName]['objects']:\n"
-                genScript += f"\t\tif stepObj['name'] == '{FreeCADObjectName}':\n"
-                genScript += f"\t\t\tstepObjGroup = stepObj['value']\n"
-                genScript += f"\t\t\tfor stepSubObj in stepObjGroup.objects:\n"
-                genScript += f"\t\t\t\tsimulationObj.mesher.set_boundary_size(stepSubObj, {gridSettingsInst.femMesh['femMaxElementSize']} * {gridSettingsInst.femMesh['femMaxElementSizeUnits']})\n"
+                genScript += f"for geometryObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():\n"
+                genScript += f"\t\tif geometryObj.name == '{FreeCADObjectName}' or geometryObj.name.startswith('{FreeCADObjectName}_'):\n"
+                genScript += f"\t\t\tsimulationObj.mesher.set_boundary_size(geometryObj, {gridSettingsInst.femMesh['femMaxElementSize']} * {gridSettingsInst.femMesh['femMaxElementSizeUnits']})\n"
+                genScript += f"\t\t\tsimulationObj.mesher.set_face_size(geometryObj, {gridSettingsInst.femMesh['femMaxElementSize']} * {gridSettingsInst.femMesh['femMaxElementSizeUnits']})\n"
                 genScript += f"\n"
 
             genScript += "\n"
@@ -1324,6 +1338,14 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
 
         return genScript
 
+    def generateSimulationScript(self, outputDir=None):
+        """
+        General method which should be used as interface in other objects. Generate simulation script.
+        :param outputDir:
+        :return:
+        """
+        self.generateOpenEMSScript(outputDir)
+
     def generateOpenEMSScript(self, outputDir=None):
         """
         Generates result simulation script for EMerge
@@ -1424,16 +1446,6 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
         # Write material definitions.
         genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None), outputDir)
 
-        genScript += f"#\n"
-        genScript += f"# Takes materialList structure and assign each geometric object material\n"
-        genScript += f"#\n"
-        genScript += f"for materialName in materialList:\n"
-        genScript += f"\tfor stepObj in materialList[materialName]['objects']:\n"
-        genScript += f"\t\tstepObjGroup = stepObj['value']\n"
-        genScript += f"\t\tfor stepSubObj in stepObjGroup.objects:\n"
-        genScript += f"\t\t\tstepSubObj.set_material(materialList[materialName]['definition'])\n"
-        genScript += f"\n"
-
         # Write port definitions.
         genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None))
 
@@ -1474,6 +1486,9 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
         #
         #   Display model in window first as volumes, then it displays mesh.
         #
+        genScript += "#######################################################################################################################################\n"
+        genScript += "# DISPLAY MODEL\n"
+        genScript += "#######################################################################################################################################\n"
         genScript += "simulationObj.view()\n"
         genScript += "simulationObj.view(plot_mesh=True, volume_mesh=False)\n"
         genScript += "\n"
@@ -1486,7 +1501,6 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2):
         genScript += "# RUN\n"
         genScript += "#######################################################################################################################################\n"
 
-        genScript += "### Run the simulation\n"
         genScript += "simulationResult = simulationObj.mw.run_sweep()\n"
         genScript += "\n"
 

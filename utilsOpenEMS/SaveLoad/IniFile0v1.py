@@ -394,10 +394,11 @@ class IniFile0v1:
         boundaryConditionList = self.cadHelpers.getAllTreeWidgetItems(self.form.boundaryConditionSettingsTreeView)
         print("Boundary condition list contains " + str(len(boundaryConditionList)) + " items.")
         for k in range(len(boundaryConditionList)):
-            print("Saving new LUMPED PART " + boundaryConditionList[k].getName())
+            print("Saving new BOUNDARY CONDITION " + boundaryConditionList[k].getName())
 
             settings.beginGroup("BOUNDARYCONDITION-" + boundaryConditionList[k].getName())
-            settings.setValue("type", json.dumps(boundaryConditionList[k].type))
+            settings.setValue("type", boundaryConditionList[k].type)
+            settings.setValue("customType", boundaryConditionList[k].customType)
             settings.endGroup()
 
         # SAVE OBJECT ASSIGNMENTS
@@ -935,6 +936,7 @@ class IniFile0v1:
                 categorySettings = BoundaryConditionSettingsItem()
                 categorySettings.name = itemName
                 categorySettings.type = settings.value('type')
+                categorySettings.customType = settings.value('customType')
 
                 settings.endGroup()
 

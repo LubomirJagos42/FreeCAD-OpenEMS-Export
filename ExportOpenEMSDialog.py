@@ -68,7 +68,7 @@ from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator import OctaveS
 from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator import PythonScriptLinesGenerator
 
 from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator2 import OctaveScriptLinesGenerator2				#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
-from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator2 import PythonScriptLinesGenerator2				#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
+from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator2_openems import PythonScriptLinesGenerator2_openems				#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
 from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator3_emerge import PythonScriptLinesGenerator3_emerge	#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
 
 from utilsOpenEMS.GuiHelpers.GuiHelpers import GuiHelpers
@@ -156,7 +156,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		# EXPERIMENTAL using settings to short code and move auxiliary logic for diferent sutff into settings classes
 		# to be able do in python code generatr same stuff as in octave
 		self.octaveScriptGenerator = OctaveScriptLinesGenerator2(self.form, statusBar=self.statusBar)
-		self.pythonScriptGenerator = PythonScriptLinesGenerator2(self.form, statusBar = self.statusBar)
+		self.pythonScriptGenerator = PythonScriptLinesGenerator2_openems(self.form, statusBar = self.statusBar)
 
 		self.scriptGenerator = self.octaveScriptGenerator													#variable which store current script generator
 		#self.scriptGenerator2 = OctaveScriptLinesGenerator2(self.form, statusBar=self.statusBar)
@@ -540,7 +540,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			#disable main BoundaryConditions tab, not applicable for FDTD simulation in openEMS
 			self.form.boundaryConditionTab.setEnabled(False)
 
-			self.pythonScriptGenerator = PythonScriptLinesGenerator2(self.form, statusBar = self.statusBar)
+			self.pythonScriptGenerator = PythonScriptLinesGenerator2_openems(self.form, statusBar = self.statusBar)
 
 			#hide boundary conditions in right tree widget, not applicable for openEMS
 			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "BoundaryCondition", False)
@@ -3114,7 +3114,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		boundaryConditionItem = BoundaryConditionSettingsItem()
 		boundaryConditionItem.name = name
-		boundaryConditionItem.type = self.form.boundaryConditionTypeCombobox.currentText()
+		if (self.form.boundaryConditionTypePredefinedRadio.isChecked()):
+			boundaryConditionItem.type = self.form.boundaryConditionTypeCombobox.currentText()
+		elif (self.form.boundaryConditionTypeCustomRadio.isChecked()):
+			boundaryConditionItem.type = "custom"
+			boundaryConditionItem.customType = self.form.boundaryConditionTypeCustomTextInput.text()
 
 		return boundaryConditionItem
 
@@ -3187,7 +3191,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		currSetting = self.form.boundaryConditionSettingsTreeView.currentItem().data(0, QtCore.Qt.UserRole)
 		self.form.boundaryConditionSettingsNameInput.setText(currSetting.name)
-		self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeCombobox, currSetting.type)
+		if (currSetting.type == "custom"):
+			self.form.boundaryConditionTypeCustomRadio.click()
+			self.form.boundaryConditionTypeCustomTextInput.setText(currSetting.customType)
+		else:
+			self.form.boundaryConditionTypePredefinedRadio.click()
+			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeCombobox, currSetting.type)
+			self.form.boundaryConditionTypeCustomTextInput.setText("")
 
 		return
 

@@ -14,13 +14,13 @@ from utilsOpenEMS.GuiHelpers.FactoryCadInterface import FactoryCadInterface
 
 from utilsOpenEMS.ScriptLinesGenerator.CommonScriptLinesGenerator import CommonScriptLinesGenerator
 
-class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
+class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
 
     #
     #   constructor, get access to form GUI
     #
     def __init__(self, form, statusBar = None):
-        super(PythonScriptLinesGenerator2, self).__init__(form, statusBar)
+        super(PythonScriptLinesGenerator2_openems, self).__init__(form, statusBar)
 
     def getCoordinateSystemScriptLines(self):
         genScript = ""
