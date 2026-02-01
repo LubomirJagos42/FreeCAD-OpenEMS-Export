@@ -8,7 +8,7 @@ from utilsOpenEMS.GlobalFunctions.GlobalFunctions import _bool, _r, _getFreeCADU
 #		- circular waveguide
 #		- rectangular waveguide
 class PortSettingsItem(SettingsItem):
-    def __init__(self, name="", type="", R=0, RUnits="", isActive=False, direction="z", excitationAmplitude=1, infiniteResistance=False,
+    def __init__(self, name="", type="", R=0, RUnits="", isActive=False, direction="z", directionCustomVector=[0.0, 0.0, 1.0], excitationAmplitude=1, infiniteResistance=False,
                  mslFeedShiftValue="", mslFeedShiftUnits="", mslMeasPlaneShiftValue="", mslMeasPlaneShiftUnits="", mslMaterial="", mslPropagation="",
                  waveguideRectDir = "", waveguideCircDir="",
                  coaxialConductorMaterial = "", coaxialMaterial = "", coaxialPropagation = "", coaxialInnerRadiusValue = 0, coaxialInnerRadiusUnits = "", coaxialShellThicknessValue = 0, coaxialShellThicknessUnits = "", coaxialFeedpointShiftValue = 0, coaxialFeedpointShiftUnits = "", coaxialMeasPlaneShiftValue = 0, coaxialMeasPlaneShiftUnits = "",
@@ -22,6 +22,7 @@ class PortSettingsItem(SettingsItem):
         self.RUnits = RUnits
         self.isActive = isActive
         self.direction = direction
+        self.directionCustomVector = directionCustomVector
         self.excitationAmplitude = excitationAmplitude
         self.infiniteResistance = infiniteResistance
 

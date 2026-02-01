@@ -99,7 +99,12 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                 materialPythonVariable = f"materialList['{currSetting.getName()}']"
 
                 if (currSetting.type == 'metal'):
-                    genScript += f"{materialPythonVariable} = em.Material(name='{currSetting.getName()}', _metal=True)\n"
+                    #this is working, same as in lib
+                    # genScript += f"{materialPythonVariable} = em.Material(name='{currSetting.getName()}', _metal=True, cond=1e30)\n"
+
+                    #using predefined library with materials
+                    genScript += f"{materialPythonVariable} = em.lib.PEC\n"
+
                     self.internalMaterialIndexNamesList[currSetting.getName()] = materialPythonVariable
                 elif (currSetting.type == 'userdefined'):
                     self.internalMaterialIndexNamesList[currSetting.getName()] = materialPythonVariable
@@ -109,8 +114,9 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                         smp_args.append(f"er={str(currSetting.constants['epsilon'])}")
                     if str(currSetting.constants['mue']) != "0":
                         smp_args.append(f"ur={str(currSetting.constants['mue'])}")
-                    if ("tand" in currSetting.constants) and str( currSetting.constants['tand']) != "0":
-                        smp_args.append(f"tand={str(currSetting.constants['tand'])}")
+                    if ("tand" in currSetting.constants) \
+                       and type(currSetting.constants['tand']) is float:
+                            smp_args.append(f"tand={str(currSetting.constants['tand'])}")
                     if str(currSetting.constants['sigma']) != "0":
                         smp_args.append(f"cond={str(currSetting.constants['sigma'])}")
 
@@ -457,54 +463,52 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                         genScript += "portStart = [k*0.001 for k in portStart]\n"
                         genScript += "portStop = [k*0.001 for k in portStop]\n"
                         genScript += "\n"
-                        genScript += "w = abs(portStart[0] - portStop[0])\n"
-                        genScript += "h = abs(portStart[1] - portStop[1])\n"
-                        genScript += "th = abs(portStart[2] - portStop[2])\n"
-                        genScript += "\n"
-
-                        if currSetting.infiniteResistance:
-                            genScript += 'portR = inf\n'
-                        else:
-                            genScript += 'portR = ' + str(currSetting.R) + '\n'
-
-                        genScript += 'portUnits = ' + str(currSetting.getRUnits()) + '\n'
-                        genScript += "portExcitationAmplitude = " + str(currSetting.excitationAmplitude) + "\n"
-
-                        if (currSetting.direction.lower() == "x"):
-                            genScript += 'portDirection = em.XAX\n'
-                        elif (currSetting.direction.lower() == "y"):
-                            genScript += 'portDirection = em.YAX\n'
-                        elif (currSetting.direction.lower() == "z"):
-                            genScript += 'portDirection = em.ZAX\n'
-                        else:
-                            genScript += 'portDirection = None\n'
 
                         genScript += f"\n"
                         genScript += f"port[{str(genScriptPortCount)}] = {{}}\n"
 
                         portVariableName = f"port[{str(genScriptPortCount)}]"
 
-                        if bbCoords.XLength == 0 or bbCoords.YLength == 0 or bbCoords.ZLength == 0:
-                            if bbCoords.XLength == 0:
-                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[0,h,0], v=[0,0,th])\n"
-                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['h'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'])\n")
-                            elif bbCoords.YLength == 0:
-                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[w,0,0], v=[0,0,th])\n"
-                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'])\n")
-                            elif bbCoords.ZLength == 0:
-                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[w,0,0], v=[0,h,0])\n"
-                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['h'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'])\n")
-                        else:
-                            genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(name='port_{str(genScriptPortCount)}', width=w, height=h, depth=th, position=tuple(portStart))\n"
-
+                        genScript += f"port[{str(genScriptPortCount)}]['portStart'] = portStart\n"
+                        genScript += f"port[{str(genScriptPortCount)}]['portStop'] = portStop\n"
+                        genScript += f"w = abs(portStart[0] - portStop[0])\n"
+                        genScript += f"h = abs(portStart[1] - portStop[1])\n"
+                        genScript += f"th = abs(portStart[2] - portStop[2])\n"
                         genScript += f"port[{str(genScriptPortCount)}]['w'] = w\n"
                         genScript += f"port[{str(genScriptPortCount)}]['h'] = h\n"
                         genScript += f"port[{str(genScriptPortCount)}]['th'] = th\n"
-                        genScript += f"port[{str(genScriptPortCount)}]['portStart'] = portStart\n"
-                        genScript += f"port[{str(genScriptPortCount)}]['portStop'] = portStop\n"
-                        genScript += f"port[{str(genScriptPortCount)}]['portR'] = portR\n"
-                        genScript += f"port[{str(genScriptPortCount)}]['portDirection'] = portDirection\n"
-                        genScript += f"port[{str(genScriptPortCount)}]['portExcitationAmplitude'] = portExcitationAmplitude\n"
+
+                        if currSetting.infiniteResistance:
+                            genScript += 'portR = inf\n'
+                            genScript += f"port[{str(genScriptPortCount)}]['portR'] = float('inf')\n"
+                        else:
+                            genScript += f"port[{str(genScriptPortCount)}]['portR'] = {str(currSetting.R)}*{str(currSetting.getRUnits())}\n"
+
+                        if (currSetting.direction.lower() == "x"):
+                            genScript += f"port[{str(genScriptPortCount)}]['portDirection'] = em.XAX\n"
+                        elif (currSetting.direction.lower() == "y"):
+                            genScript += f"port[{str(genScriptPortCount)}]['portDirection'] = em.YAX\n"
+                        elif (currSetting.direction.lower() == "z"):
+                            genScript += f"port[{str(genScriptPortCount)}]['portDirection'] = em.ZAX\n"
+                        elif (currSetting.direction.lower() == "custom"):
+                            genScript += f"port[{str(genScriptPortCount)}]['portDirection'] = tuple({str(currSetting.directionCustomVector)})\n"
+                        else:
+                            genScript += 'portDirection = None\n'
+
+                        genScript += f"port[{str(genScriptPortCount)}]['portExcitationAmplitude'] = {str(currSetting.excitationAmplitude)}\n"
+
+                        if bbCoords.XLength == 0 or bbCoords.YLength == 0 or bbCoords.ZLength == 0:
+                            if bbCoords.XLength == 0:
+                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[0,h,0], v=[0,0,th])\n"
+                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['h'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'], power={portVariableName}['portExcitationAmplitude'])\n")
+                            elif bbCoords.YLength == 0:
+                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[w,0,0], v=[0,0,th])\n"
+                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'], power={portVariableName}['portExcitationAmplitude'])\n")
+                            elif bbCoords.ZLength == 0:
+                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[w,0,0], v=[0,h,0])\n"
+                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['h'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'], power={portVariableName}['portExcitationAmplitude'])\n")
+                        else:
+                            genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(name='port_{str(genScriptPortCount)}', width=w, height=h, depth=th, position=tuple(portStart))\n"
 
                         internalPortName = currSetting.name + " - " + obj.Label
                         self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
@@ -932,9 +936,9 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
 
                     bcType = currentSetting.getType().lower()
                     if  bcType == "absorbing":
-                        genScript += f"# model.mw.bc.AbsorbingBoundary(boundary_selection)"
+                        genScript += f"# simulationObj.mw.bc.AbsorbingBoundary(boundary_selection)"
                     elif bcType == "pec":
-                        genScript += f"# model.mw.bc.PECBoundary(boundary_selection)"
+                        genScript += f"# simulationObj.mw.bc.PECBoundary(boundary_selection)"
                     else:
                         genScript += f"# ERROR: Unknown boundary condition type \"{currentSetting.getType()}\""
 

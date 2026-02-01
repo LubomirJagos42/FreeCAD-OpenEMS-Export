@@ -27,7 +27,7 @@ class GridSettingsItem(SettingsItem):
         ("YZ plane", "z-theta plane"),                          #cylindrical has just 2 independent planes so this is repeating
     ]
 
-    lumpedPortCartesianExcitationDirection = ["z", "x", "y"]
+    lumpedPortCartesianExcitationDirection = ["z", "x", "y", "custom"]
     multilayeredPortCartesianLayerDirection = ["XY plane, top layer", "XY plane, bottom layer", "XZ plane, front layer", "XZ plane, back layer", "YZ plane, right layer", "YZ plane, left layer"]
     multilayeredPortCartesianPropagationDirection = ["x+", "x-", "y+", "y-", "z+", "z-"]
 

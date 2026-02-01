@@ -99,6 +99,8 @@ class IniFile0v1:
                 settings.setValue("material_mue", materialList[k].constants['mue'])
                 settings.setValue("material_kappa", materialList[k].constants['kappa'])
                 settings.setValue("material_sigma", materialList[k].constants['sigma'])
+                settings.setValue("material_tand", materialList[k].constants['tand'])
+
             elif (materialList[k].type == "conducting sheet"):
                 try:
                     settings.setValue("conductingSheetThicknessValue", materialList[k].constants['conductingSheetThicknessValue'])
@@ -190,6 +192,7 @@ class IniFile0v1:
                     settings.setValue("isActive", portList[k].isActive)
                     settings.setValue("infiniteResistance", portList[k].infiniteResistance)
                     settings.setValue("direction", portList[k].direction)
+                    settings.setValue("directionCustomVector", json.dumps(portList[k].directionCustomVector))
                 except Exception as e:
                     print(f"{__file__} > write() lumped ERROR: {e}")
 
@@ -592,10 +595,15 @@ class IniFile0v1:
                     print(f"There was error during reading excitation or infiniteResistance port settings: {e}")
 
                 if (categorySettings.type == "lumped"):
-                    categorySettings.R = settings.value('R')
-                    categorySettings.RUnits = settings.value('RUnits')
-                    categorySettings.isActive = _bool(settings.value('isActive'))
-                    categorySettings.direction = settings.value('direction')
+                    try:
+                        categorySettings.R = settings.value('R')
+                        categorySettings.RUnits = settings.value('RUnits')
+                        categorySettings.isActive = _bool(settings.value('isActive'))
+                        categorySettings.direction = settings.value('direction')
+                        categorySettings.directionCustomVector = json.loads(settings.value('directionCustomVector'))
+                    except Exception as e:
+                        print(f"There was error during reading resistance and port direction related info for port settings: {e}")
+                        pass
 
                 elif (categorySettings.type == "circular waveguide"):
                     categorySettings.isActive = _bool(settings.value('isActive'))
@@ -728,11 +736,17 @@ class IniFile0v1:
                 categorySettings = MaterialSettingsItem()
                 categorySettings.name = itemName
                 categorySettings.type = settings.value('type')
-                categorySettings.constants = {}
-                categorySettings.constants['epsilon'] = settings.value('material_epsilon')
-                categorySettings.constants['mue'] = settings.value('material_mue')
-                categorySettings.constants['kappa'] = settings.value('material_kappa')
-                categorySettings.constants['sigma'] = settings.value('material_sigma')
+                categorySettings.constants = {'epsilon': 1.0, 'mue': 1.0, 'kappa': 0.0, 'sigma': 0.0, 'tand': 0.0}  #default values if there is error during load
+
+                try:
+                    categorySettings.constants['epsilon'] = settings.value('material_epsilon')
+                    categorySettings.constants['mue'] = settings.value('material_mue')
+                    categorySettings.constants['kappa'] = settings.value('material_kappa')
+                    categorySettings.constants['sigma'] = settings.value('material_sigma')
+                    categorySettings.constants['tand'] = settings.value('material_tand')
+                except:
+                    pass
+
                 print(f"loading MATERIAL - {categorySettings.name} - {categorySettings.type} - {categorySettings.constants}")
 
                 try:

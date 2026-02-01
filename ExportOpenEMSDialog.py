@@ -533,6 +533,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.gridTab_gridSettings_openems.setEnabled(True)
 			self.form.tabWidget_gridTab_gridSettings.setCurrentIndex(0)
 
+			if (self.form.materialUserDefinedRadioButton.isChecked()):
+				self.form.materialKappaNumberInput.setEnabled(True)
+				self.form.materialTanDeltaNumberInput.setEnabled(False)
+
+			self.form.lumpedPortDirectionCustomGroupBox.setEnabled(False)
+
 			self.form.simulationParamsTab_tabWidget.setCurrentIndex(0)
 			self.form.simulationParamsTab_tabWidget_openEMSTab.setEnabled(True)
 			self.form.simulationParamsTab_tabWidget_emergeTab.setEnabled(False)
@@ -558,6 +564,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.gridTab_gridSettings_emerge.setEnabled(True)
 			self.form.gridTab_gridSettings_openems.setEnabled(False)
 			self.form.tabWidget_gridTab_gridSettings.setCurrentIndex(1)
+
+			if (self.form.materialUserDefinedRadioButton.isChecked()):
+				self.form.materialKappaNumberInput.setEnabled(False)
+				self.form.materialTanDeltaNumberInput.setEnabled(True)
+
+			self.form.lumpedPortDirectionCustomGroupBox.setEnabled(True)
 
 			self.form.excitationSettingsTab_tabWidget_emerge.setEnabled(True)
 			self.form.excitationSettingsTab_tabWidget_openems.setEnabled(False)
@@ -1398,13 +1410,20 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		if (self.form.materialUserDefinedRadioButton.isChecked()):
 			self.form.materialEpsilonNumberInput.setEnabled(True)
 			self.form.materialMueNumberInput.setEnabled(True)
-			self.form.materialKappaNumberInput.setEnabled(True)
 			self.form.materialSigmaNumberInput.setEnabled(True)
+
+			if (self.form.comboBox_solverType.currentText().lower().find("openems") > -1):
+				self.form.materialKappaNumberInput.setEnabled(True)
+				self.form.materialTanDeltaNumberInput.setEnabled(False)
+			if (self.form.comboBox_solverType.currentText().lower().find("emerge") > -1):
+				self.form.materialKappaNumberInput.setEnabled(False)
+				self.form.materialTanDeltaNumberInput.setEnabled(True)
 		else:
 			self.form.materialEpsilonNumberInput.setEnabled(False)
 			self.form.materialMueNumberInput.setEnabled(False)
-			self.form.materialKappaNumberInput.setEnabled(False)
 			self.form.materialSigmaNumberInput.setEnabled(False)
+			self.form.materialKappaNumberInput.setEnabled(False)
+			self.form.materialTanDeltaNumberInput.setEnabled(False)
 
 	def materialConductingSheetRadioButtonToggled(self):
 		if (self.form.materialConductingSheetRadioButton.isChecked()):
@@ -2196,6 +2215,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		mue = self.form.materialMueNumberInput.value()
 		kappa = self.form.materialKappaNumberInput.value()
 		sigma = self.form.materialSigmaNumberInput.value()
+		tand = self.form.materialTanDeltaNumberInput.value()
 
 		# LuboJ, added at March 2023 so this is here to prevent errors
 		try:
@@ -2214,6 +2234,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		materialItem.constants['mue'] = mue
 		materialItem.constants['kappa'] = kappa
 		materialItem.constants['sigma'] = sigma	
+		materialItem.constants['tand'] = tand
 
 		materialItem.constants['conductingSheetThicknessValue'] = conductingSheetThicknessValue
 		materialItem.constants['conductingSheetThicknessUnits'] = conductingSheetThicknessUnits
@@ -2637,7 +2658,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			portItem.infiniteResistance = self.form.lumpedPortInfinitResistance.isChecked()
 			portItem.isActive = self.form.lumpedPortActive.isChecked()
 			portItem.direction = self.form.lumpedPortDirection.currentText()
-			portItem.excitationAmplitude = self.form.lumpedPortExcitationAmplitude.value()
+			portItem.directionCustomVector = [
+				self.form.lumpedPortDirectionCustomX.value(),
+				self.form.lumpedPortDirectionCustomY.value(),
+				self.form.lumpedPortDirectionCustomZ.value()
+			]
 
 		if (self.form.microstripPortRadioButton.isChecked()):
 			portItem.type = "microstrip"
@@ -3442,10 +3467,15 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		elif (currSetting.type == 'userdefined'):
 			self.form.materialUserDefinedRadioButton.click()
 
-			self.form.materialEpsilonNumberInput.setValue(float(currSetting.constants['epsilon']))
-			self.form.materialMueNumberInput.setValue(float(currSetting.constants['mue']))
-			self.form.materialKappaNumberInput.setValue(float(currSetting.constants['kappa']))
-			self.form.materialSigmaNumberInput.setValue(float(currSetting.constants['sigma']))
+			try:
+				self.form.materialEpsilonNumberInput.setValue(float(currSetting.constants['epsilon']))
+				self.form.materialMueNumberInput.setValue(float(currSetting.constants['mue']))
+				self.form.materialKappaNumberInput.setValue(float(currSetting.constants['kappa']))
+				self.form.materialSigmaNumberInput.setValue(float(currSetting.constants['sigma']))
+				self.form.materialTanDeltaNumberInput.setValue(float(currSetting.constants['tand']))	#added for emerge solver
+			except:
+				pass
+
 		elif (currSetting.type == 'conducting sheet'):
 			self.form.materialConductingSheetRadioButton.click()
 
@@ -3647,6 +3677,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 				self.form.lumpedPortInfinitResistance.setChecked(currSetting.infiniteResistance)
 				self.form.lumpedPortExcitationAmplitude.setValue(currSetting.excitationAmplitude)
+
+				self.form.lumpedPortDirectionCustomX.setValue(float(currSetting.directionCustomVector[0]))
+				self.form.lumpedPortDirectionCustomY.setValue(float(currSetting.directionCustomVector[1]))
+				self.form.lumpedPortDirectionCustomZ.setValue(float(currSetting.directionCustomVector[2]))
+
 			except Exception as e:
 				self.guiHelpers.displayMessage(f"ERROR update lumped current settings: {e}", forceModal=False)
 
