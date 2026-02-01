@@ -149,7 +149,6 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     colorTuple = freeCadObj.ViewObject.DiffuseColor[0]
                     colorStr += "#" + format(int(255 * colorTuple[0]), '02x') + format(int(255 * colorTuple[1]), '02x') + format(int(255 * colorTuple[2]), '02x')
                     genScript += f"{materialPythonVariable}.color = '{colorStr}'\n"
-                    genScript += f"{materialPythonVariable}._color_rgb = ({colorTuple[0]}, {colorTuple[1]}, {colorTuple[2]})\n"
                     genScript += f"{materialPythonVariable}.opacity = {1.0 - freeCadObj.ViewObject.Transparency}\n"
                     genScript += f"\n"
 
@@ -157,7 +156,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     #   HERE IS OBJECT GENERATOR THERE ARE FEW SPECIAL CASES WHICH ARE HANDLED FIRST AND IF OBJECT IS NORMAL STRUCTURE AT THE END IS GENERATED AS .stl FILR:
                     #       - conducting sheet = just plane is generated, in case of 3D object shell of object bounding box is generated
                     #       - discretized edge = curve from line is generated
-                    #       - sketch           = curve is generated from it's vertices
+                    #       - sketch           = curve is generated from its vertices
                     #
                     if (currSetting.type == 'conducting sheet'):
                         #
