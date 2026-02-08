@@ -148,7 +148,7 @@ class IniFile0v1:
                 settings.setValue("yenabled", gridList[k].yenabled)
                 settings.setValue("zenabled", gridList[k].zenabled)
                 settings.setValue("userDefined", json.dumps(gridList[k].userDefined))
-            elif (gridList[k].type == "FEM Max Element Size"):
+            elif (gridList[k].type == "FEM Max Size"):
                 settings.setValue("femMesh", json.dumps(gridList[k].femMesh))
 
             try:
@@ -566,7 +566,7 @@ class IniFile0v1:
                         categorySettings.smoothMesh = json.loads(settings.value('smoothMesh'))
                     except Exception as e:
                         print(f"Error during load reading smooth mesh: {e}")
-                elif (categorySettings.type == "FEM Max Element Size"):
+                elif (categorySettings.type == "FEM Max Size"):
                     try:
                         categorySettings.femMesh = json.loads(settings.value('femMesh'))
                     except Exception as e:

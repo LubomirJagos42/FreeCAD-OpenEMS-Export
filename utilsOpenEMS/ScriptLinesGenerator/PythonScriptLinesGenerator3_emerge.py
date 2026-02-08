@@ -25,6 +25,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         super(PythonScriptLinesGenerator3_emerge, self).__init__(form, statusBar)
         self.portBoundaryConditionScriptLinesBuffer = []
 
+        self.cadHelpers = FactoryCadInterface.createHelper()
+
     def getCoordinateSystemScriptLines(self):
         genScript = ""
 
@@ -310,6 +312,82 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                 genScript += "\n"   #newline after each COMPLETE material category code generated
 
             genScript += "\n"
+
+        return genScript
+
+    def getBoundaryConditionObjectImportScriptLines(self, items, outputDir=None, generateObjects=True):
+        genScript = ""
+
+        genScript += "# Imported objects used as boundary conditions\n"
+        genScript += "#\n"
+        genScript += "\n"
+
+        # now export material children, if it's object export as STL, if it's curve export as curve
+        for [item, currSetting] in items:
+
+            # first print all current material children names
+            for k in range(item.childCount()):
+                childName = item.child(k).text(0)
+                print("##Children:")
+                print("\t" + childName)
+
+            # now export material children, if it's object export as STL, if it's curve export as curve
+            for k in range(item.childCount()):
+                childName = item.child(k).text(0)
+
+                #
+                #	getting item priority
+                #
+                objModelPriorityItemName = item.parent().text(0) + ", " + item.text(0) + ", " + childName
+                objModelPriority = self.getItemPriority(objModelPriorityItemName)
+
+                # getting reference to FreeCAD object
+                freeCadObj = [i for i in self.cadHelpers.getObjects() if (i.Label) == childName][0]
+
+                if freeCadObj.Name.startswith('Sphere'):
+                    bbox = freeCadObj.Shape.BoundBox
+
+                    radius = max(
+                        bbox.XMax - bbox.XMin,
+                        bbox.YMax - bbox.YMin,
+                        bbox.ZMax - bbox.ZMin
+                    ) / 2.0
+
+                    # Get center
+                    position = (
+                        (bbox.XMin + bbox.XMax) / 2,
+                        (bbox.YMin + bbox.YMax) / 2,
+                        (bbox.ZMin + bbox.ZMax) / 2
+                    )
+
+                    # TODO: Use variable with units to properly calculate radius value, now for testing when working with models mostly in mm
+                    genScript += f"position = {str(position)}\n"
+                    genScript += f"position = tuple([x*mm for x in position])\n"
+                    genScript += f"newSphereObj = em.geo.Sphere(radius={str(radius)}*mm, position=position)\n"
+                    genScript += f"newSphereObj.give_name('{freeCadObj.Label}')\n"
+                    genScript += f"newSphereObj.name = '{freeCadObj.Label}'\n"
+                    genScript += f"newSphereObj.prio_set({objModelPriority})\n"
+
+                else:
+                    #
+                    #   Going through each concrete material items and generate their .step files
+                    #
+                    currDir, baseName = self.getCurrDir()
+                    stepModelFileName = childName + "_gen_model.step"
+                    genScript += f"stepObjectGroup = em.geo.step.STEPItems(name='{childName}', filename=os.path.join(currDir,'{stepModelFileName}'), unit=mm)\n"
+                    genScript += f"for geoObj in stepObjectGroup.objects:\n"
+                    genScript += f"\tgeoObj.prio_set({objModelPriority})\n"
+
+                    #output directory path construction, if there is no parameter for output dir then output is in current freecad file dir
+                    if (not outputDir is None):
+                        exportFileName = os.path.join(outputDir, stepModelFileName)
+                    else:
+                        exportFileName = os.path.join(currDir, stepModelFileName)
+
+                    self.cadHelpers.exportSTEP([freeCadObj], exportFileName)
+                    print("Boundary condition object exported as STEP into: " + stepModelFileName)
+
+            genScript += "\n"   #newline after each COMPLETE material category code generated
 
         return genScript
 
@@ -900,6 +978,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "#######################################################################################################################################\n"
         genScript += "# BOUNDARY CONDITIONS PART\n"
         genScript += "#######################################################################################################################################\n"
+        genScript += "\n"
 
         for [item, currentSetting] in items:
             genScript += "# BOUNDARY CONDITION NAME: " + currentSetting.getName() + "\n"
@@ -912,14 +991,15 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                 childName = item.child(k).text(0)
                 print("#BOUNDARY CONDITION TYPE: " + currentSetting.getType())
 
-                freecadObjects = [i for i in objs if (i.Label) == childName]
-                for obj in freecadObjects:
-                    # obj = FreeCAD Object class
+                freecadObjectList = [i for i in objs if (i.Label) == childName]
+                for freecadObj in freecadObjectList:
+                    # freecadObj = FreeCAD Object class
 
-                    # BOUNDING BOX
-                    bbCoords = obj.Shape.BoundBox
-
-                    genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords, "bcStart", "bcStop")
+                    genScript += f"boundary_selection = None\n"
+                    genScript += f"for geometryObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():\n"
+                    genScript += f"\tif geometryObj.name == 'airbox' or geometryObj.name.startswith('airbox'):\n"
+                    genScript += f"\t\tboundary_selection = geometryObj.boundary()\n"
+                    genScript += f"\n"
 
                     #
                     #	getting item priority
@@ -928,16 +1008,11 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     priorityItemName = item.parent().text(0) + ", " + item.text(0) + ", " + childName
                     priorityIndex = self.getItemPriority(priorityItemName)
 
-                    # WARNING: Caps param has hardwired value 1, will be generated small metal caps to connect part with circuit !!!
-                    # genScript += f"lumpedPart = CSX.AddLumpedElement({lumpedPartParams});\n"
-                    # genScript += f"lumpedPart.AddBox(lumpedPartStart, lumpedPartStop, priority={priorityIndex});\n"
-
-
                     bcType = currentSetting.getType().lower()
                     if  bcType == "absorbing":
-                        genScript += f"# simulationObj.mw.bc.AbsorbingBoundary(boundary_selection)"
+                        genScript += f"simulationObj.mw.bc.AbsorbingBoundary(boundary_selection)"
                     elif bcType == "pec":
-                        genScript += f"# simulationObj.mw.bc.PECBoundary(boundary_selection)"
+                        genScript += f"simulationObj.mw.bc.PECBoundary(boundary_selection)"
                     else:
                         genScript += f"# ERROR: Unknown boundary condition type \"{currentSetting.getType()}\""
 
@@ -1048,7 +1123,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
             #
             #   Fixed Distance, Fixed Count mesh boundaries coords obtain
             #
-            if (gridSettingsInst.getType() in ['FEM Max Element Size']):
+            if (gridSettingsInst.getType() in ['FEM Max Size']):
                 fcObject = fcObjects.get(FreeCADObjectName, None)
                 if (not fcObject):
                     print("Failed to resolve '{}'.".format(FreeCADObjectName))
@@ -1063,8 +1138,20 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                 genScript += f"#\n"
                 genScript += f"for geometryObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():\n"
                 genScript += f"\t\tif geometryObj.name == '{FreeCADObjectName}' or geometryObj.name.startswith('{FreeCADObjectName}_'):\n"
-                genScript += f"\t\t\tsimulationObj.mesher.set_boundary_size(geometryObj, {gridSettingsInst.femMesh['femMaxElementSize']} * {gridSettingsInst.femMesh['femMaxElementSizeUnits']})\n"
-                genScript += f"\t\t\tsimulationObj.mesher.set_face_size(geometryObj, {gridSettingsInst.femMesh['femMaxElementSize']} * {gridSettingsInst.femMesh['femMaxElementSizeUnits']})\n"
+
+                if gridSettingsInst.femMesh['femUseMaxElementSize'] == True:
+                    genScript += f"\t\t\tsimulationObj.mesher.set_size(geometryObj, {gridSettingsInst.femMesh['femMaxElementSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
+                if gridSettingsInst.femMesh['femUseMaxBoundarySize'] == True:
+                    genScript += f"\t\t\tsimulationObj.mesher.set_boundary_size(geometryObj, {gridSettingsInst.femMesh['femMaxBoundarySize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
+                if gridSettingsInst.femMesh['femUseMaxFaceSize'] == True:
+                    genScript += f"\t\t\tsimulationObj.mesher.set_face_size(geometryObj, {gridSettingsInst.femMesh['femMaxFaceSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
+                if gridSettingsInst.femMesh['femUseMaxDomainSize'] == True:
+                    genScript += f"\t\t\tsimulationObj.mesher.set_domain_size(geometryObj, {gridSettingsInst.femMesh['femMaxDomainSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
+
+                #
+                #   TODO: Add user defined mesh, code block will be placed into code
+                #
+
                 genScript += f"\n"
 
             genScript += "\n"
@@ -1216,7 +1303,6 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "import numpy as np\n"
         genScript += "import emerge as em\n"
         genScript += "import os, tempfile, shutil\n"
-        genScript += "from emerge.plot import smith, plot_sp\n"
         genScript += "#\n"
 
         genScript += "# Change current path to script file folder\n"
@@ -1349,9 +1435,9 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         :param outputDir:
         :return:
         """
-        self.generateOpenEMSScript(outputDir)
+        self.generateEmergeScript(outputDir)
 
-    def generateOpenEMSScript(self, outputDir=None):
+    def generateEmergeScript(self, outputDir=None):
         """
         Generates result simulation script for EMerge
 
@@ -1421,7 +1507,9 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "nH = 1e-9  # nanohenry in henrys\n"
         genScript += "\n"
 
-        genScript += "simulationObj = em.Simulation(\"FreeCAD EMerge Model\")\n"
+        simulationName = self.cadHelpers.getCurrentDocumentFileName()
+
+        genScript += f"simulationObj = em.Simulation(\"{simulationName}\", save_file=True)\n"
         solverEngineStr = self.form.simParamsSolverEngine_emerge.currentText()
         if(solverEngineStr.upper() == "CUDA"):
             genScript += "simulationObj.mw.solveroutine.set_solver(em.EMSolver.CUDSS)\n"
@@ -1450,6 +1538,9 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
 
         # Write material definitions.
         genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None), outputDir)
+
+        # Write import STEP objects which are used as boundary conditions
+        genScript += self.getBoundaryConditionObjectImportScriptLines(itemsByClassName.get("BoundaryConditionSettingsItem", None), outputDir)
 
         # Write port definitions.
         genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None))
@@ -1503,24 +1594,13 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         # Finalize script.
 
         genScript += "#######################################################################################################################################\n"
-        genScript += "# RUN\n"
+        genScript += "# RUN and save results\n"
         genScript += "#######################################################################################################################################\n"
 
         genScript += "simulationResult = simulationObj.mw.run_sweep()\n"
         genScript += "\n"
-
-        # --- Post-process S-parameters ------------------------------------------
-        genScript += "freqs = simulationResult.scalar.grid.freq\n"
-        genScript += "freq_dense = np.linspace(fmin, fmax, 1001)\n"
-        genScript += "S11 = simulationResult.scalar.grid.model_S(1, 1, freq_dense)  # reflection coefficient\n"
-        genScript += "plot_sp(freq_dense, S11)  # plot return loss in dB\n"
-        genScript += "smith(S11, f=freq_dense, labels='S11')  # Smith chart of S11\n"
+        genScript += "simulationObj.save()\n"
         genScript += "\n"
-
-
-
-
-
 
         # Write _OpenEMS.py script file to current directory.
         currDir, nameBase = self.getCurrDir()
@@ -1753,97 +1833,30 @@ generatorFunc_DumpFF2VTK(E_far_normalized, nf2ff.theta, nf2ff.phi, os.path.join(
 
     def drawS11ButtonClicked(self, outputDir=None, portName=""):
         genScript = ""
-        genScript += "# Plot S11\n"
+
+        genScript += "## EMerge simulation - S11\n"
         genScript += "#\n"
-
-        genScript += self.getInitScriptLines()
-
-        genScript += "currDir = os.getcwd()\n"
-        genScript += "Sim_Path = os.path.join(currDir, r'simulation_output')\n"
-        genScript += "print(currDir)\n"
+        genScript += "#\n"
+        genScript += "import emerge as em\n"
+        genScript += "import numpy as np\n"
+        genScript += "from emerge.plot import smith, plot_sp\n"
         genScript += "\n"
 
-        genScript += "## setup FDTD parameter & excitation function\n"
-        genScript += "max_timesteps = " + str(self.form.simParamsMaxTimesteps.value()) + "\n"
-        genScript += "min_decrement = " + str(self.form.simParamsMinDecrement.value()) + " # 10*log10(min_decrement) dB  (i.e. 1E-5 means -50 dB)\n"
-
-        if (self.getModelCoordsType() == "cylindrical"):
-            genScript += "CSX = CSXCAD.ContinuousStructure(CoordSystem=1)\n"
-            genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement, CoordSystem=1)\n"
-        else:
-            genScript += "CSX = CSXCAD.ContinuousStructure()\n"
-            genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement)\n"
-
-        genScript += "FDTD.SetCSX(CSX)\n"
+        simulationName = self.cadHelpers.getCurrentDocumentFileName()
+        genScript += f"simulationObj = em.Simulation(\"{simulationName}\", load_file=True)\n"
+        genScript += "simulationResult = simulationObj.data.mw\n"
         genScript += "\n"
 
-        # List categories and items.
-        itemsByClassName = self.getItemsByClassName()
+        #add excitation script lines
+        genScript += self.getExcitationScriptLines()
 
-        # Write coordinate system definitions.
-        genScript += self.getCoordinateSystemScriptLines()
-
-        # Write excitation definition.
-        genScript += self.getExcitationScriptLines(definitionsOnly=True)
-
-        # Write material definitions.
-        genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None),
-                                                            outputDir, generateObjects=False)
-
-        # Write grid definitions.
-        genScript += self.getOrderedGridDefinitionsScriptLines(itemsByClassName.get("GridSettingsItem", None))
-
-        # Write scriptlines which removes gridline too close, must be enabled in GUI, it's checking checkbox inside
-        genScript += self.getMinimalGridlineSpacingScriptLines()
-
-        # Write port definitions.
-        genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None))
-
-        genScript += f"""## postprocessing & do the plots
-freq = np.linspace(max(1e6,f0-fc), f0+fc, 501)
-port[{self.internalPortIndexNamesList[portName]}].CalcPort(Sim_Path, freq)
-
-Zin = port[{self.internalPortIndexNamesList[portName]}].uf_tot / port[{self.internalPortIndexNamesList[portName]}].if_tot
-s11 = port[{self.internalPortIndexNamesList[portName]}].uf_ref / port[{self.internalPortIndexNamesList[portName]}].uf_inc
-s11_dB = 20.0*np.log10(np.abs(s11))
-
-# plot the feed point impedance
-figure()
-plot(freq / 1e6, np.real(Zin), 'k-', linewidth=2, label=r'$\Re(Z_{{in}})$')
-grid()
-plot(freq / 1e6, np.imag(Zin), 'r--', linewidth=2, label=r'$\Im(Z_{{in}})$')
-title('impedance of {portName}')
-xlabel('frequency (MHz)')
-ylabel('$Z (\\Omega)$')
-legend()
-
-# plot S11 parameter
-figure()
-plot(freq/1e6, s11_dB, 'k-', linewidth=2, label='$S_{{11}}$')
-grid()
-legend()
-title('S11-Parameter (dB) of {portName}')
-ylabel('S11 (dB)')
-xlabel('Frequency (MHz)')
-
-show()  #show all figures at once
-
-#
-#   Write S11, real and imag Z_in into CSV file separated by ';'
-#
-filename = 'openEMS_simulation_s11_dB.csv'
-
-with open(filename, 'w', newline='') as csvfile:
-\twriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-\twriter.writerow(['freq (MHz)', 's11 (dB)', 'real Z_in', 'imag Z_in', 'Z_in total'])
-\twriter.writerows(np.array([
-\t\t(freq/1e6),
-\t\ts11_dB,
-\t\tnp.real(Zin),
-\t\tnp.imag(Zin),
-\t\tnp.abs(Zin)
-\t]).T) #creates array with 1st row frequencies, 2nd row S11, ... and transpose it
-"""
+        # --- Post-process S-parameters ------------------------------------------
+        genScript += "freqs = simulationResult.scalar.grid.freq\n"
+        genScript += "freq_dense = np.linspace(fmin, fmax, 1001)\n"
+        genScript += "S11 = simulationResult.scalar.grid.model_S(1, 1, freq_dense)  # reflection coefficient\n"
+        genScript += "plot_sp(freq_dense, S11)  # plot return loss in dB\n"
+        genScript += "smith(S11, f=freq_dense, labels='S11')  # Smith chart of S11\n"
+        genScript += "\n"
 
         #
         # WRITE OpenEMS Script file into current dir

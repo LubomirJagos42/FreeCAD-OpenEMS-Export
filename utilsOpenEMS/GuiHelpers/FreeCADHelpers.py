@@ -5,6 +5,7 @@ import FreeCAD
 import FreeCADGui
 import Draft
 import Mesh
+import os
 
 class FreeCADHelpers(CadInterface):
 
@@ -133,3 +134,7 @@ class FreeCADHelpers(CadInterface):
     def exportSTEP(self, partToExportList, exportFileName):
         for partToExport in partToExportList:
             partToExport.Shape.exportStep(exportFileName)
+
+    def getCurrentDocumentFileName(self):
+        currentFileName = os.path.basename(FreeCAD.ActiveDocument.FileName)
+        return currentFileName

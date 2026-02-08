@@ -253,7 +253,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		# Handle function for grid radio buttons click
 		#
 		self.form.userDefinedRadioButton.clicked.connect(self.userDefinedRadioButtonClicked)
-		self.form.femGridUserDefinedRadio.clicked.connect(self.userDefinedRadioButtonClicked)
+		self.form.femGridUserDefinedCheckbox.clicked.connect(self.userDefinedRadioButtonClicked)
 		self.form.fixedCountRadioButton.clicked.connect(self.fixedCountRadioButtonClicked)
 		self.form.fixedDistanceRadioButton.clicked.connect(self.fixedDistanceRadioButtonClicked)
 		self.form.smoothMeshRadioButton.clicked.connect(self.smoothMeshRadioButtonClicked)
@@ -1831,9 +1831,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#write result .m file into subfolder named after .ini file next to simulation settings .ini file
 		print(f"----> start saving file into {self.simulationOutputDir}")
 
-		self.scriptGenerator.generateOpenEMSScript(self.simulationOutputDir)
-		#self.scriptGenerator2.generateOpenEMSScript(self.simulationOutputDir + "_2nd_generator")
-		#self.scriptGenerator3.generateOpenEMSScript(self.simulationOutputDir + "_3rd_generator")
+		self.scriptGenerator.generateSimulationScript(self.simulationOutputDir)
+		#self.scriptGenerator2.generateSimulationScript(self.simulationOutputDir + "_2nd_generator")
+		#self.scriptGenerator3.generateSimulationScript(self.simulationOutputDir + "_3rd_generator")
 
 	def drawS11ButtonClicked(self):
 		portName = self.form.drawS11Port.currentText()
@@ -1982,29 +1982,45 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			gridItem.smoothMesh['yMaxRes'] = self.form.smoothMeshYMaxRes.value()
 			gridItem.smoothMesh['zMaxRes'] = self.form.smoothMeshZMaxRes.value()
 
-		if (self.form.userDefinedRadioButton.isChecked() or self.form.femGridUserDefinedRadio.isChecked()):
+		if (self.form.userDefinedRadioButton.isChecked() or self.form.femGridUserDefinedCheckbox.isChecked()):
 			gridItem.type = "User Defined"
 			gridItem.userDefined['data'] = self.form.userDefinedGridLinesTextInput.toPlainText()
 
-		gridItem.units = self.form.gridUnitsInput.currentText()
-		gridItem.unitsAngle = self.form.gridUnitsInput_2.currentText()
-		gridItem.generateLinesInside = self.form.gridGenerateLinesInsideCheckbox.isChecked()
-		gridItem.topPriorityLines = self.form.gridTopPriorityLinesCheckbox.isChecked()
+		#
+		#	DEFAULT VALUES FOR GRID ITEM FOR openEMS
+		#
+		if (self.form.comboBox_solverType.currentText().lower().find("openems") > -1):
+			gridItem.units = self.form.gridUnitsInput.currentText()
+			gridItem.unitsAngle = self.form.gridUnitsInput_2.currentText()
+			gridItem.generateLinesInside = self.form.gridGenerateLinesInsideCheckbox.isChecked()
+			gridItem.topPriorityLines = self.form.gridTopPriorityLinesCheckbox.isChecked()
 
-		gridItem.gridOffset['x'] = self.form.gridOffsetX.value()
-		gridItem.gridOffset['y'] = self.form.gridOffsetY.value()
-		gridItem.gridOffset['z'] = self.form.gridOffsetZ.value()
-		gridItem.gridOffset['units'] = self.form.gridOffsetUnits.currentText()
+			gridItem.gridOffset['x'] = self.form.gridOffsetX.value()
+			gridItem.gridOffset['y'] = self.form.gridOffsetY.value()
+			gridItem.gridOffset['z'] = self.form.gridOffsetZ.value()
+			gridItem.gridOffset['units'] = self.form.gridOffsetUnits.currentText()
 
 		#
 		#	New items for FEM simulation (emerge)
+		#		- now there is just one only type for FEM grid and that's to specify max size of element, boundary, volume and domain
 		#
-		if (self.form.femGridMaxElementSizeRadio.isChecked()):
-			gridItem.type = "FEM Max Element Size"
+		if (self.form.comboBox_solverType.currentText().lower().find("emerge") > -1):
+			gridItem.type = "FEM Max Size"
 
 			gridItem.femMesh = {}
-			gridItem.femMesh['femMaxElementSizeUnits'] = self.form.femGridMaxElementSizeUnits.currentText()
+			gridItem.femMesh['femMaxSizeUnits'] = self.form.femGridMaxSizeUnits.currentText()
+
 			gridItem.femMesh['femMaxElementSize'] = self.form.femGridMaxElementSizeValue.value()
+			gridItem.femMesh['femMaxBoundarySize'] = self.form.femGridMaxBoundarySizeValue.value()
+			gridItem.femMesh['femMaxFaceSize'] = self.form.femGridMaxFaceSizeValue.value()
+			gridItem.femMesh['femMaxDomainSize'] = self.form.femGridMaxDomainSizeValue.value()
+
+			gridItem.femMesh['femUseMaxElementSize'] = self.form.femGridMaxElementSizeCheckbox.isChecked()
+			gridItem.femMesh['femUseMaxBoundarySize'] = self.form.femGridMaxBoundarySizeCheckbox.isChecked()
+			gridItem.femMesh['femUseMaxFaceSize'] = self.form.femGridMaxFaceSizeCheckbox.isChecked()
+			gridItem.femMesh['femUseMaxDomainSize'] = self.form.femGridMaxDomainSizeCheckbox.isChecked()
+
+			gridItem.femMesh['femUseMaxUserDefined'] = self.form.femGridUserDefinedCheckbox.isChecked()
 
 		return gridItem
 		
@@ -3529,7 +3545,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.guiHelpers.setComboboxItem(self.form.gridOffsetUnits, 'um')
 
 		self.form.femGridMaxElementSizeValue.setValue(0)
-		self.form.femGridMaxElementSizeUnits.setCurrentIndex(2)
+		self.form.femGridMaxSizeUnits.setCurrentIndex(2)
 
 		#set values in grid settings by actual selected item
 		currSetting = self.form.gridSettingsTreeView.currentItem().data(0, QtCore.Qt.UserRole)
@@ -3574,12 +3590,32 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			except:
 				pass
 
-		elif (currSetting.type == "FEM Max Element Size"):
+		elif (currSetting.type == "FEM Max Size"):
 			try:
-				self.form.femGridMaxElementSizeRadio.click()
+				self.form.femGridMaxElementSizeCheckbox.click()
 
-				self.form.femGridMaxElementSizeValue.setValue(currSetting.femMesh['femMaxElementSize'])
-				self.guiHelpers.setComboboxItem(self.form.femGridMaxElementSizeUnits, currSetting.femMesh['femMaxElementSize'])
+				try:
+					self.guiHelpers.setComboboxItem(self.form.femGridMaxSizeUnits, currSetting.femMesh['femMaxSizeUnits'])
+				except:
+					pass
+
+				try:
+					self.form.femGridMaxElementSizeValue.setValue(currSetting.femMesh['femMaxElementSize'])
+					self.form.femGridMaxBoundarySizeValue.setValue(currSetting.femMesh['femMaxBoundarySize'])
+					self.form.femGridMaxFaceSizeValue.setValue(currSetting.femMesh['femMaxFaceSize'])
+					self.form.femGridMaxDomainSizeValue.setValue(currSetting.femMesh['femMaxDomainSize'])
+				except:
+					pass
+
+				try:
+					self.form.femGridMaxElementSizeCheckbox.setChecked(currSetting.femMesh['femUseMaxElementSize'])
+					self.form.femGridMaxBoundarySizeCheckbox.setChecked(currSetting.femMesh['femUseMaxBoundarySize'])
+					self.form.femGridMaxFaceSizeCheckbox.setChecked(currSetting.femMesh['femUseMaxFaceSize'])
+					self.form.femGridMaxDomainSizeCheckbox.setChecked(currSetting.femMesh['femUseMaxDomainSize'])
+				except:
+					pass
+
+				self.form.femGridUserDefinedCheckbox.setChecked(currSetting.femMesh['femUseMaxUserDefined'])
 			except:
 				pass
 
@@ -3589,7 +3625,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			# therefore if radiobutton is disabled then nothing happens when it's disabled
 			#
 			self.form.userDefinedRadioButton.click()	#when FDTD openEMS solver active this will be one which will be triggered
-			self.form.femGridUserDefinedRadio.click()	#when FEM EMerge solver active this will be one which will be triggered
+			self.form.femGridUserDefinedCheckbox.click()	#when FEM EMerge solver active this will be one which will be triggered
 
 			self.form.userDefinedGridLinesTextInput.setPlainText(currSetting.userDefined['data'])
 
