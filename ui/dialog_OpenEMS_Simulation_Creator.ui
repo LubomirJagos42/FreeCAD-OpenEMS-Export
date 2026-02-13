@@ -8254,344 +8254,599 @@ than min spacing</string>
                 </attribute>
                 <layout class="QVBoxLayout" name="verticalLayout_44">
                  <item>
-                  <widget class="QGroupBox" name="nf2ffEMergeGroupProcessing">
-                   <property name="title">
-                    <string>Post-Processing: EMerge: NF2FF Display Script</string>
+                  <widget class="QTabWidget" name="probeProcessingEmergeTab">
+                   <property name="currentIndex">
+                    <number>0</number>
                    </property>
-                   <layout class="QVBoxLayout" name="verticalLayout_45">
-                    <item>
-                     <widget class="QPushButton" name="writeNf2ffEmergeButton">
-                      <property name="text">
-                       <string>Write NF2FF</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <layout class="QFormLayout" name="formLayout_2">
-                      <property name="horizontalSpacing">
-                       <number>0</number>
-                      </property>
-                      <property name="leftMargin">
-                       <number>5</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>5</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>5</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>5</number>
-                      </property>
-                      <item row="0" column="0">
-                       <widget class="QLabel" name="label_126">
-                        <property name="text">
-                         <string>Absorbing boundary condition</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="0" column="1">
-                       <widget class="QComboBox" name="portNf2ffEmergeObjectList"/>
-                      </item>
-                      <item row="1" column="0">
-                       <widget class="QLabel" name="label_127">
-                        <property name="text">
-                         <string>Frequency to plot far field (MHz)</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="1">
-                       <widget class="QDoubleSpinBox" name="boundaryNf2ffEmergeFreq">
-                        <property name="decimals">
-                         <number>8</number>
-                        </property>
-                        <property name="maximum">
-                         <double>10000000000.000000000000000</double>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="2" column="0">
-                       <widget class="QLabel" name="label_128">
-                        <property name="text">
-                         <string>Polarization</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="2" column="1">
-                       <widget class="QComboBox" name="polarizationNf2ffEmerge">
+                   <widget class="QWidget" name="probeProcessingEmergeTab_nf2ffTab">
+                    <attribute name="title">
+                     <string>NF2FF</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="verticalLayout_46">
+                     <item>
+                      <widget class="QGroupBox" name="nf2ffEMergeGroupProcessing">
+                       <property name="title">
+                        <string>Post-Processing: EMerge: NF2FF Display Script</string>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_45">
                         <item>
-                         <property name="text">
-                          <string>normE</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>Erhcp</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>Elhcp</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>Etheta</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>Ephi</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>Ex</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>Ey</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>Ez</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>AR</string>
-                         </property>
-                        </item>
-                       </widget>
-                      </item>
-                      <item row="3" column="0">
-                       <widget class="QLabel" name="label_129">
-                        <property name="text">
-                         <string>Quantity</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="3" column="1">
-                       <widget class="QComboBox" name="quantityNf2ffEmerge">
-                        <item>
-                         <property name="text">
-                          <string>abs</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>real</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>imag</string>
-                         </property>
-                        </item>
-                        <item>
-                         <property name="text">
-                          <string>angle</string>
-                         </property>
-                        </item>
-                       </widget>
-                      </item>
-                      <item row="4" column="0">
-                       <spacer name="horizontalSpacer_54">
-                        <property name="orientation">
-                         <enum>Qt::Orientation::Horizontal</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>320</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item row="4" column="1">
-                       <layout class="QHBoxLayout" name="horizontalLayout_65">
-                        <property name="leftMargin">
-                         <number>5</number>
-                        </property>
-                        <property name="topMargin">
-                         <number>5</number>
-                        </property>
-                        <property name="rightMargin">
-                         <number>5</number>
-                        </property>
-                        <property name="bottomMargin">
-                         <number>5</number>
-                        </property>
-                        <item>
-                         <widget class="QCheckBox" name="checkBox">
+                         <widget class="QPushButton" name="writeNf2ffEmergeButton">
                           <property name="text">
-                           <string>Plot using dB</string>
+                           <string>Write NF2FF</string>
                           </property>
                          </widget>
                         </item>
                         <item>
-                         <widget class="QLabel" name="label_130">
-                          <property name="text">
-                           <string>dB floor</string>
+                         <layout class="QFormLayout" name="formLayout_2">
+                          <property name="horizontalSpacing">
+                           <number>0</number>
                           </property>
-                         </widget>
+                          <property name="leftMargin">
+                           <number>5</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>5</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>5</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>5</number>
+                          </property>
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_126">
+                            <property name="text">
+                             <string>Absorbing boundary condition</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QComboBox" name="portNf2ffEmergeObjectList"/>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_127">
+                            <property name="text">
+                             <string>Frequency to plot far field (MHz)</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="QDoubleSpinBox" name="boundaryNf2ffEmergeFreq">
+                            <property name="decimals">
+                             <number>8</number>
+                            </property>
+                            <property name="maximum">
+                             <double>10000000000.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="label_128">
+                            <property name="text">
+                             <string>Polarization</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <widget class="QComboBox" name="polarizationNf2ffEmerge">
+                            <item>
+                             <property name="text">
+                              <string>normE</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Erhcp</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Elhcp</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Etheta</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ephi</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ex</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ey</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ez</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>AR</string>
+                             </property>
+                            </item>
+                           </widget>
+                          </item>
+                          <item row="3" column="0">
+                           <widget class="QLabel" name="label_129">
+                            <property name="text">
+                             <string>Quantity</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="1">
+                           <widget class="QComboBox" name="quantityNf2ffEmerge">
+                            <item>
+                             <property name="text">
+                              <string>abs</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>real</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>imag</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>angle</string>
+                             </property>
+                            </item>
+                           </widget>
+                          </item>
+                          <item row="4" column="0">
+                           <spacer name="horizontalSpacer_54">
+                            <property name="orientation">
+                             <enum>Qt::Orientation::Horizontal</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>320</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                          <item row="4" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_65">
+                            <property name="leftMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="topMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="rightMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="bottomMargin">
+                             <number>5</number>
+                            </property>
+                            <item>
+                             <widget class="QCheckBox" name="checkBox">
+                              <property name="text">
+                               <string>Plot using dB</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="label_130">
+                              <property name="text">
+                               <string>dB floor</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="doubleSpinBox">
+                              <property name="minimum">
+                               <double>-100000000.000000000000000</double>
+                              </property>
+                              <property name="maximum">
+                               <double>100000000.000000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <spacer name="horizontalSpacer_55">
+                              <property name="orientation">
+                               <enum>Qt::Orientation::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="5" column="0">
+                           <widget class="QLabel" name="label_131">
+                            <property name="text">
+                             <string>Diagram maximum size</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="1">
+                           <widget class="QDoubleSpinBox" name="diagramRMaxNF2FFEmerge"/>
+                          </item>
+                          <item row="6" column="0">
+                           <widget class="QLabel" name="label_132">
+                            <property name="text">
+                             <string>Diagram placement (X,Y,Z) in milimeters</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="6" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_66">
+                            <property name="leftMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="topMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="rightMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="bottomMargin">
+                             <number>5</number>
+                            </property>
+                            <item>
+                             <widget class="QLabel" name="label_133">
+                              <property name="text">
+                               <string>X</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="diagramPlacementXNF2FFEmerge">
+                              <property name="decimals">
+                               <number>3</number>
+                              </property>
+                              <property name="minimum">
+                               <double>-100000000.000000000000000</double>
+                              </property>
+                              <property name="maximum">
+                               <double>100000000.000000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="label_134">
+                              <property name="text">
+                               <string>Y</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="diagramPlacementYNF2FFEmerge">
+                              <property name="decimals">
+                               <number>3</number>
+                              </property>
+                              <property name="minimum">
+                               <double>-100000000.000000000000000</double>
+                              </property>
+                              <property name="maximum">
+                               <double>100000000.000000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="label_135">
+                              <property name="text">
+                               <string>Z</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="diagramPlacementZNF2FFEmerge">
+                              <property name="decimals">
+                               <number>3</number>
+                              </property>
+                              <property name="minimum">
+                               <double>-100000000.000000000000000</double>
+                              </property>
+                              <property name="maximum">
+                               <double>100000000.000000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <spacer name="horizontalSpacer_56">
+                              <property name="orientation">
+                               <enum>Qt::Orientation::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="7" column="1">
+                           <widget class="QCheckBox" name="diagramIsotropicNF2FFEmerge">
+                            <property name="text">
+                             <string>Isotropic</string>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
                         </item>
                         <item>
-                         <widget class="QDoubleSpinBox" name="doubleSpinBox">
-                          <property name="minimum">
-                           <double>-100000000.000000000000000</double>
-                          </property>
-                          <property name="maximum">
-                           <double>100000000.000000000000000</double>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <spacer name="horizontalSpacer_55">
+                         <spacer name="verticalSpacer_35">
                           <property name="orientation">
-                           <enum>Qt::Orientation::Horizontal</enum>
+                           <enum>Qt::Orientation::Vertical</enum>
                           </property>
                           <property name="sizeHint" stdset="0">
                            <size>
-                            <width>40</width>
-                            <height>20</height>
+                            <width>20</width>
+                            <height>40</height>
                            </size>
                           </property>
                          </spacer>
                         </item>
                        </layout>
-                      </item>
-                      <item row="5" column="0">
-                       <widget class="QLabel" name="label_131">
-                        <property name="text">
-                         <string>Diagram maximum size</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="5" column="1">
-                       <widget class="QDoubleSpinBox" name="diagramRMaxNF2FFEmerge"/>
-                      </item>
-                      <item row="6" column="0">
-                       <widget class="QLabel" name="label_132">
-                        <property name="text">
-                         <string>Diagram placement (X,Y,Z) in milimeters</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="6" column="1">
-                       <layout class="QHBoxLayout" name="horizontalLayout_66">
-                        <property name="leftMargin">
-                         <number>5</number>
-                        </property>
-                        <property name="topMargin">
-                         <number>5</number>
-                        </property>
-                        <property name="rightMargin">
-                         <number>5</number>
-                        </property>
-                        <property name="bottomMargin">
-                         <number>5</number>
-                        </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                   <widget class="QWidget" name="probeProcessingEmergeTab_fieldTab">
+                    <attribute name="title">
+                     <string>Field</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="verticalLayout_47">
+                     <item>
+                      <widget class="QGroupBox" name="fieldEMergeGroupProcessing">
+                       <property name="title">
+                        <string>Post-Processing: EMerge: Field Display Script</string>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_52">
                         <item>
-                         <widget class="QLabel" name="label_133">
+                         <widget class="QPushButton" name="writeFieldScriptEmergeButton">
                           <property name="text">
-                           <string>X</string>
+                           <string>Write Field Display Script</string>
                           </property>
                          </widget>
                         </item>
                         <item>
-                         <widget class="QDoubleSpinBox" name="diagramPlacementXNF2FFEmerge">
-                          <property name="decimals">
-                           <number>3</number>
+                         <layout class="QFormLayout" name="formLayout_3">
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_136">
+                            <property name="text">
+                             <string>Frequency to plot field (MHz)</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+                            <property name="decimals">
+                             <number>3</number>
+                            </property>
+                            <property name="maximum">
+                             <double>100000000000.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_137">
+                            <property name="text">
+                             <string>Field</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="QComboBox" name="typeFieldProcessingEmerge">
+                            <item>
+                             <property name="text">
+                              <string>normE</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>normH</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ex</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ey</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ez</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Hx</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Hy</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Hz</string>
+                             </property>
+                            </item>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="label_138">
+                            <property name="text">
+                             <string>Metric</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <widget class="QComboBox" name="metricFieldProcessingEmerge">
+                            <item>
+                             <property name="text">
+                              <string>abs</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>real</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>imag</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>complex</string>
+                             </property>
+                            </item>
+                           </widget>
+                          </item>
+                          <item row="3" column="0">
+                           <widget class="QLabel" name="label_139">
+                            <property name="text">
+                             <string>Discretization step size</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="1">
+                           <widget class="QDoubleSpinBox" name="discretizationStepSizeFieldProcessingEmerge">
+                            <property name="decimals">
+                             <number>3</number>
+                            </property>
+                            <property name="maximum">
+                             <double>10000000.000000000000000</double>
+                            </property>
+                            <property name="singleStep">
+                             <double>0.010000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </item>
+                        <item>
+                         <widget class="QGroupBox" name="groupBox_11">
+                          <property name="title">
+                           <string>Cutplane (meters)</string>
                           </property>
-                          <property name="minimum">
-                           <double>-100000000.000000000000000</double>
-                          </property>
-                          <property name="maximum">
-                           <double>100000000.000000000000000</double>
-                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_67">
+                           <item>
+                            <widget class="QLabel" name="label_142">
+                             <property name="text">
+                              <string>X</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+                             <property name="decimals">
+                              <number>3</number>
+                             </property>
+                             <property name="minimum">
+                              <double>-10000000.000000000000000</double>
+                             </property>
+                             <property name="maximum">
+                              <double>10000000.000000000000000</double>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QLabel" name="label_141">
+                             <property name="text">
+                              <string>Y</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+                             <property name="decimals">
+                              <number>3</number>
+                             </property>
+                             <property name="minimum">
+                              <double>-10000000.000000000000000</double>
+                             </property>
+                             <property name="maximum">
+                              <double>10000000.000000000000000</double>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QLabel" name="label_140">
+                             <property name="text">
+                              <string>Z</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
+                             <property name="decimals">
+                              <number>3</number>
+                             </property>
+                             <property name="minimum">
+                              <double>-10000000.000000000000000</double>
+                             </property>
+                             <property name="maximum">
+                              <double>10000000.000000000000000</double>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <spacer name="horizontalSpacer_57">
+                             <property name="orientation">
+                              <enum>Qt::Orientation::Horizontal</enum>
+                             </property>
+                             <property name="sizeHint" stdset="0">
+                              <size>
+                               <width>40</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </spacer>
+                           </item>
+                          </layout>
                          </widget>
                         </item>
                         <item>
-                         <widget class="QLabel" name="label_134">
-                          <property name="text">
-                           <string>Y</string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QDoubleSpinBox" name="diagramPlacementYNF2FFEmerge">
-                          <property name="decimals">
-                           <number>3</number>
-                          </property>
-                          <property name="minimum">
-                           <double>-100000000.000000000000000</double>
-                          </property>
-                          <property name="maximum">
-                           <double>100000000.000000000000000</double>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QLabel" name="label_135">
-                          <property name="text">
-                           <string>Z</string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QDoubleSpinBox" name="diagramPlacementZNF2FFEmerge">
-                          <property name="decimals">
-                           <number>3</number>
-                          </property>
-                          <property name="minimum">
-                           <double>-100000000.000000000000000</double>
-                          </property>
-                          <property name="maximum">
-                           <double>100000000.000000000000000</double>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <spacer name="horizontalSpacer_56">
+                         <spacer name="verticalSpacer_36">
                           <property name="orientation">
-                           <enum>Qt::Orientation::Horizontal</enum>
+                           <enum>Qt::Orientation::Vertical</enum>
                           </property>
                           <property name="sizeHint" stdset="0">
                            <size>
-                            <width>40</width>
-                            <height>20</height>
+                            <width>20</width>
+                            <height>40</height>
                            </size>
                           </property>
                          </spacer>
                         </item>
                        </layout>
-                      </item>
-                      <item row="7" column="1">
-                       <widget class="QCheckBox" name="diagramIsotropicNF2FFEmerge">
-                        <property name="text">
-                         <string>Isotropic</string>
-                        </property>
-                       </widget>
-                      </item>
-                     </layout>
-                    </item>
-                    <item>
-                     <spacer name="verticalSpacer_35">
-                      <property name="orientation">
-                       <enum>Qt::Orientation::Vertical</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>20</width>
-                        <height>40</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                   </layout>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
                   </widget>
                  </item>
                 </layout>
