@@ -289,6 +289,30 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                         genScript += "\n"
                         print("Line segments from sketch added.")
 
+                    elif freeCadObj.Name.startswith('Sphere'):
+                        bbox = freeCadObj.Shape.BoundBox
+
+                        radius = max(
+                            bbox.XMax - bbox.XMin,
+                            bbox.YMax - bbox.YMin,
+                            bbox.ZMax - bbox.ZMin
+                        ) / 2.0
+
+                        # Get center
+                        position = (
+                            (bbox.XMin + bbox.XMax) / 2,
+                            (bbox.YMin + bbox.YMax) / 2,
+                            (bbox.ZMin + bbox.ZMax) / 2
+                        )
+
+                        # TODO: Use variable with units to properly calculate radius value, now for testing when working with models mostly in mm
+                        genScript += f"position = {str(position)}\n"
+                        genScript += f"position = tuple([x*mm for x in position])\n"
+                        genScript += f"newSphereObj = em.geo.Sphere(radius={str(radius)}*mm, position=position)\n"
+                        genScript += f"newSphereObj.give_name('{freeCadObj.Label}')\n"
+                        genScript += f"newSphereObj.name = '{freeCadObj.Label}'\n"
+                        genScript += f"newSphereObj.prio_set({objModelPriority})\n"
+
                     else:
                         #
                         #   Going through each concrete material items and generate their .step files
@@ -997,7 +1021,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
 
                     genScript += f"boundary_selection = None\n"
                     genScript += f"for geometryObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():\n"
-                    genScript += f"\tif geometryObj.name == 'airbox' or geometryObj.name.startswith('airbox'):\n"
+                    genScript += f"\tif geometryObj.name == '{childName}' or geometryObj.name.startswith('{childName}'):\n"
                     genScript += f"\t\tboundary_selection = geometryObj.boundary()\n"
                     genScript += f"\n"
 

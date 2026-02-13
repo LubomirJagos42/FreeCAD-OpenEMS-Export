@@ -7955,285 +7955,647 @@ than min spacing</string>
               </widget>
              </item>
              <item>
-              <widget class="QGroupBox" name="nf2ffGroupProcessing">
-               <property name="title">
-                <string>Post-Processing: NF2FF Display Script</string>
+              <widget class="QTabWidget" name="nf2ffProcessingTab">
+               <property name="currentIndex">
+                <number>0</number>
                </property>
-               <layout class="QGridLayout" name="gridLayout_9">
-                <item row="2" column="1">
-                 <layout class="QHBoxLayout" name="horizontalLayout_54">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_93">
-                    <property name="text">
-                     <string>Active port for drawing far field</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QComboBox" name="portNf2ffInput"/>
-                  </item>
-                 </layout>
-                </item>
-                <item row="4" column="1">
-                 <layout class="QHBoxLayout" name="horizontalLayout_24">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_40">
-                    <property name="text">
-                     <string>Frequency points count between f0 +- fc</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QSpinBox" name="portNf2ffFreqCount">
-                    <property name="minimum">
-                     <number>1</number>
-                    </property>
-                    <property name="maximum">
-                     <number>1000000000</number>
-                    </property>
-                    <property name="value">
-                     <number>501</number>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-                <item row="5" column="1">
-                 <layout class="QGridLayout" name="gridLayout_10">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item row="1" column="1">
-                   <widget class="QDoubleSpinBox" name="portNf2ffThetaStart">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="minimum">
-                     <double>-360.000000000000000</double>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="3">
-                   <widget class="QDoubleSpinBox" name="portNf2ffPhiStep">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>2.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="2">
-                   <widget class="QDoubleSpinBox" name="portNf2ffThetaStop">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="minimum">
-                     <double>-360.000000000000000</double>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>180.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_42">
-                    <property name="text">
-                     <string>phi (deg)</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="2">
-                   <widget class="QDoubleSpinBox" name="portNf2ffPhiStop">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="minimum">
-                     <double>-360.000000000000000</double>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>360.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QDoubleSpinBox" name="portNf2ffPhiStart">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="minimum">
-                     <double>-360.000000000000000</double>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="2">
-                   <widget class="QLabel" name="label_44">
-                    <property name="text">
-                     <string>Stop</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_41">
-                    <property name="text">
-                     <string>theta (deg)</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="3">
-                   <widget class="QDoubleSpinBox" name="portNf2ffThetaStep">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>0.500000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="3">
-                   <widget class="QLabel" name="label_45">
-                    <property name="text">
-                     <string>Step</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QLabel" name="label_43">
-                    <property name="text">
-                     <string>Start</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-                <item row="1" column="1">
-                 <layout class="QHBoxLayout" name="horizontalLayout_53">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_85">
-                    <property name="text">
-                     <string>NF2FF probe</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QComboBox" name="portNf2ffObjectList"/>
-                  </item>
-                 </layout>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QPushButton" name="writeNf2ffButton">
-                  <property name="text">
-                   <string>Write NF2FF </string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="6" column="1">
-                 <widget class="QLabel" name="label_50">
-                  <property name="text">
-                   <string>Hints:
+               <widget class="QWidget" name="nf2ffProcessingTab_openemsTab">
+                <attribute name="title">
+                 <string>openEMS</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="verticalLayout_43">
+                 <item>
+                  <widget class="QGroupBox" name="nf2ffOpenEMSGroupProcessing">
+                   <property name="title">
+                    <string>Post-Processing: OpenEMS: NF2FF Display Script</string>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_9">
+                    <item row="2" column="1">
+                     <layout class="QHBoxLayout" name="horizontalLayout_54">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_93">
+                        <property name="text">
+                         <string>Active port for drawing far field</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QComboBox" name="portNf2ffInput"/>
+                      </item>
+                     </layout>
+                    </item>
+                    <item row="4" column="1">
+                     <layout class="QHBoxLayout" name="horizontalLayout_24">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_40">
+                        <property name="text">
+                         <string>Frequency points count between f0 +- fc</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QSpinBox" name="portNf2ffFreqCount">
+                        <property name="minimum">
+                         <number>1</number>
+                        </property>
+                        <property name="maximum">
+                         <number>1000000000</number>
+                        </property>
+                        <property name="value">
+                         <number>501</number>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item row="5" column="1">
+                     <layout class="QGridLayout" name="gridLayout_10">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item row="1" column="1">
+                       <widget class="QDoubleSpinBox" name="portNf2ffThetaStart">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="minimum">
+                         <double>-360.000000000000000</double>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="3">
+                       <widget class="QDoubleSpinBox" name="portNf2ffPhiStep">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                        <property name="value">
+                         <double>2.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="2">
+                       <widget class="QDoubleSpinBox" name="portNf2ffThetaStop">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="minimum">
+                         <double>-360.000000000000000</double>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                        <property name="value">
+                         <double>180.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="0">
+                       <widget class="QLabel" name="label_42">
+                        <property name="text">
+                         <string>phi (deg)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="2">
+                       <widget class="QDoubleSpinBox" name="portNf2ffPhiStop">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="minimum">
+                         <double>-360.000000000000000</double>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                        <property name="value">
+                         <double>360.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="1">
+                       <widget class="QDoubleSpinBox" name="portNf2ffPhiStart">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="minimum">
+                         <double>-360.000000000000000</double>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="2">
+                       <widget class="QLabel" name="label_44">
+                        <property name="text">
+                         <string>Stop</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_41">
+                        <property name="text">
+                         <string>theta (deg)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="3">
+                       <widget class="QDoubleSpinBox" name="portNf2ffThetaStep">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                        <property name="value">
+                         <double>0.500000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="3">
+                       <widget class="QLabel" name="label_45">
+                        <property name="text">
+                         <string>Step</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QLabel" name="label_43">
+                        <property name="text">
+                         <string>Start</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item row="1" column="1">
+                     <layout class="QHBoxLayout" name="horizontalLayout_53">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_85">
+                        <property name="text">
+                         <string>NF2FF probe</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QComboBox" name="portNf2ffObjectList"/>
+                      </item>
+                     </layout>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QPushButton" name="writeNf2ffButton">
+                      <property name="text">
+                       <string>Write NF2FF</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="6" column="1">
+                     <widget class="QLabel" name="label_50">
+                      <property name="text">
+                       <string>Hints:
 360deg display settings:
     theta: start: 0deg stop:180deg
     phi: start: 0deg stop: 360deg</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <layout class="QHBoxLayout" name="horizontalLayout_57">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_104">
-                    <property name="text">
-                     <string>Frequency to plot far field (MHz)</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QDoubleSpinBox" name="portNf2ffFreq">
-                    <property name="decimals">
-                     <number>8</number>
-                    </property>
-                    <property name="maximum">
-                     <double>10000000000.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-               </layout>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="1">
+                     <layout class="QHBoxLayout" name="horizontalLayout_57">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_104">
+                        <property name="text">
+                         <string>Frequency to plot far field (MHz)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QDoubleSpinBox" name="portNf2ffFreq">
+                        <property name="decimals">
+                         <number>8</number>
+                        </property>
+                        <property name="maximum">
+                         <double>10000000000.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="nf2ffProcessingTab_emergeTab">
+                <attribute name="title">
+                 <string>EMerge</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="verticalLayout_44">
+                 <item>
+                  <widget class="QGroupBox" name="nf2ffEMergeGroupProcessing">
+                   <property name="title">
+                    <string>Post-Processing: EMerge: NF2FF Display Script</string>
+                   </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_45">
+                    <item>
+                     <widget class="QPushButton" name="writeNf2ffEmergeButton">
+                      <property name="text">
+                       <string>Write NF2FF</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <layout class="QFormLayout" name="formLayout_2">
+                      <property name="horizontalSpacing">
+                       <number>0</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>5</number>
+                      </property>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_126">
+                        <property name="text">
+                         <string>Absorbing boundary condition</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QComboBox" name="portNf2ffEmergeObjectList"/>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_127">
+                        <property name="text">
+                         <string>Frequency to plot far field (MHz)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QDoubleSpinBox" name="boundaryNf2ffEmergeFreq">
+                        <property name="decimals">
+                         <number>8</number>
+                        </property>
+                        <property name="maximum">
+                         <double>10000000000.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="0">
+                       <widget class="QLabel" name="label_128">
+                        <property name="text">
+                         <string>Polarization</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="1">
+                       <widget class="QComboBox" name="polarizationNf2ffEmerge">
+                        <item>
+                         <property name="text">
+                          <string>normE</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Erhcp</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Elhcp</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Etheta</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Ephi</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Ex</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Ey</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Ez</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>AR</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item row="3" column="0">
+                       <widget class="QLabel" name="label_129">
+                        <property name="text">
+                         <string>Quantity</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="3" column="1">
+                       <widget class="QComboBox" name="quantityNf2ffEmerge">
+                        <item>
+                         <property name="text">
+                          <string>abs</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>real</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>imag</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>angle</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item row="4" column="0">
+                       <spacer name="horizontalSpacer_54">
+                        <property name="orientation">
+                         <enum>Qt::Orientation::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>320</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item row="4" column="1">
+                       <layout class="QHBoxLayout" name="horizontalLayout_65">
+                        <property name="leftMargin">
+                         <number>5</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>5</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>5</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>5</number>
+                        </property>
+                        <item>
+                         <widget class="QCheckBox" name="checkBox">
+                          <property name="text">
+                           <string>Plot using dB</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QLabel" name="label_130">
+                          <property name="text">
+                           <string>dB floor</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QDoubleSpinBox" name="doubleSpinBox">
+                          <property name="minimum">
+                           <double>-100000000.000000000000000</double>
+                          </property>
+                          <property name="maximum">
+                           <double>100000000.000000000000000</double>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="horizontalSpacer_55">
+                          <property name="orientation">
+                           <enum>Qt::Orientation::Horizontal</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>40</width>
+                            <height>20</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
+                      </item>
+                      <item row="5" column="0">
+                       <widget class="QLabel" name="label_131">
+                        <property name="text">
+                         <string>Diagram maximum size</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="5" column="1">
+                       <widget class="QDoubleSpinBox" name="diagramRMaxNF2FFEmerge"/>
+                      </item>
+                      <item row="6" column="0">
+                       <widget class="QLabel" name="label_132">
+                        <property name="text">
+                         <string>Diagram placement (X,Y,Z) in milimeters</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="6" column="1">
+                       <layout class="QHBoxLayout" name="horizontalLayout_66">
+                        <property name="leftMargin">
+                         <number>5</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>5</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>5</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>5</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_133">
+                          <property name="text">
+                           <string>X</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QDoubleSpinBox" name="diagramPlacementXNF2FFEmerge">
+                          <property name="decimals">
+                           <number>3</number>
+                          </property>
+                          <property name="minimum">
+                           <double>-100000000.000000000000000</double>
+                          </property>
+                          <property name="maximum">
+                           <double>100000000.000000000000000</double>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QLabel" name="label_134">
+                          <property name="text">
+                           <string>Y</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QDoubleSpinBox" name="diagramPlacementYNF2FFEmerge">
+                          <property name="decimals">
+                           <number>3</number>
+                          </property>
+                          <property name="minimum">
+                           <double>-100000000.000000000000000</double>
+                          </property>
+                          <property name="maximum">
+                           <double>100000000.000000000000000</double>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QLabel" name="label_135">
+                          <property name="text">
+                           <string>Z</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QDoubleSpinBox" name="diagramPlacementZNF2FFEmerge">
+                          <property name="decimals">
+                           <number>3</number>
+                          </property>
+                          <property name="minimum">
+                           <double>-100000000.000000000000000</double>
+                          </property>
+                          <property name="maximum">
+                           <double>100000000.000000000000000</double>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="horizontalSpacer_56">
+                          <property name="orientation">
+                           <enum>Qt::Orientation::Horizontal</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>40</width>
+                            <height>20</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
+                      </item>
+                      <item row="7" column="1">
+                       <widget class="QCheckBox" name="diagramIsotropicNF2FFEmerge">
+                        <property name="text">
+                         <string>Isotropic</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <spacer name="verticalSpacer_35">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
               </widget>
              </item>
              <item>

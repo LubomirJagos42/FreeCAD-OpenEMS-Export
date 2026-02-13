@@ -555,6 +555,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			boundaryConditionTabIndex = self.form.openEMSTab.indexOf(self.form.boundaryConditionTab)
 			self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "")
 
+			# post-processing tab nf2ff tab set
+			self.form.nf2ffProcessingTab.setCurrentIndex(0)
+			self.form.nf2ffProcessingTab_openemsTab.setEnabled(True)
+			self.form.nf2ffProcessingTab_emergeTab.setEnabled(False)
+
 		elif (solverTypeStr.lower() == "emerge"):
 			self.form.generateOpenEMSScriptButton.setText("Generate EMerge Files")
 			self.form.radioButton_octaveType.setEnabled(False)
@@ -590,6 +595,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 			boundaryConditionTabIndex = self.form.openEMSTab.indexOf(self.form.boundaryConditionTab)
 			self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "Boundary Conditions")
+
+			# post-processing tab nf2ff tab set
+			self.form.nf2ffProcessingTab.setCurrentIndex(1)
+			self.form.nf2ffProcessingTab_openemsTab.setEnabled(False)
+			self.form.nf2ffProcessingTab_emergeTab.setEnabled(True)
 
 		else:
 			pass
