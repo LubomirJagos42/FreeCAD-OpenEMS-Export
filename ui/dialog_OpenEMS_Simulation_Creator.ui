@@ -8725,14 +8725,14 @@ than min spacing</string>
                             </item>
                            </widget>
                           </item>
-                          <item row="3" column="0">
+                          <item row="4" column="0">
                            <widget class="QLabel" name="label_139">
                             <property name="text">
                              <string>Discretization step size</string>
                             </property>
                            </widget>
                           </item>
-                          <item row="3" column="1">
+                          <item row="4" column="1">
                            <widget class="QDoubleSpinBox" name="discretizationStepSizeFieldProcessingEmerge">
                             <property name="decimals">
                              <number>3</number>
@@ -8742,6 +8742,13 @@ than min spacing</string>
                             </property>
                             <property name="singleStep">
                              <double>0.010000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="1">
+                           <widget class="QCheckBox" name="animateFieldProcessingEmerge">
+                            <property name="text">
+                             <string>CheckBox</string>
                             </property>
                            </widget>
                           </item>
