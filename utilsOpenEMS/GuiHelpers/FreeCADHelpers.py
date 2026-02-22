@@ -136,5 +136,8 @@ class FreeCADHelpers(CadInterface):
             partToExport.Shape.exportStep(exportFileName)
 
     def getCurrentDocumentFileName(self):
-        currentFileName = os.path.basename(FreeCAD.ActiveDocument.FileName)
+        '''
+        :return: FreeCAD filename without extension
+        '''
+        currentFileName = os.path.splitext(os.path.basename(FreeCAD.ActiveDocument.FileName))[0]
         return currentFileName

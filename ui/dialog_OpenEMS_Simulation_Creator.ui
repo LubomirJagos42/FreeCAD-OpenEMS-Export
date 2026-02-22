@@ -8748,7 +8748,7 @@ than min spacing</string>
                           <item row="5" column="1">
                            <widget class="QCheckBox" name="animateFieldProcessingEmerge">
                             <property name="text">
-                             <string>CheckBox</string>
+                             <string>animate</string>
                             </property>
                            </widget>
                           </item>

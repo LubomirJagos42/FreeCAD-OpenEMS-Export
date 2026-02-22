@@ -24,6 +24,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
     def __init__(self, form, statusBar = None):
         super(PythonScriptLinesGenerator3_emerge, self).__init__(form, statusBar)
         self.portBoundaryConditionScriptLinesBuffer = []
+        self.createdObjectNameList = []
 
         self.cadHelpers = FactoryCadInterface.createHelper()
 
@@ -134,6 +135,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                 for k in range(item.childCount()):
                     simObjectCounter += 1               #counter for objects
                     childName = item.child(k).text(0)
+
+                    self.createdObjectNameList.append(childName)    #add this object into list of created objects which will be used to create named group in exported mesh
 
                     #
                     #	getting item priority
@@ -359,6 +362,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
             for k in range(item.childCount()):
                 childName = item.child(k).text(0)
 
+                self.createdObjectNameList.append(childName)  # add this object into list of created objects which will be used to create named group in exported mesh
+
                 #
                 #	getting item priority
                 #
@@ -539,6 +544,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
             for k in range(item.childCount()):
                 childName = item.child(k).text(0)
 
+                self.createdObjectNameList.append(childName)  # add this object into list of created objects which will be used to create named group in exported mesh
+
                 genScript += "## PORT - " + currSetting.getName() + " - " + childName + "\n"
 
                 freecadObjects = [i for i in objs if (i.Label) == childName]
@@ -598,18 +605,28 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
 
                         genScript += f"port[{str(genScriptPortCount)}]['portExcitationAmplitude'] = {str(currSetting.excitationAmplitude)}\n"
 
+                        PORT_NAME = childName
                         if bbCoords.XLength == 0 or bbCoords.YLength == 0 or bbCoords.ZLength == 0:
+
+                            #
+                            #   If port is active create on the fly param with power which is passed to function to create lumped port
+                            #
+                            excitationPowerParamStr = f", power={portVariableName}['portExcitationAmplitude']" if currSetting.isActive else ""
+
+                            #
+                            #   Create lumped port script line based on its orientation for now supports X,Y,Z axis
+                            #
                             if bbCoords.XLength == 0:
-                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[0,h,0], v=[0,0,th])\n"
-                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['h'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'], power={portVariableName}['portExcitationAmplitude'])\n")
+                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=[0,h,0], v=[0,0,th])\n"
+                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['h'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR']{excitationPowerParamStr})\n")
                             elif bbCoords.YLength == 0:
-                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[w,0,0], v=[0,0,th])\n"
-                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'], power={portVariableName}['portExcitationAmplitude'])\n")
+                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=[w,0,0], v=[0,0,th])\n"
+                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['th'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR']{excitationPowerParamStr})\n")
                             elif bbCoords.ZLength == 0:
-                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='port_{str(genScriptPortCount)}', origin=portStart, u=[w,0,0], v=[0,h,0])\n"
-                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['h'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR'], power={portVariableName}['portExcitationAmplitude'])\n")
+                                genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=[w,0,0], v=[0,h,0])\n"
+                                self.portBoundaryConditionScriptLinesBuffer.append(f"simulationObj.mw.bc.LumpedPort({portVariableName}['object'], {str(genScriptPortCount)}, width={portVariableName}['w'], height={portVariableName}['h'], direction={portVariableName}['portDirection'], Z0={portVariableName}['portR']{excitationPowerParamStr})\n")
                         else:
-                            genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(name='port_{str(genScriptPortCount)}', width=w, height=h, depth=th, position=tuple(portStart))\n"
+                            genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(name='{PORT_NAME}', width=w, height=h, depth=th, position=tuple(portStart))\n"
 
                         internalPortName = currSetting.name + " - " + obj.Label
                         self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
@@ -1322,12 +1339,13 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "#\n"
         genScript += "# This file has been automatically generated. Manual changes may be overwritten.\n"
         genScript += "#\n"
+        genScript += "\n"
         genScript += "### Import Libraries\n"
         genScript += "import math\n"
         genScript += "import numpy as np\n"
         genScript += "import emerge as em\n"
         genScript += "import os, tempfile, shutil\n"
-        genScript += "#\n"
+        genScript += "\n"
 
         genScript += "# Change current path to script file folder\n"
         genScript += "#\n"
@@ -1470,6 +1488,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         """
 
         self.portBoundaryConditionScriptLinesBuffer = []
+        self.createdObjectNameList = []
 
         # Create outputDir relative to local FreeCAD file if output dir does not exists
         #   if outputDir is set to same value
@@ -1603,6 +1622,41 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         #
         genScript += self.getBoundaryConditionScriptLines(itemsByClassName.get("BoundaryConditionSettingsItem", None))
 
+        genScript += "#######################################################################################################################################\n"
+        genScript += "# EXPERIMENT EXPORT MESH WITH NAMED GROUP OF MESH\n"
+        genScript += "#######################################################################################################################################\n"
+        genScript += "import gmsh\n"
+        genScript += "\n"
+        genScript += "def createGmshNamedGroup(geometryObjName: str, groupName: str, groupTag: int = -1, useSuffixToRecognizeGeometryName: bool = True):\n"
+        genScript += "\tobjectTag1DList = []\n"
+        genScript += "\tobjectTag2DList = []\n"
+        genScript += "\tobjectTag3DList = []\n"
+        genScript += "\n"
+        genScript += "\tfor geometryObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():\n"
+        genScript += "\t\tif geometryObj.name == geometryObjName or geometryObj.name.startswith(geometryObjName + ('_' if useSuffixToRecognizeGeometryName else '')):\n"
+        genScript += "\t\t\tfor tagTuple in geometryObj.dimtags:\n"
+        genScript += "\t\t\t\tif tagTuple[0] == 1:\n"
+        genScript += "\t\t\t\t\tobjectTag1DList.append(tagTuple[1])\n"
+        genScript += "\t\t\t\tif tagTuple[0] == 2:\n"
+        genScript += "\t\t\t\t\tobjectTag2DList.append(tagTuple[1])\n"
+        genScript += "\t\t\t\tif tagTuple[0] == 3:\n"
+        genScript += "\t\t\t\t\tobjectTag3DList.append(tagTuple[1])\n"
+        genScript += "\n"
+        genScript += "\tif groupTag > -1:\n"
+        genScript += "\t\tgmsh.model.addPhysicalGroup(1, objectTag1DList, name=groupName, tag=groupTag)\n"
+        genScript += "\t\tgmsh.model.addPhysicalGroup(2, objectTag2DList, name=groupName, tag=groupTag + 1)\n"
+        genScript += "\t\tgmsh.model.addPhysicalGroup(3, objectTag3DList, name=groupName, tag=groupTag + 2)\n"
+        genScript += "\telse:\n"
+        genScript += "\t\tgmsh.model.addPhysicalGroup(1, objectTag1DList, name=groupName)\n"
+        genScript += "\t\tgmsh.model.addPhysicalGroup(2, objectTag2DList, name=groupName)\n"
+        genScript += "\t\tgmsh.model.addPhysicalGroup(3, objectTag3DList, name=groupName)\n"
+        genScript += "\n"
+        for objectName in set(self.createdObjectNameList):  #converting list to set make it unique, because some names could be under more categories and we want to use them just once
+            genScript += f"createGmshNamedGroup('{objectName}', '{objectName}')\n"
+        genScript += "\n"
+        genScript += f"simulationObj.export('{simulationName}.msh')\n"
+        genScript += "\n"
+
         #
         #   Display model in window first as volumes, then it displays mesh.
         #
@@ -1648,7 +1702,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
     #
     #	Write NF2FF Button clicked, generate script to display far field pattern
     #
-    def writeNf2ffButtonClicked(self, outputDir=None, nf2ffBoxName="", nf2ffBoxInputPortName="", plotFrequency=0, freqCount=501):
+    def writeNf2ffButtonClicked(self, outputDir=None):
         genScript = ""
         genScript += "# Plot far field for structure.\n"
         genScript += "#\n"
@@ -1660,67 +1714,6 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "print(currDir)\n"
         genScript += "\n"
 
-        genScript += "## setup FDTD parameter & excitation function\n"
-        genScript += "max_timesteps = " + str(self.form.simParamsMaxTimesteps.value()) + "\n"
-        genScript += "min_decrement = " + str(self.form.simParamsMinDecrement.value()) + " # 10*log10(min_decrement) dB  (i.e. 1E-5 means -50 dB)\n"
-
-        if (self.getModelCoordsType() == "cylindrical"):
-            genScript += "CSX = CSXCAD.ContinuousStructure(CoordSystem=1)\n"
-            genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement, CoordSystem=1)\n"
-        else:
-            genScript += "CSX = CSXCAD.ContinuousStructure()\n"
-            genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement)\n"
-
-        genScript += "FDTD.SetCSX(CSX)\n"
-        genScript += "\n"
-
-        # List categories and items.
-        itemsByClassName = self.getItemsByClassName()
-
-        # Write boundary conditions definitions.
-        genScript += self.getBoundaryConditionsScriptLines()
-
-        # Write coordinate system definitions.
-        genScript += self.getCoordinateSystemScriptLines()
-
-        # Write excitation definition.
-        genScript += self.getExcitationScriptLines(definitionsOnly=True)
-
-        # Write material definitions.
-        genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None), outputDir, generateObjects=False)
-
-        # Write grid definitions.
-        genScript += self.getOrderedGridDefinitionsScriptLines(itemsByClassName.get("GridSettingsItem", None))
-
-        # Write port definitions:
-        #    - must be after gridlines definitions
-        #    - must be before nf2ff
-        genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None))
-
-        # Write probes definitions
-        genScript += self.getProbeDefinitionsScriptLines(itemsByClassName.get("ProbeSettingsItem", None))
-
-        # Write NF2FF probe grid definitions. THIS NEEDS TO BE DONE TO FILL self.internalNF2FFIndexNamesList[] with keys and indexes, key = "[nf2ff probe category name] - [object label]"
-        genScript += self.getNF2FFDefinitionsScriptLines(itemsByClassName.get("ProbeSettingsItem", None))
-
-        # Write scriptlines which removes gridline too close, must be enabled in GUI, it's checking checkbox inside
-        genScript += self.getMinimalGridlineSpacingScriptLines()
-
-        #
-        #   Current NF2FF box index
-        #
-        print(f"writeNf2ffButtonClicked() > generate script, getting nf2ff box index for '{nf2ffBoxName}'")
-        currentNF2FFBoxIndex = self.internalNF2FFIndexNamesList[nf2ffBoxName.replace(" ", "_")]
-        currentNF2FFInputPortIndex = self.internalPortIndexNamesList[nf2ffBoxInputPortName]
-
-        thetaStart = str(self.form.portNf2ffThetaStart.value())
-        thetaStop = str(self.form.portNf2ffThetaStop.value())
-        thetaStep = str(self.form.portNf2ffThetaStep.value())
-
-        phiStart = str(self.form.portNf2ffPhiStart.value())
-        phiStop = str(self.form.portNf2ffPhiStop.value())
-        phiStep = str(self.form.portNf2ffPhiStep.value())
-
         #
         #   ATTENTION THIS IS SPECIFIC FOR FAR FIELD PLOTTING, plotFrequency and frequencies count
         #       port is calculated to get P_in (input power)
@@ -1729,113 +1722,64 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
 #######################################################################################################################################
 # Farfield plot and 3D gain generated
 #######################################################################################################################################
-
-def generatorFunc_DumpFF2VTK(farfield, t, a, filename):
-    '''
-       Create .vtk file
-       params:
-           farfield: 2D array of values of field
-           t:        theta angles in radians
-           a:        phi angles in radians
-           filename: output file name
-    '''
-
-    with (open(filename, 'w') as outFile):
-         outFile.write(f"# vtk DataFile Version 3.0\\n")
-         outFile.write(f"Structured Grid by python-interface of openEMS\\n")
-         outFile.write(f"ASCII\\n")
-         outFile.write(f"DATASET STRUCTURED_GRID\\n")
-
-         outFile.write(f"DIMENSIONS 1 {{len(t)}} {{len(a)}}\\n")
-         outFile.write(f"POINTS {{len(t)*len(a)}} double\\n")
-
-         for na in range(len(a)):
-             for nt in range(len(t)):
-                 val1 = farfield[nt][na]*math.sin(t[nt])*math.cos(a[na])
-                 val2 = farfield[nt][na]*math.sin(t[nt])*math.sin(a[na])
-                 val3 = farfield[nt][na]*math.cos(t[nt])
-                 outFile.write(f"{{val1}} {{val2}} {{val3}}\\n")
-
-         outFile.write(f'\\n\\n');
-         outFile.write(f'POINT_DATA {{len(t)*len(a)}}\\n');
-         outFile.write(f'SCALARS gain double 1\\n');
-         outFile.write(f'LOOKUP_TABLE default\\n');
-         for na in range(len(a)):
-             for nt in range(len(t)):
-                 outFile.write(f"{{farfield[nt][na]}}\\n")
-
+## EMerge simulation - S11
 #
-# Frequency range
 #
-freq = np.linspace(max([0, f0-fc]), f0+fc, {freqCount})
-plotFrequency = {plotFrequency}
-port[{currentNF2FFInputPortIndex}].CalcPort(Sim_Path, freq)
-P_in_0 = np.interp(f0, freq, port[{currentNF2FFInputPortIndex}].P_acc)
+import emerge as em
+import numpy as np
+from emerge.plot import smith, plot_sp
+import os
 
-#
-# Calculate the far field at phi=0 degrees and at phi=90 degrees
-#   Using angles in degrees.
-#
-thetaRange = arangeWithEndpoint({thetaStart}, {thetaStop}, {thetaStep})
-phiRange = arangeWithEndpoint({phiStart}, {phiStop}, {phiStep}) - 180
+simulationObj = em.Simulation("Discone Antenna.FCStd", load_file=True)
+simulationResult = simulationObj.data.mw
 
-print( 'calculating the 3D far field...' )
+#######################################################################################################################################
+# EXCITATION basic
+#######################################################################################################################################
+fmin = 0.5*1000000000.0
+fmax = 5.0*1000000000.0
+resolution = 0.3
+npoints = 7
+simulationObj.mw.set_frequency_range(fmin, fmax, npoints)
+simulationObj.mw.set_resolution(resolution)
 
-#
-#	nf2ffBoxList[<name>] - NF2FF box structure which should be calculated
-#       INPUT ANGLES ARE IN DEGREES for python interface!
-#
-nf2ff = nf2ffBoxList['{nf2ffBoxName.replace(" ", "_")}'].CalcNF2FF(Sim_Path, plotFrequency, thetaRange, phiRange, outfile='3D_Pattern.h5', verbose=True, read_cached=False)
+freqs = simulationResult.scalar.grid.freq
+freq_dense = np.linspace(fmin, fmax, 101)
 
-Dmax_dB = 10*log10(nf2ff.Dmax[0])
-E_norm = 20.0*log10(nf2ff.E_norm[0]/np.max(nf2ff.E_norm[0])) + 10*log10(nf2ff.Dmax[0])
+# S11 = simulationResult.scalar.grid.model_S(1, 1, freq_dense)  # reflection coefficient
+# plot_sp(freq_dense, S11)  # plot return loss in dB
+# smith(S11, f=freq_dense, labels='S11')  # Smith chart of S11
 
-theta_HPBW = thetaRange[ np.where(squeeze(E_norm[:,phiRange==0])<Dmax_dB-3)[0][0] ]
+#######################################################################################################################################
+# FAR FIELD PLOT
+#######################################################################################################################################
+mm = 0.001
+currDir = os.getcwd()
 
-# display power and directivity
-print('radiated power: Prad = ' + str(nf2ff.Prad[0]) + ' Watt')
-print('directivity: Dmax = ' + str(Dmax_dB) + ' dBi)')
-print('efficiency: nu_rad = ' + str(100*nf2ff.Prad[0]/P_in_0) + ' %')
-print('theta_HPBW = ' + str(theta_HPBW) + '°')
+#######################################################################################################################################
+#   ADD BOUNDARY SELECTION SAME AS SIMULATION FILE
+#######################################################################################################################################
 
-with (open('openEMS_simulation_nf2ff_info.txt', 'w') as outFile):
-    outFile.write(f'radiated power: Prad = {{nf2ff.Prad[0]}} Watt\\n')
-    outFile.write(f'directivity: Dmax = {{Dmax_dB}} dBi)\\n')
-    outFile.write(f'efficiency: nu_rad = {{100*nf2ff.Prad[0]/P_in_0}} %\\n')
-    outFile.write(f'theta_HPBW = {{theta_HPBW}}°\\n')
-    outFile.write(f'\\n')
+boundary_selection = None
+for geometryObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():
+	if geometryObj.name == 'airbox' or geometryObj.name.startswith('airbox'):
+		boundary_selection = geometryObj.boundary()
 
-##
-E_norm = 20.0*log10(nf2ff.E_norm[0]/np.max(nf2ff.E_norm[0])) + 10*log10(nf2ff.Dmax[0])
-E_CPRH = 20.0*log10(np.abs(nf2ff.E_cprh[0])/np.max(nf2ff.E_norm[0])) + 10*log10(nf2ff.Dmax[0])
-E_CPLH = 20.0*log10(np.abs(nf2ff.E_cplh[0])/np.max(nf2ff.E_norm[0])) + 10*log10(nf2ff.Dmax[0])
+simulationObj.mw.bc.AbsorbingBoundary(boundary_selection)
 
-##
-figure()
-plot(thetaRange, E_norm[:,phiRange==0],'k-' , linewidth=2, label='$|E|$')
-plot(thetaRange, E_CPRH[:,phiRange==0],'g--', linewidth=2, label='$|E_{{CPRH}}|$')
-plot(thetaRange, E_CPLH[:,phiRange==0],'r-.', linewidth=2, label='$|E_{{CPLH}}|$')
-grid()
-xlabel('theta (deg)')
-ylabel('directivity (dBi)')
-title('Frequency: {{}} GHz'.format(nf2ff.freq[0]/1e9))
-legend()
 
-show()
-  
-#
-# Dump radiation field to vtk file
-#
-directivity = nf2ff.P_rad[0]/nf2ff.Prad*4*pi
-directivity_CPRH = np.abs(nf2ff.E_cprh[0])**2/np.max(nf2ff.E_norm[0][:])**2*nf2ff.Dmax[0]
-directivity_CPLH = np.abs(nf2ff.E_cplh[0])**2/np.max(nf2ff.E_norm[0][:])**2*nf2ff.Dmax[0]
+# add model files into display
+for geoObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():
+	simulationObj.display.add_object(geoObj)
 
-generatorFunc_DumpFF2VTK(directivity, nf2ff.theta, nf2ff.phi, os.path.join(Sim_Path, '3D_Pattern_GAIN.vtk'))
-generatorFunc_DumpFF2VTK(directivity_CPRH, nf2ff.theta, nf2ff.phi, os.path.join(Sim_Path, '3D_Pattern_CPRH.vtk'))
-generatorFunc_DumpFF2VTK(directivity_CPLH, nf2ff.theta, nf2ff.phi, os.path.join(Sim_Path, '3D_Pattern_CPLH.vtk'))
+# display far field
+# field = simulationResult.field.find(freq=1.6e9)
+field = simulationResult.field.find(freq=2.5e9)
+ff3d = field.farfield_3d(boundary_selection, origin=(0.0, 0.0, 0.0))
+# simulationObj.display.add_field(ff3d.surfplot('normE','abs',True, dB=True, rmax=150*mm, offset=(0.0, 0.0, 70.0*mm)))
+simulationObj.display.add_field(ff3d.surfplot('normE','abs',True, dB=True, rmax=150*mm, offset=(0.0, 0.0, -2*70.0*mm)))
+simulationObj.display.show()
 
-E_far_normalized = E_norm / np.max(E_norm) * nf2ff.Dmax[0]
-generatorFunc_DumpFF2VTK(E_far_normalized, nf2ff.theta, nf2ff.phi, os.path.join(Sim_Path, '3D_Pattern_Efield_norm.vtk'))
 """
 
         #
@@ -1858,7 +1802,25 @@ generatorFunc_DumpFF2VTK(E_far_normalized, nf2ff.theta, nf2ff.phi, os.path.join(
     def drawS11ButtonClicked(self, outputDir=None, portName=""):
         genScript = ""
 
-        genScript += "## EMerge simulation - S11\n"
+        itemsByClassName = self.getItemsByClassName()
+        items = itemsByClassName.get("PortSettingsItem", None)
+
+        genScriptPortCount = 1
+        portNamesAndNumbersList = {}
+        for [item, currSetting] in items:
+            for k in range(item.childCount()):
+                childName = item.child(k).text(0)
+                portName = f"{currSetting.name} - {childName}"
+
+                # PORT openEMS GENERATION INTO VARIABLE
+                if (currSetting.getType() == 'lumped'):
+                    portNamesAndNumbersList[portName] = genScriptPortCount
+                    genScriptPortCount += 1
+
+        sourcePortName = self.form.drawS11Port.currentText()
+        sourcePortNumber = portNamesAndNumbersList[sourcePortName]
+
+        genScript += f"## EMerge simulation - S{sourcePortNumber}{sourcePortNumber}\n"
         genScript += "#\n"
         genScript += "#\n"
         genScript += "import emerge as em\n"
@@ -1871,15 +1833,31 @@ generatorFunc_DumpFF2VTK(E_far_normalized, nf2ff.theta, nf2ff.phi, os.path.join(
         genScript += "simulationResult = simulationObj.data.mw\n"
         genScript += "\n"
 
-        #add excitation script lines
-        genScript += self.getExcitationScriptLines()
+        #
+        #   Get port names and their numbers from GUI
+        #
+        genScript += "###############################################################################\n"
+        genScript += "# PORT NAME AND THEIR NUMBERS LIST\n"
+        genScript += "###############################################################################\n"
+        genScript += "portNamesAndNumbersList = {}\n"
+        for portName, portNumber in portNamesAndNumbersList.items():
+            genScript += f'portNamesAndNumbersList["{portName}"] = {portNumber}\n'
+        genScript += "\n"
 
-        # --- Post-process S-parameters ------------------------------------------
+        genScript += "###############################################################################\n"
+        genScript += "# PLOT S DATA\n"
+        genScript += "###############################################################################\n"
+        genScript += f"sourcePortName = '{sourcePortName}'\n"
+        genScript += "sourcePortNumber = portNamesAndNumbersList[sourcePortName]\n"
+        genScript += "\n"
         genScript += "freqs = simulationResult.scalar.grid.freq\n"
+        genScript += "fmin = freqs.min()\n"
+        genScript += "fmax = freqs.max()\n"
         genScript += "freq_dense = np.linspace(fmin, fmax, 1001)\n"
-        genScript += "S11 = simulationResult.scalar.grid.model_S(1, 1, freq_dense)  # reflection coefficient\n"
-        genScript += "plot_sp(freq_dense, S11)  # plot return loss in dB\n"
-        genScript += "smith(S11, f=freq_dense, labels='S11')  # Smith chart of S11\n"
+        genScript += "S_data = simulationResult.scalar.grid.model_S(sourcePortNumber, sourcePortNumber, freq_dense)  #reflection coefficient\n"
+        genScript += "plotLabel = f'S{sourcePortNumber}{sourcePortNumber} ({sourcePortName})'\n"
+        genScript += "plot_sp(freq_dense, S_data)  #plot return loss in dB\n"
+        genScript += f"smith(S_data, f=freq_dense, labels=plotLabel)  #smith chart\n"
         genScript += "\n"
 
         #
@@ -1889,9 +1867,9 @@ generatorFunc_DumpFF2VTK(E_far_normalized, nf2ff.theta, nf2ff.phi, os.path.join(
 
         self.createOuputDir(outputDir)
         if (not outputDir is None):
-            fileName = f"{outputDir}/{nameBase}_draw_S11.py"
+            fileName = f"{outputDir}/{nameBase}_draw_S{sourcePortNumber}{sourcePortNumber}.py"
         else:
-            fileName = f"{currDir}/{nameBase}_draw_S11.py"
+            fileName = f"{currDir}/{nameBase}_draw_S{sourcePortNumber}{sourcePortNumber}.py"
 
         f = open(fileName, "w", encoding='utf-8')
         f.write(genScript)
@@ -1901,104 +1879,89 @@ generatorFunc_DumpFF2VTK(E_far_normalized, nf2ff.theta, nf2ff.phi, os.path.join(
 
     def drawS21ButtonClicked(self, outputDir=None, sourcePortName="", targetPortName=""):
         genScript = ""
-        genScript += "# Plot S11, S21 parameters from OpenEMS results.\n"
-        genScript += "#\n"
 
-        genScript += self.getInitScriptLines()
-
-        genScript += "currDir = os.getcwd()\n"
-        genScript += "Sim_Path = os.path.join(currDir, r'simulation_output')\n"
-        genScript += "print(currDir)\n"
-        genScript += "\n"
-
-        genScript += "## setup FDTD parameter & excitation function\n"
-        genScript += "max_timesteps = " + str(self.form.simParamsMaxTimesteps.value()) + "\n"
-        genScript += "min_decrement = " + str(self.form.simParamsMinDecrement.value()) + " # 10*log10(min_decrement) dB  (i.e. 1E-5 means -50 dB)\n"
-
-        if (self.getModelCoordsType() == "cylindrical"):
-            genScript += "CSX = CSXCAD.ContinuousStructure(CoordSystem=1)\n"
-            genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement, CoordSystem=1)\n"
-        else:
-            genScript += "CSX = CSXCAD.ContinuousStructure()\n"
-            genScript += "FDTD = openEMS(NrTS=max_timesteps, EndCriteria=min_decrement)\n"
-
-        genScript += "FDTD.SetCSX(CSX)\n"
-        genScript += "\n"
-
-        # List categories and items.
         itemsByClassName = self.getItemsByClassName()
+        items = itemsByClassName.get("PortSettingsItem", None)
 
-        # Write coordinate system definitions.
-        genScript += self.getCoordinateSystemScriptLines()
+        genScriptPortCount = 1
+        portNamesAndNumbersList = {}
+        for [item, currSetting] in items:
+            for k in range(item.childCount()):
+                childName = item.child(k).text(0)
+                portName = f"{currSetting.name} - {childName}"
 
-        # Write excitation definition.
-        genScript += self.getExcitationScriptLines(definitionsOnly=True)
+                # PORT openEMS GENERATION INTO VARIABLE
+                if (currSetting.getType() == 'lumped'):
+                    portNamesAndNumbersList[portName] = genScriptPortCount
+                    genScriptPortCount += 1
 
-        # Write material definitions.
-        genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None), outputDir, generateObjects=False)
+        sourcePortNumber = portNamesAndNumbersList[sourcePortName]
+        targetPortNumber = portNamesAndNumbersList[targetPortName]
+        sourcePortName = self.form.drawS21Source.currentText()
+        targetPortName = self.form.drawS21Target.currentText()
 
-        # Write grid definitions.
-        genScript += self.getOrderedGridDefinitionsScriptLines(itemsByClassName.get("GridSettingsItem", None))
-
-        # Write scriptlines which removes gridline too close, must be enabled in GUI, it's checking checkbox inside
-        genScript += self.getMinimalGridlineSpacingScriptLines()
-
-        # Write port definitions.
-        genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None))
-
-        # Post-processing and plot generation.
-        genScript += "#######################################################################################################################################\n"
-        genScript += "# POST-PROCESSING AND PLOT GENERATION\n"
-        genScript += "#######################################################################################################################################\n"
-        genScript += "\n"
-        genScript += "freq = np.linspace(max(1e6, f0 - fc), f0 + fc, 501)\n"
-        genScript += f"port[{self.internalPortIndexNamesList[sourcePortName]}].CalcPort(Sim_Path, freq)\n"
-        genScript += f"port[{self.internalPortIndexNamesList[targetPortName]}].CalcPort(Sim_Path, freq)\n"
-        genScript += "\n"
-        genScript += f"s11 = port[{self.internalPortIndexNamesList[sourcePortName]}].uf_ref / port[{self.internalPortIndexNamesList[sourcePortName]}].uf_inc\n"
-        genScript += f"s21 = port[{self.internalPortIndexNamesList[targetPortName]}].uf_ref / port[{self.internalPortIndexNamesList[sourcePortName]}].uf_inc\n"
-        genScript += "\n"
-        genScript += "s11_dB = 20*log10(abs(s11))\n"
-        genScript += "s21_dB = 20*log10(abs(s21))\n"
-        genScript += "\n"
-        genScript += "plot(freq/1e9,s11_dB,'k-', linewidth=2)\n"
-        genScript += "grid()\n"
-        genScript += "plot(freq/1e9,s21_dB,'r--', linewidth=2)\n"
-        genScript += "legend(('$S_{11}$','$S_{21}$'))\n"
-        genScript += f"title('S21-Parameter\\n{sourcePortName} $\\\\rightarrow$ {targetPortName}', fontsize=12)\n"
-        genScript += "ylabel('S21(dB)', fontsize=12)\n"
-        genScript += "xlabel('frequency (GHz)', fontsize=12)\n"
-        genScript += "ylim([-40, 2])\n"
-        genScript += "show()\n"
-        genScript += "\n"
-
-        genScript += "#######################################################################################################################################\n"
-        genScript += "# SAVE PLOT DATA\n"
-        genScript += "#######################################################################################################################################\n"
-        genScript += "\n"
+        #
+        #   Generate script plotting S21 from source port to output port
+        #
+        genScript += f"## EMerge simulation - S{targetPortNumber}{sourcePortNumber}\n"
+        genScript += f"#\ttransfer from '{sourcePortName}' -> '{targetPortName}'\n"
         genScript += "#\n"
-        genScript += "#   Write S11, real and imag Z_in into CSV file separated by ';'\n"
         genScript += "#\n"
-        genScript += "filename = 'openEMS_simulation_s11_dB.csv'\n"
-        genScript += "\n"
-        genScript += "with open(filename, 'w', newline='') as csvfile:\n"
-        genScript += "\twriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)\n"
-        genScript += "\twriter.writerow(['freq (Hz)', 's11 (dB)', 's21 (dB)'])\n"
-        genScript += "\twriter.writerows(np.array([freq, s11_dB, s21_dB]).T)  # creates array with 1st row frequencies, 2nd row S11 and transpose it\n"
+        genScript += "import emerge as em\n"
+        genScript += "import numpy as np\n"
+        genScript += "from emerge.plot import smith, plot_sp\n"
         genScript += "\n"
 
-        # Write OpenEMS Script file into current dir.
+        simulationName = self.cadHelpers.getCurrentDocumentFileName()
+        genScript += f"simulationObj = em.Simulation(\"{simulationName}\", load_file=True)\n"
+        genScript += "simulationResult = simulationObj.data.mw\n"
+        genScript += "\n"
 
+        #
+        #   Get port names and their numbers from GUI
+        #
+        genScript += "###############################################################################\n"
+        genScript += "# PORT NAME AND THEIR NUMBERS LIST\n"
+        genScript += "###############################################################################\n"
+        genScript += "portNamesAndNumbersList = {}\n"
+        for portName, portNumber in portNamesAndNumbersList.items():
+            genScript += f'portNamesAndNumbersList["{portName}"] = {portNumber}\n'
+        genScript += "\n"
+
+        # --- Post-process S-parameters ------------------------------------------
+        genScript += "###############################################################################\n"
+        genScript += "# PLOT S DATA\n"
+        genScript += "###############################################################################\n"
+        genScript += f"sourcePortName = '{sourcePortName}'\n"
+        genScript += f"targetPortName = '{targetPortName}'\n"
+        genScript += "sourcePortNumber = portNamesAndNumbersList[sourcePortName]\n"
+        genScript += "targetPortNumber = portNamesAndNumbersList[targetPortName]\n"
+        genScript += "\n"
+        genScript += "freqs = simulationResult.scalar.grid.freq\n"
+        genScript += "fmin = freqs.min()\n"
+        genScript += "fmax = freqs.max()\n"
+        genScript += "freq_dense = np.linspace(fmin, fmax, 1001)\n"
+        genScript += "S_data = simulationResult.scalar.grid.model_S(sourcePortNumber, targetPortNumber, freq_dense)  # reflection coefficient\n"
+
+        genScript += "plotLabel = f'S{sourcePortNumber}{targetPortNumber} ({sourcePortName} -> {targetPortName})'\n"
+        genScript += f"plot_sp(freq_dense, S_data, labels=plotLabel)  # plot return loss in dB\n"
+        genScript += f"smith(S_data, f=freq_dense, labels=plotLabel)  # smith chart\n"
+        genScript += "\n"
+
+        #
+        # WRITE OpenEMS Script file into current dir
+        #
         currDir, nameBase = self.getCurrDir()
 
         self.createOuputDir(outputDir)
         if (not outputDir is None):
-            fileName = f"{outputDir}/{nameBase}_draw_S21.py"
+            fileName = f"{outputDir}/{nameBase}_draw_S{targetPortNumber}{sourcePortNumber}.py"
         else:
-            fileName = f"{currDir}/{nameBase}_draw_S21.py"
+            fileName = f"{currDir}/{nameBase}_draw_S{targetPortNumber}{sourcePortNumber}.py"
 
         f = open(fileName, "w", encoding='utf-8')
         f.write(genScript)
         f.close()
+
         print('Draw result from simulation file written to: ' + fileName)
         self.guiHelpers.displayMessage('Draw result from simulation file written to: ' + fileName, forceModal=False)

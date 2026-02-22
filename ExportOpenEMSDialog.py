@@ -287,6 +287,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.drawS11Button.clicked.connect(self.drawS11ButtonClicked)			# Clicked on "Write Draw S11 Script"
 		self.form.drawS21Button.clicked.connect(self.drawS21ButtonClicked)			# Clicked on "Write Draw S21 Script"
 		self.form.writeNf2ffButton.clicked.connect(self.writeNf2ffButtonClicked)	# Clicked on "Write NF2FF"
+		self.form.writeNf2ffEmergeButton.clicked.connect(self.writeNf2ffEmergeButtonClicked)	# Clicked on "Write NF2FF" for EMerge
 
 		#
 		# GRID
@@ -548,12 +549,21 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 			self.pythonScriptGenerator = PythonScriptLinesGenerator2_openems(self.form, statusBar = self.statusBar)
 
-			#hide boundary conditions in right tree widget, not applicable for openEMS
+			#
+			# Hide boundary conditions in right tree widget, not applicable for openEMS
+			#
 			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "BoundaryCondition", False)
 			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "BoundaryCondition", False)
-
 			boundaryConditionTabIndex = self.form.openEMSTab.indexOf(self.form.boundaryConditionTab)
 			self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "")
+
+			#
+			# Display probe settings tab, this is applicable tab just for openEMS
+			#
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "Probe", True)
+			probeTabIndex = self.form.openEMSTab.indexOf(self.form.probeSettingsTab)
+			self.form.openEMSTab.setTabText(probeTabIndex, "Probe Settings")
+			self.form.probeSettingsTab.setEnabled(True)
 
 			# post-processing tab nf2ff tab set
 			self.form.nf2ffProcessingTab.setCurrentIndex(0)
@@ -584,17 +594,24 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.simulationParamsTab_tabWidget_openEMSTab.setEnabled(False)
 			self.form.simulationParamsTab_tabWidget_emergeTab.setEnabled(True)
 
-			#enable main BoundaryConditions tab, just for FEM simulations
-			self.form.boundaryConditionTab.setEnabled(True)
-
 			self.pythonScriptGenerator = PythonScriptLinesGenerator3_emerge(self.form, statusBar=self.statusBar)
 
-			# display boundary conditions in right tree widget, applicable for FEM EMerge only
+			#
+			# Display boundary conditions in right tree widget, applicable for FEM EMerge only
+			#
 			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "BoundaryCondition", True)
 			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "BoundaryCondition", True)
-
 			boundaryConditionTabIndex = self.form.openEMSTab.indexOf(self.form.boundaryConditionTab)
 			self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "Boundary Conditions")
+			self.form.boundaryConditionTab.setEnabled(True)		# enable main BoundaryConditions tab, just for FEM simulations
+
+			#
+			# Hide probe settings tab, not applicable for EMerge
+			#
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "Probe", False)
+			probeTabIndex = self.form.openEMSTab.indexOf(self.form.probeSettingsTab)
+			self.form.openEMSTab.setTabText(probeTabIndex, "")
+			self.form.probeSettingsTab.setEnabled(False)
 
 			# post-processing tab nf2ff tab set
 			self.form.nf2ffProcessingTab.setCurrentIndex(1)
@@ -1903,6 +1920,14 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		# display message that script was generated
 		self.guiHelpers.displayMessage("Script to display far field generated.")
+
+	def writeNf2ffEmergeButtonClicked(self):
+		self.scriptGenerator.writeNf2ffButtonClicked(self.simulationOutputDir)
+
+		# display message that script was generated
+		self.guiHelpers.displayMessage("Script to display far field generated.")
+
+		return
 
 	#########################################################################################################################################
 	#
