@@ -25,6 +25,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         super(PythonScriptLinesGenerator3_emerge, self).__init__(form, statusBar)
         self.portBoundaryConditionScriptLinesBuffer = []
         self.createdObjectNameList = []
+        self.createdObjectBoundaryNameList = []
 
         self.cadHelpers = FactoryCadInterface.createHelper()
 
@@ -362,7 +363,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
             for k in range(item.childCount()):
                 childName = item.child(k).text(0)
 
-                self.createdObjectNameList.append(childName)  # add this object into list of created objects which will be used to create named group in exported mesh
+                self.createdObjectBoundaryNameList.append(childName)  # add this object into list of created objects which will be used to create named group in exported mesh
 
                 #
                 #	getting item priority
@@ -1489,6 +1490,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
 
         self.portBoundaryConditionScriptLinesBuffer = []
         self.createdObjectNameList = []
+        self.createdObjectBoundaryNameList = []
 
         # Create outputDir relative to local FreeCAD file if output dir does not exists
         #   if outputDir is set to same value
@@ -1627,14 +1629,14 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "#######################################################################################################################################\n"
         genScript += "import gmsh\n"
         genScript += "\n"
-        genScript += "def createGmshNamedGroup(geometryObjName: str, groupName: str, groupTag: int = -1, useSuffixToRecognizeGeometryName: bool = True):\n"
+        genScript += "def createGmshNamedGroup(geometryObjName: str, groupName: str, groupTag: int = -1, useBoundary: bool = False, useSuffixToRecognizeGeometryName: bool = True):\n"
         genScript += "\tobjectTag1DList = []\n"
         genScript += "\tobjectTag2DList = []\n"
         genScript += "\tobjectTag3DList = []\n"
         genScript += "\n"
         genScript += "\tfor geometryObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():\n"
         genScript += "\t\tif geometryObj.name == geometryObjName or geometryObj.name.startswith(geometryObjName + ('_' if useSuffixToRecognizeGeometryName else '')):\n"
-        genScript += "\t\t\tfor tagTuple in geometryObj.dimtags:\n"
+        genScript += "\t\t\tfor tagTuple in (geometryObj.boundary().dimtags if useBoundary else geometryObj.dimtags):\n"
         genScript += "\t\t\t\tif tagTuple[0] == 1:\n"
         genScript += "\t\t\t\t\tobjectTag1DList.append(tagTuple[1])\n"
         genScript += "\t\t\t\tif tagTuple[0] == 2:\n"
@@ -1653,6 +1655,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "\n"
         for objectName in set(self.createdObjectNameList):  #converting list to set make it unique, because some names could be under more categories and we want to use them just once
             genScript += f"createGmshNamedGroup('{objectName}', '{objectName}')\n"
+        for objectName in set(self.createdObjectBoundaryNameList):  #converting list to set make it unique, because some names could be under more categories and we want to use them just once
+            genScript += f"createGmshNamedGroup('{objectName}', '{objectName}Boundary', useBoundary=True)\n"
         genScript += "\n"
         genScript += f"simulationObj.export('{simulationName}.msh')\n"
         genScript += "\n"
@@ -1675,9 +1679,13 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "# RUN and save results\n"
         genScript += "#######################################################################################################################################\n"
 
-        genScript += "simulationResult = simulationObj.mw.run_sweep()\n"
-        genScript += "\n"
-        genScript += "simulationObj.save()\n"
+        if self.form.generateJustPreviewCheckbox.isChecked():
+            genScript += "#simulationResult = simulationObj.mw.run_sweep()\n"
+            genScript += "#simulationObj.save()\n"
+        else:
+            genScript += "simulationResult = simulationObj.mw.run_sweep()\n"
+            genScript += "simulationObj.save()\n"
+
         genScript += "\n"
 
         # Write _OpenEMS.py script file to current directory.
