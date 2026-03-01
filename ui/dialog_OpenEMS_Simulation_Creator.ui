@@ -8435,7 +8435,7 @@ than min spacing</string>
                              <number>5</number>
                             </property>
                             <item>
-                             <widget class="QCheckBox" name="checkBox">
+                             <widget class="QCheckBox" name="useDecibelsNf2ffEmerge">
                               <property name="text">
                                <string>Plot using dB</string>
                               </property>
@@ -8449,7 +8449,7 @@ than min spacing</string>
                              </widget>
                             </item>
                             <item>
-                             <widget class="QDoubleSpinBox" name="doubleSpinBox">
+                             <widget class="QDoubleSpinBox" name="dBFloorNf2ffEmerge">
                               <property name="minimum">
                                <double>-100000000.000000000000000</double>
                               </property>
@@ -8476,7 +8476,7 @@ than min spacing</string>
                           <item row="5" column="0">
                            <widget class="QLabel" name="label_131">
                             <property name="text">
-                             <string>Diagram maximum size</string>
+                             <string>Diagram maximum size in milimeters</string>
                             </property>
                            </widget>
                           </item>
@@ -8634,7 +8634,7 @@ than min spacing</string>
                            </widget>
                           </item>
                           <item row="0" column="1">
-                           <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+                           <widget class="QDoubleSpinBox" name="frequencyFieldProcessingEmerge">
                             <property name="decimals">
                              <number>3</number>
                             </property>
@@ -8743,6 +8743,9 @@ than min spacing</string>
                             <property name="singleStep">
                              <double>0.010000000000000</double>
                             </property>
+                            <property name="value">
+                             <double>0.001000000000000</double>
+                            </property>
                            </widget>
                           </item>
                           <item row="5" column="1">
@@ -8768,7 +8771,7 @@ than min spacing</string>
                             </widget>
                            </item>
                            <item>
-                            <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+                            <widget class="QDoubleSpinBox" name="cutplaneXFieldProcessingEmerge">
                              <property name="decimals">
                               <number>3</number>
                              </property>
@@ -8788,7 +8791,7 @@ than min spacing</string>
                             </widget>
                            </item>
                            <item>
-                            <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+                            <widget class="QDoubleSpinBox" name="cutplaneYFieldProcessingEmerge">
                              <property name="decimals">
                               <number>3</number>
                              </property>
@@ -8808,7 +8811,7 @@ than min spacing</string>
                             </widget>
                            </item>
                            <item>
-                            <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
+                            <widget class="QDoubleSpinBox" name="cutplaneZFieldProcessingEmerge">
                              <property name="decimals">
                               <number>3</number>
                              </property>

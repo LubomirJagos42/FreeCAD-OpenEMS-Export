@@ -1726,37 +1726,19 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         #   ATTENTION THIS IS SPECIFIC FOR FAR FIELD PLOTTING, plotFrequency and frequencies count
         #       port is calculated to get P_in (input power)
         #
+        boundaryConditionObjectName = self.form.portNf2ffEmergeObjectList.currentText().split('-')[1].strip()
+
         genScript += f"""
 #######################################################################################################################################
 # Farfield plot and 3D gain generated
 #######################################################################################################################################
-## EMerge simulation - S11
-#
-#
 import emerge as em
 import numpy as np
 from emerge.plot import smith, plot_sp
 import os
 
-simulationObj = em.Simulation("Discone Antenna.FCStd", load_file=True)
+simulationObj = em.Simulation("{self.cadHelpers.getCurrentDocumentFileName()}", load_file=True)
 simulationResult = simulationObj.data.mw
-
-#######################################################################################################################################
-# EXCITATION basic
-#######################################################################################################################################
-fmin = 0.5*1000000000.0
-fmax = 5.0*1000000000.0
-resolution = 0.3
-npoints = 7
-simulationObj.mw.set_frequency_range(fmin, fmax, npoints)
-simulationObj.mw.set_resolution(resolution)
-
-freqs = simulationResult.scalar.grid.freq
-freq_dense = np.linspace(fmin, fmax, 101)
-
-# S11 = simulationResult.scalar.grid.model_S(1, 1, freq_dense)  # reflection coefficient
-# plot_sp(freq_dense, S11)  # plot return loss in dB
-# smith(S11, f=freq_dense, labels='S11')  # Smith chart of S11
 
 #######################################################################################################################################
 # FAR FIELD PLOT
@@ -1770,7 +1752,7 @@ currDir = os.getcwd()
 
 boundary_selection = None
 for geometryObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():
-	if geometryObj.name == 'airbox' or geometryObj.name.startswith('airbox'):
+	if geometryObj.name == '{boundaryConditionObjectName}' or geometryObj.name.startswith('{boundaryConditionObjectName}'):
 		boundary_selection = geometryObj.boundary()
 
 simulationObj.mw.bc.AbsorbingBoundary(boundary_selection)
@@ -1781,11 +1763,9 @@ for geoObj in simulationObj.state.manager.geometry_list[simulationObj.modelname]
 	simulationObj.display.add_object(geoObj)
 
 # display far field
-# field = simulationResult.field.find(freq=1.6e9)
-field = simulationResult.field.find(freq=2.5e9)
-ff3d = field.farfield_3d(boundary_selection, origin=(0.0, 0.0, 0.0))
-# simulationObj.display.add_field(ff3d.surfplot('normE','abs',True, dB=True, rmax=150*mm, offset=(0.0, 0.0, 70.0*mm)))
-simulationObj.display.add_field(ff3d.surfplot('normE','abs',True, dB=True, rmax=150*mm, offset=(0.0, 0.0, -2*70.0*mm)))
+field = simulationResult.field.find(freq={self.form.boundaryNf2ffEmergeFreq.value()}*1e6)
+ff3d = field.farfield_3d(boundary_selection, origin=({self.form.diagramPlacementXNF2FFEmerge.value()}*mm, {self.form.diagramPlacementYNF2FFEmerge.value()}*mm, {self.form.diagramPlacementZNF2FFEmerge.value()}*mm))
+simulationObj.display.add_field(ff3d.surfplot('{self.form.polarizationNf2ffEmerge.currentText()}','{self.form.quantityNf2ffEmerge.currentText()}',True, dB=True, rmax={self.form.diagramRMaxNF2FFEmerge.value()}*mm, offset=({self.form.diagramPlacementXNF2FFEmerge.value()}, {self.form.diagramPlacementYNF2FFEmerge.value()}, {self.form.diagramPlacementZNF2FFEmerge.value()})))
 simulationObj.display.show()
 
 """
@@ -1800,6 +1780,83 @@ simulationObj.display.show()
             fileName = f"{outputDir}/{nameBase}_draw_NF2FF.py"
         else:
             fileName = f"{currDir}/{nameBase}_draw_NF2FF.py"
+
+        f = open(fileName, "w", encoding='utf-8')
+        f.write(genScript)
+        f.close()
+        print('Script to display far field written into: ' + fileName)
+        self.guiHelpers.displayMessage('Script to display far field written into: ' + fileName, forceModal=False)
+
+    #
+    #	Write NF2FF Button clicked, generate script to display far field pattern
+    #
+    def writeFieldButtonClicked(self, outputDir=None):
+        genScript = ""
+        genScript += "# Plot far field for structure.\n"
+        genScript += "#\n"
+
+        genScript += self.getInitScriptLines()
+
+        genScript += "currDir = os.getcwd()\n"
+        genScript += "Sim_Path = os.path.join(currDir, r'simulation_output')\n"
+        genScript += "print(currDir)\n"
+        genScript += "\n"
+
+        #
+        #   ATTENTION THIS IS SPECIFIC FOR FAR FIELD PLOTTING, plotFrequency and frequencies count
+        #       port is calculated to get P_in (input power)
+        #
+        cutplaneScriptLine = ""
+        if self.form.cutplaneXFieldProcessingEmerge.value() == 0.0 and self.form.cutplaneYFieldProcessingEmerge.value() == 0.0:
+            cutplaneScriptLine = f"result = simulationResult.field.find(freq={self.form.frequencyFieldProcessingEmerge.value()}*1e6).cutplane({self.form.discretizationStepSizeFieldProcessingEmerge.value()}, z={self.form.cutplaneZFieldProcessingEmerge.value()}*mm)"
+        elif self.form.cutplaneXFieldProcessingEmerge.value() == 0.0 and self.form.cutplaneZFieldProcessingEmerge.value() == 0.0:
+            cutplaneScriptLine = f"result = simulationResult.field.find(freq={self.form.frequencyFieldProcessingEmerge.value()}*1e6).cutplane({self.form.discretizationStepSizeFieldProcessingEmerge.value()}, y={self.form.cutplaneZFieldProcessingEmerge.value()}*mm)"
+        elif self.form.cutplaneYFieldProcessingEmerge.value() == 0.0 and self.form.cutplaneZFieldProcessingEmerge.value() == 0.0:
+            cutplaneScriptLine = f"result = simulationResult.field.find(freq={self.form.frequencyFieldProcessingEmerge.value()}*1e6).cutplane({self.form.discretizationStepSizeFieldProcessingEmerge.value()}, x={self.form.cutplaneZFieldProcessingEmerge.value()}*mm)"
+
+        genScript += f"""## display field in model
+#
+#
+import emerge as em
+import numpy as np
+from emerge.plot import smith, plot_sp
+
+from emerge.plot import plot_ff, plot_ff_polar  #added for far field plot
+import os
+
+simulationObj = em.Simulation("{self.cadHelpers.getCurrentDocumentFileName()}", load_file=True)
+simulationResult = simulationObj.data.mw
+
+#######################################################################################################################################
+# E FIELD PLOT
+#######################################################################################################################################
+mm = 0.001
+currDir = os.getcwd()
+
+# add model files into display
+for geoObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():
+	simulationObj.display.add_object(geoObj, opacity=0.1)
+
+{cutplaneScriptLine}
+plot_data = result.scalar('{self.form.typeFieldProcessingEmerge.currentText()}','{self.form.metricFieldProcessingEmerge.currentText()}')
+X, Y, Z, F = plot_data.xyzf
+simulationObj.display.add_surf(X,Y,Z,F)				        #static field display
+#simulationObj.display.animate().add_surf(X,Y,Z,F, opacity=0.7)	#animated version of display
+
+simulationObj.display.show()
+
+"""
+
+        #
+        # WRITE OpenEMS Script file into current dir
+        #
+        currDir, nameBase = self.getCurrDir()
+
+        self.createOuputDir(outputDir)
+        if (not outputDir is None):
+            fileName = f"{outputDir}/{nameBase}_draw_field_{self.form.typeFieldProcessingEmerge.currentText()}.py"
+        else:
+            fileName = f"{currDir}/{nameBase}_draw_field_{self.form.typeFieldProcessingEmerge.currentText()}.py"
 
         f = open(fileName, "w", encoding='utf-8')
         f.write(genScript)

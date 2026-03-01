@@ -248,6 +248,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.boundaryConditionSettingsAddButton.clicked.connect(self.boundaryConditionSettingsAddButtonClicked)
 		self.form.boundaryConditionSettingsRemoveButton.clicked.connect(self.boundaryConditionSettingsRemoveButtonClicked)
 		self.form.boundaryConditionSettingsUpdateButton.clicked.connect(self.boundaryConditionSettingsUpdateButtonClicked)
+		self.guiSignals.boundaryConditionChanged.connect(self.boundaryConditionChanged)
 
 		#
 		# Handle function for grid radio buttons click
@@ -287,7 +288,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.drawS11Button.clicked.connect(self.drawS11ButtonClicked)			# Clicked on "Write Draw S11 Script"
 		self.form.drawS21Button.clicked.connect(self.drawS21ButtonClicked)			# Clicked on "Write Draw S21 Script"
 		self.form.writeNf2ffButton.clicked.connect(self.writeNf2ffButtonClicked)	# Clicked on "Write NF2FF"
-		self.form.writeNf2ffEmergeButton.clicked.connect(self.writeNf2ffEmergeButtonClicked)	# Clicked on "Write NF2FF" for EMerge
+		self.form.writeNf2ffEmergeButton.clicked.connect(self.writeNf2ffEmergeButtonClicked)				# Clicked on "Write NF2FF" for EMerge
+		self.form.writeFieldScriptEmergeButton.clicked.connect(self.writeFieldScriptEmergeButtonClicked)	# Clicked on "Write Field Display Script" for EMerge
 
 		#
 		# GRID
@@ -693,6 +695,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				filterStr = self.form.objectAssignmentFilterLeft.text()
 				self.initLeftColumnTopLevelItems(filterStr)
 
+			#
+			#	Update combobox with port and boundary names
+			#
+			self.portsChanged("update")
+			self.boundaryConditionChanged("update")
+
 	def freecadBeforeObjectDeleted(self,obj):
 		# event is generated before object is being removed, so observing instances have to 
 		# (TODO) un-list the object without drawing upon the FreeCAD objects list, and
@@ -733,6 +741,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		# remove object label from internal list
 		del self.internalObjectNameLabelList[obj.Name]
+
+		#
+		#	Update combobox with port and boundary names
+		#
+		self.portsChanged("update")
+		self.boundaryConditionChanged("update")
 
 	def blenderWindowActivatedHandler(self):
 		"""
@@ -1530,6 +1544,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			probeObjectIsRemoved = True
 			self.guiSignals.probesChanged.emit("remove")
 
+		boundaryObjectIsRemoved = False
+		if (rightItem.parent().parent().text(0) == "BoundaryCondition"):
+			boundaryObjectIsRemoved = True
+			self.guiSignals.boundaryConditionChanged.emit("remove")
+
 		#
 		#	REMOVE ITEM FROM OpenEMS Simulation assignments tree view
 		#
@@ -1540,6 +1559,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.guiSignals.portsChanged.emit("remove")
 		if (probeObjectIsRemoved):
 			self.guiSignals.probesChanged.emit("remove")
+		if (boundaryObjectIsRemoved):
+			self.guiSignals.boundaryConditionChanged.emit("remove")
 
 		return
 
@@ -1656,6 +1677,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 					self.guiSignals.portsChanged.emit("add")
 				elif (reResult.group(1).lower() == 'probe'):
 					self.guiSignals.probesChanged.emit("add")
+				elif (reResult.group(1).lower() == 'boundarycondition'):
+					self.guiSignals.boundaryConditionChanged.emit("add")
 
 			#
 			# If grid settings is not set to be top priority lines, therefore it's disabled (because then it's not take into account when generate mesh lines and it's overlapping something)
@@ -1771,6 +1794,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		# Inform GUI that there are some ports updated
 		self.guiSignals.portsChanged.emit("update")
 		self.guiSignals.probesChanged.emit("update")
+		self.guiSignals.boundaryConditionChanged.emit("update")
 
 		# PORT select first item
 		topItem = self.form.portSettingsTreeView.itemAt(0,0)
@@ -1926,6 +1950,14 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		# display message that script was generated
 		self.guiHelpers.displayMessage("Script to display far field generated.")
+
+		return
+
+	def writeFieldScriptEmergeButtonClicked(self):
+		self.scriptGenerator.writeFieldButtonClicked(self.simulationOutputDir)
+
+		# display message that script was generated
+		self.guiHelpers.displayMessage("Script to display field generated.")
 
 		return
 
@@ -2581,8 +2613,6 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.renameObjectAssignmentPriorityTreeViewItem("BoundaryCondition", oldName, newName)
 			self.renameTreeViewItem(self.form.boundaryConditionSettingsTreeView, oldName, newName)
 			self.guiHelpers.displayMessage("BoundaryCondition " + oldName + " renamed to " + newName, forceModal=False)
-
-
 		except Exception as e:
 			self.guiHelpers.displayMessage("ERROR: " + str(e), forceModal=False)
 			self.cadHelpers.printError(traceback.format_exc())
@@ -3015,6 +3045,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		if (operation in ["add", "remove", "update"]):
 			self.updateComboboxWithAllowedItems(self.form.portNf2ffObjectList, "Probe", ["nf2ff box"])
 
+	@Slot(str)
+	def boundaryConditionChanged(self, operation):
+		print(f"@Slot boundaryConditionChanged: {operation}")
+
+		if (operation in ["add", "remove", "update"]):
+			self.updateComboboxWithAllowedItems(self.form.portNf2ffEmergeObjectList, "BoundaryCondition", ["Absorbing"])
+
 	#########################################################################################################################################
 	#
 	#	PROBE TAB HANDLERS
@@ -3206,6 +3243,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		if (not isDuplicityName):
 			self.guiHelpers.addSettingsItemGui(settingsInst)
+			self.guiSignals.boundaryConditionChanged.emit("add")
 
 	def boundaryConditionSettingsRemoveButtonClicked(self, name=None):
 		# if there is no name it's called from UI, if there is name it's called as function this is done to have one function removing port properly for both cases
@@ -3403,16 +3441,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		self.guiHelpers.setComboboxItem(self.form.striplinePortPropagationComboBox, previousPropagationValue)
 
-	#  _     _    _ __  __ _____  ______ _____    _____        _____ _______            _   _   _
-	# | |   | |  | |  \/  |  __ \|  ____|  __ \  |  __ \ /\   |  __ \__   __|          | | | | (_)                
-	# | |   | |  | | \  / | |__) | |__  | |  | | | |__) /  \  | |__) | | |     ___  ___| |_| |_ _ _ __   __ _ ___ 
-	# | |   | |  | | |\/| |  ___/|  __| | |  | | |  ___/ /\ \ |  _  /  | |    / __|/ _ \ __| __| | '_ \ / _` / __|
-	# | |___| |__| | |  | | |    | |____| |__| | | |  / ____ \| | \ \  | |    \__ \  __/ |_| |_| | | | | (_| \__ \
-	# |______\____/|_|  |_|_|    |______|_____/  |_| /_/    \_\_|  \_\ |_|    |___/\___|\__|\__|_|_| |_|\__, |___/
-	#                                                                                                    __/ |    
-	#                                                                                                   |___/    
+	#########################################################################################################################################
 	#
-	
+	#	LUMPED PART TAB HANDLERS
+	#
+	#########################################################################################################################################
+
 	def getLumpedPartItemFromGui(self):
 		name = self.form.lumpedPartSettingsNameInput.text()
 
@@ -3496,12 +3530,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 			self.guiHelpers.displayMessage(f"LumpedPart {settingsInst.name} updated.", forceModal=False)
 
-	#   _____________   ____________  ___    __       _____ _______________________   _____________
-	#  / ____/ ____/ | / / ____/ __ \/   |  / /      / ___// ____/_  __/_  __/  _/ | / / ____/ ___/
-	# / / __/ __/ /  |/ / __/ / /_/ / /| | / /       \__ \/ __/   / /   / /  / //  |/ / / __ \__ \ 
-	#/ /_/ / /___/ /|  / /___/ _, _/ ___ |/ /___    ___/ / /___  / /   / / _/ // /|  / /_/ /___/ / 
-	#\____/_____/_/ |_/_____/_/ |_/_/  |_/_____/   /____/_____/ /_/   /_/ /___/_/ |_/\____//____/  
+	#########################################################################################################################################
 	#
+	#	GENERAL SETTINGS
+	#
+	#########################################################################################################################################
+
 	def materialTreeWidgetItemChanged(self, current, previous):
 		print("materialTreeWidgetItemChanged(): Material item changed.")
 

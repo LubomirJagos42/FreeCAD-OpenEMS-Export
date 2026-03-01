@@ -53,12 +53,8 @@ class IniFile0v1:
 
         return None
 
-    #   _____    __      ________    _____ ______ _______ _______ _____ _   _  _____  _____
-    #  / ____|  /\ \    / /  ____|  / ____|  ____|__   __|__   __|_   _| \ | |/ ____|/ ____|
-    # | (___   /  \ \  / /| |__    | (___ | |__     | |     | |    | | |  \| | |  __| (___
-    #  \___ \ / /\ \ \/ / |  __|    \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \
-    #  ____) / ____ \  /  | |____   ____) | |____   | |     | |   _| |_| |\  | |__| |____) |
-    # |_____/_/    \_\/   |______| |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/
+    ##
+    #   SAVE SETTINGS METHOD
     #
     def write(self, filename=None):
 
@@ -457,8 +453,9 @@ class IniFile0v1:
             settings.setValue(priorityMeshObjName, str(k*10))          #multiply priority by 10 to left there some numbers between
         settings.endGroup()
 
+        #
         # SAVE POSTPROCESSING OPTIONS
-
+        #
         settings.beginGroup("POSTPROCESSING-DefaultName")
         settings.setValue("nf2ffObject", self.form.portNf2ffObjectList.currentText())
         settings.setValue("nf2ffInputPort", self.form.portNf2ffInput.currentText())
@@ -470,6 +467,37 @@ class IniFile0v1:
         settings.setValue("nf2ffPhiStart", self.form.portNf2ffPhiStart.value())
         settings.setValue("nf2ffPhiStop", self.form.portNf2ffPhiStop.value())
         settings.setValue("nf2ffPhiStep", self.form.portNf2ffPhiStep.value())
+        settings.endGroup()
+
+        #
+        # SAVE EMERGE NF2FF FIELDS
+        #
+        nf2ffEmergeSettings = {}
+        nf2ffEmergeSettings["portNf2ffEmergeObjectList"] = self.form.portNf2ffEmergeObjectList.currentText()
+        nf2ffEmergeSettings["boundaryNf2ffEmergeFreq"] = self.form.boundaryNf2ffEmergeFreq.value()
+        nf2ffEmergeSettings["polarizationNf2ffEmerge"] = self.form.polarizationNf2ffEmerge.currentText()
+        nf2ffEmergeSettings["quantityNf2ffEmerge"] = self.form.quantityNf2ffEmerge.currentText()
+        nf2ffEmergeSettings["useDecibelsNf2ffEmerge"] = self.form.useDecibelsNf2ffEmerge.isChecked()
+        nf2ffEmergeSettings["dBFloorNf2ffEmerge"] = self.form.dBFloorNf2ffEmerge.value()
+        nf2ffEmergeSettings["diagramRMaxNF2FFEmerge"] = self.form.diagramRMaxNF2FFEmerge.value()
+        nf2ffEmergeSettings["diagramPlacementXNF2FFEmerge"] = self.form.diagramPlacementXNF2FFEmerge.value()
+        nf2ffEmergeSettings["diagramPlacementYNF2FFEmerge"] = self.form.diagramPlacementYNF2FFEmerge.value()
+        nf2ffEmergeSettings["diagramPlacementZNF2FFEmerge"] = self.form.diagramPlacementZNF2FFEmerge.value()
+        nf2ffEmergeSettings["diagramIsotropicNF2FFEmerge"] = self.form.diagramIsotropicNF2FFEmerge.isChecked()
+
+        fieldProbeEmergeSettings = {}
+        fieldProbeEmergeSettings["frequencyFieldProcessingEmerge"] = self.form.frequencyFieldProcessingEmerge.value()
+        fieldProbeEmergeSettings["typeFieldProcessingEmerge"] = self.form.typeFieldProcessingEmerge.currentText()
+        fieldProbeEmergeSettings["metricFieldProcessingEmerge"] = self.form.metricFieldProcessingEmerge.currentText()
+        fieldProbeEmergeSettings["discretizationStepSizeFieldProcessingEmerge"] = self.form.discretizationStepSizeFieldProcessingEmerge.value()
+        fieldProbeEmergeSettings["animateFieldProcessingEmerge"] = self.form.animateFieldProcessingEmerge.isChecked()
+        fieldProbeEmergeSettings["cutplaneXFieldProcessingEmerge"] = self.form.cutplaneXFieldProcessingEmerge.value()
+        fieldProbeEmergeSettings["cutplaneYFieldProcessingEmerge"] = self.form.cutplaneYFieldProcessingEmerge.value()
+        fieldProbeEmergeSettings["cutplaneZFieldProcessingEmerge"] = self.form.cutplaneZFieldProcessingEmerge.value()
+
+        settings.beginGroup("POSTPROCESSING-EmergePlotFields")
+        settings.setValue("plotFieldSettings", json.dumps(fieldProbeEmergeSettings))
+        settings.setValue("plotNF2FFSettings", json.dumps(nf2ffEmergeSettings))
         settings.endGroup()
 
         # sys.exit()  # prevents second call
@@ -1039,6 +1067,45 @@ class IniFile0v1:
                 # If grid settings is not set to be top priority lines, therefore it's disabled (because then it's not take into account when generate mesh lines and it's overlapping something)
                 #
                 self.guiHelpers.updateMeshPriorityDisableItems()
+
+                continue
+
+            elif (re.compile("POSTPROCESSING-EmergePlotFields").search(settingsGroup)):
+
+                #
+                #   This parameters were added into .ini file just now recently (March 2026) therefore it's wrapped in try/except
+                #   to not cause error when older .ini files are opened and don't have these params inside
+                #
+                try:
+                    settings.beginGroup(settingsGroup)
+                    plotNF2FFSettings = json.loads(settings.value('plotNF2FFSettings'))
+                    plotFieldSettings = json.loads(settings.value('plotFieldSettings'))
+
+                    self.guiHelpers.setComboboxItem(self.form.portNf2ffEmergeObjectList, plotNF2FFSettings["portNf2ffEmergeObjectList"])
+                    self.form.boundaryNf2ffEmergeFreq.setValue(plotNF2FFSettings["boundaryNf2ffEmergeFreq"])
+                    self.guiHelpers.setComboboxItem(self.form.polarizationNf2ffEmerge, plotNF2FFSettings["polarizationNf2ffEmerge"])
+                    self.guiHelpers.setComboboxItem(self.form.quantityNf2ffEmerge, plotNF2FFSettings["quantityNf2ffEmerge"])
+                    self.form.useDecibelsNf2ffEmerge.setChecked(plotNF2FFSettings["useDecibelsNf2ffEmerge"])
+                    self.form.dBFloorNf2ffEmerge.setValue(plotNF2FFSettings["dBFloorNf2ffEmerge"])
+                    self.form.diagramRMaxNF2FFEmerge.setValue(plotNF2FFSettings["diagramRMaxNF2FFEmerge"])
+                    self.form.diagramPlacementXNF2FFEmerge.setValue(plotNF2FFSettings["diagramPlacementXNF2FFEmerge"])
+                    self.form.diagramPlacementYNF2FFEmerge.setValue(plotNF2FFSettings["diagramPlacementYNF2FFEmerge"])
+                    self.form.diagramPlacementZNF2FFEmerge.setValue(plotNF2FFSettings["diagramPlacementZNF2FFEmerge"])
+                    self.form.diagramIsotropicNF2FFEmerge.setChecked(plotNF2FFSettings["diagramIsotropicNF2FFEmerge"])
+
+                    self.form.frequencyFieldProcessingEmerge.setValue(plotFieldSettings["frequencyFieldProcessingEmerge"])
+                    self.guiHelpers.setComboboxItem(self.form.typeFieldProcessingEmerge, plotFieldSettings["typeFieldProcessingEmerge"])
+                    self.guiHelpers.setComboboxItem(self.form.metricFieldProcessingEmerge, plotFieldSettings["metricFieldProcessingEmerge"])
+                    self.form.discretizationStepSizeFieldProcessingEmerge.setValue(plotFieldSettings["discretizationStepSizeFieldProcessingEmerge"])
+                    self.form.animateFieldProcessingEmerge.setChecked(plotFieldSettings["animateFieldProcessingEmerge"])
+                    self.form.cutplaneXFieldProcessingEmerge.setValue(plotFieldSettings["cutplaneXFieldProcessingEmerge"])
+                    self.form.cutplaneYFieldProcessingEmerge.setValue(plotFieldSettings["cutplaneYFieldProcessingEmerge"])
+                    self.form.cutplaneZFieldProcessingEmerge.setValue(plotFieldSettings["cutplaneZFieldProcessingEmerge"])
+
+                    settings.endGroup()
+
+                except Exception as e:
+                    print(e)
 
                 continue
 

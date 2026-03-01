@@ -3,6 +3,7 @@ from PySide.QtCore import Signal, QObject
 class GuiSignals(QObject):
     materialsChanged = Signal(str)
     portsChanged = Signal(str)
+    boundaryConditionChanged = Signal(str)
     probesChanged = Signal(str)
 
     gridRenamed = Signal(str, str)
