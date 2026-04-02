@@ -309,10 +309,10 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                             (bbox.ZMin + bbox.ZMax) / 2
                         )
 
-                        # TODO: Use variable with units to properly calculate radius value, now for testing when working with models mostly in mm
+                        cadLengthUnit = self.getFreeCADInternalUnitLengthStr()
                         genScript += f"position = {str(position)}\n"
-                        genScript += f"position = tuple([x*mm for x in position])\n"
-                        genScript += f"newSphereObj = em.geo.Sphere(radius={str(radius)}*mm, position=position)\n"
+                        genScript += f"position = tuple([x*{cadLengthUnit} for x in position])\n"
+                        genScript += f"newSphereObj = em.geo.Sphere(radius={str(radius)}*{cadLengthUnit}, position=position)\n"
                         genScript += f"newSphereObj.give_name('{freeCadObj.Label}')\n"
                         genScript += f"newSphereObj.name = '{freeCadObj.Label}'\n"
                         genScript += f"newSphereObj.prio_set({objModelPriority})\n"
@@ -390,10 +390,10 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                         (bbox.ZMin + bbox.ZMax) / 2
                     )
 
-                    # TODO: Use variable with units to properly calculate radius value, now for testing when working with models mostly in mm
+                    cadLengthUnit = self.getFreeCADInternalUnitLengthStr()
                     genScript += f"position = {str(position)}\n"
-                    genScript += f"position = tuple([x*mm for x in position])\n"
-                    genScript += f"newSphereObj = em.geo.Sphere(radius={str(radius)}*mm, position=position)\n"
+                    genScript += f"position = tuple([x*{cadLengthUnit} for x in position])\n"
+                    genScript += f"newSphereObj = em.geo.Sphere(radius={str(radius)}*{cadLengthUnit}, position=position)\n"
                     genScript += f"newSphereObj.give_name('{freeCadObj.Label}')\n"
                     genScript += f"newSphereObj.name = '{freeCadObj.Label}'\n"
                     genScript += f"newSphereObj.prio_set({objModelPriority})\n"
@@ -1728,6 +1728,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         #
         boundaryConditionObjectName = self.form.portNf2ffEmergeObjectList.currentText().split('-')[1].strip()
 
+        cadLengthUnit = self.getFreeCADInternalUnitLengthStr()
+
         genScript += f"""
 #######################################################################################################################################
 # Farfield plot and 3D gain generated
@@ -1764,8 +1766,8 @@ for geoObj in simulationObj.state.manager.geometry_list[simulationObj.modelname]
 
 # display far field
 field = simulationResult.field.find(freq={self.form.boundaryNf2ffEmergeFreq.value()}*1e6)
-ff3d = field.farfield_3d(boundary_selection, origin=({self.form.diagramPlacementXNF2FFEmerge.value()}*mm, {self.form.diagramPlacementYNF2FFEmerge.value()}*mm, {self.form.diagramPlacementZNF2FFEmerge.value()}*mm))
-simulationObj.display.add_field(ff3d.surfplot('{self.form.polarizationNf2ffEmerge.currentText()}','{self.form.quantityNf2ffEmerge.currentText()}',True, dB=True, rmax={self.form.diagramRMaxNF2FFEmerge.value()}*mm, offset=({self.form.diagramPlacementXNF2FFEmerge.value()}, {self.form.diagramPlacementYNF2FFEmerge.value()}, {self.form.diagramPlacementZNF2FFEmerge.value()})))
+ff3d = field.farfield_3d(boundary_selection, origin=({self.form.diagramPlacementXNF2FFEmerge.value()}*{cadLengthUnit}, {self.form.diagramPlacementYNF2FFEmerge.value()}*{cadLengthUnit}, {self.form.diagramPlacementZNF2FFEmerge.value()}*{cadLengthUnit}))
+simulationObj.display.add_field(ff3d.surfplot('{self.form.polarizationNf2ffEmerge.currentText()}','{self.form.quantityNf2ffEmerge.currentText()}',True, dB=True, rmax={self.form.diagramRMaxNF2FFEmerge.value()}*{cadLengthUnit}, offset=({self.form.diagramPlacementXNF2FFEmerge.value()}, {self.form.diagramPlacementYNF2FFEmerge.value()}, {self.form.diagramPlacementZNF2FFEmerge.value()})))
 simulationObj.display.show()
 
 """
@@ -1791,6 +1793,8 @@ simulationObj.display.show()
     #	Write NF2FF Button clicked, generate script to display far field pattern
     #
     def writeFieldButtonClicked(self, outputDir=None):
+        cadLengthUnit = self.getFreeCADInternalUnitLengthStr()
+
         genScript = ""
         genScript += "# Plot far field for structure.\n"
         genScript += "#\n"
@@ -1808,11 +1812,11 @@ simulationObj.display.show()
         #
         cutplaneScriptLine = ""
         if self.form.cutplaneXFieldProcessingEmerge.value() == 0.0 and self.form.cutplaneYFieldProcessingEmerge.value() == 0.0:
-            cutplaneScriptLine = f"result = simulationResult.field.find(freq={self.form.frequencyFieldProcessingEmerge.value()}*1e6).cutplane({self.form.discretizationStepSizeFieldProcessingEmerge.value()}, z={self.form.cutplaneZFieldProcessingEmerge.value()}*mm)"
+            cutplaneScriptLine = f"result = simulationResult.field.find(freq={self.form.frequencyFieldProcessingEmerge.value()}*1e6).cutplane({self.form.discretizationStepSizeFieldProcessingEmerge.value()}, z={self.form.cutplaneZFieldProcessingEmerge.value()}*{cadLengthUnit})"
         elif self.form.cutplaneXFieldProcessingEmerge.value() == 0.0 and self.form.cutplaneZFieldProcessingEmerge.value() == 0.0:
-            cutplaneScriptLine = f"result = simulationResult.field.find(freq={self.form.frequencyFieldProcessingEmerge.value()}*1e6).cutplane({self.form.discretizationStepSizeFieldProcessingEmerge.value()}, y={self.form.cutplaneZFieldProcessingEmerge.value()}*mm)"
+            cutplaneScriptLine = f"result = simulationResult.field.find(freq={self.form.frequencyFieldProcessingEmerge.value()}*1e6).cutplane({self.form.discretizationStepSizeFieldProcessingEmerge.value()}, y={self.form.cutplaneZFieldProcessingEmerge.value()}*{cadLengthUnit})"
         elif self.form.cutplaneYFieldProcessingEmerge.value() == 0.0 and self.form.cutplaneZFieldProcessingEmerge.value() == 0.0:
-            cutplaneScriptLine = f"result = simulationResult.field.find(freq={self.form.frequencyFieldProcessingEmerge.value()}*1e6).cutplane({self.form.discretizationStepSizeFieldProcessingEmerge.value()}, x={self.form.cutplaneZFieldProcessingEmerge.value()}*mm)"
+            cutplaneScriptLine = f"result = simulationResult.field.find(freq={self.form.frequencyFieldProcessingEmerge.value()}*1e6).cutplane({self.form.discretizationStepSizeFieldProcessingEmerge.value()}, x={self.form.cutplaneZFieldProcessingEmerge.value()}*{cadLengthUnit})"
 
         genScript += f"""## display field in model
 #

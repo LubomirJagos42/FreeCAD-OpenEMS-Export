@@ -1143,7 +1143,49 @@ in grid units</string>
                     <string>FEM Grid settings</string>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_23">
-                    <item row="3" column="1">
+                    <item row="2" column="0">
+                     <spacer name="verticalSpacer_39">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Vertical</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Policy::Preferred</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="0" column="2">
+                     <spacer name="horizontalSpacer_51">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="8" column="0">
+                     <spacer name="verticalSpacer_33">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="4" column="1">
                      <widget class="QDoubleSpinBox" name="femGridMaxFaceSizeValue">
                       <property name="decimals">
                        <number>3</number>
@@ -1159,64 +1201,29 @@ in grid units</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="2" column="1">
-                     <widget class="QDoubleSpinBox" name="femGridMaxBoundarySizeValue">
-                      <property name="decimals">
-                       <number>3</number>
+                    <item row="5" column="0">
+                     <widget class="QCheckBox" name="femGridMaxDomainSizeCheckbox">
+                      <property name="text">
+                       <string>max domain size</string>
                       </property>
-                      <property name="maximum">
-                       <double>10000000.000000000000000</double>
+                      <property name="checkable">
+                       <bool>true</bool>
                       </property>
-                      <property name="singleStep">
-                       <double>0.100000000000000</double>
-                      </property>
-                      <property name="value">
-                       <double>1.000000000000000</double>
+                      <property name="checked">
+                       <bool>false</bool>
                       </property>
                      </widget>
                     </item>
-                    <item row="6" column="0">
-                     <spacer name="verticalSpacer_33">
-                      <property name="orientation">
-                       <enum>Qt::Orientation::Vertical</enum>
+                    <item row="3" column="0">
+                     <widget class="QCheckBox" name="femGridMaxBoundarySizeCheckbox">
+                      <property name="text">
+                       <string>max boundary size</string>
                       </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>20</width>
-                        <height>40</height>
-                       </size>
+                      <property name="checkable">
+                       <bool>true</bool>
                       </property>
-                     </spacer>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="QDoubleSpinBox" name="femGridMaxElementSizeValue">
-                      <property name="decimals">
-                       <number>3</number>
-                      </property>
-                      <property name="maximum">
-                       <double>10000000.000000000000000</double>
-                      </property>
-                      <property name="singleStep">
-                       <double>0.100000000000000</double>
-                      </property>
-                      <property name="value">
-                       <double>1.000000000000000</double>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="1">
-                     <widget class="QDoubleSpinBox" name="femGridMaxDomainSizeValue">
-                      <property name="decimals">
-                       <number>3</number>
-                      </property>
-                      <property name="maximum">
-                       <double>10000000.000000000000000</double>
-                      </property>
-                      <property name="singleStep">
-                       <double>0.100000000000000</double>
-                      </property>
-                      <property name="value">
-                       <double>1.000000000000000</double>
+                      <property name="checked">
+                       <bool>false</bool>
                       </property>
                      </widget>
                     </item>
@@ -1233,7 +1240,7 @@ in grid units</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="5" column="0">
+                    <item row="7" column="0">
                      <widget class="QCheckBox" name="femGridUserDefinedCheckbox">
                       <property name="text">
                        <string>user defined</string>
@@ -1246,64 +1253,21 @@ in grid units</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="3" column="0">
-                     <widget class="QCheckBox" name="femGridMaxFaceSizeCheckbox">
-                      <property name="text">
-                       <string>max face size</string>
+                    <item row="3" column="1">
+                     <widget class="QDoubleSpinBox" name="femGridMaxBoundarySizeValue">
+                      <property name="decimals">
+                       <number>3</number>
                       </property>
-                      <property name="checkable">
-                       <bool>true</bool>
+                      <property name="maximum">
+                       <double>10000000.000000000000000</double>
                       </property>
-                      <property name="checked">
-                       <bool>false</bool>
+                      <property name="singleStep">
+                       <double>0.100000000000000</double>
                       </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QCheckBox" name="femGridMaxBoundarySizeCheckbox">
-                      <property name="text">
-                       <string>max boundary size</string>
-                      </property>
-                      <property name="checkable">
-                       <bool>true</bool>
-                      </property>
-                      <property name="checked">
-                       <bool>false</bool>
+                      <property name="value">
+                       <double>1.000000000000000</double>
                       </property>
                      </widget>
-                    </item>
-                    <item row="4" column="0">
-                     <widget class="QCheckBox" name="femGridMaxDomainSizeCheckbox">
-                      <property name="text">
-                       <string>max domain size</string>
-                      </property>
-                      <property name="checkable">
-                       <bool>true</bool>
-                      </property>
-                      <property name="checked">
-                       <bool>false</bool>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="label_125">
-                      <property name="text">
-                       <string>Max Size Anything Units</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="2">
-                     <spacer name="horizontalSpacer_51">
-                      <property name="orientation">
-                       <enum>Qt::Orientation::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
                     </item>
                     <item row="0" column="1">
                      <widget class="QComboBox" name="femGridMaxSizeUnits">
@@ -1341,6 +1305,74 @@ in grid units</string>
                        </property>
                       </item>
                      </widget>
+                    </item>
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="label_125">
+                      <property name="text">
+                       <string>Max Size Anything Units</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="1">
+                     <widget class="QDoubleSpinBox" name="femGridMaxDomainSizeValue">
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
+                      <property name="maximum">
+                       <double>10000000.000000000000000</double>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.100000000000000</double>
+                      </property>
+                      <property name="value">
+                       <double>1.000000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="0">
+                     <widget class="QCheckBox" name="femGridMaxFaceSizeCheckbox">
+                      <property name="text">
+                       <string>max face size</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>true</bool>
+                      </property>
+                      <property name="checked">
+                       <bool>false</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QDoubleSpinBox" name="femGridMaxElementSizeValue">
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
+                      <property name="maximum">
+                       <double>10000000.000000000000000</double>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.100000000000000</double>
+                      </property>
+                      <property name="value">
+                       <double>1.000000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="6" column="0">
+                     <spacer name="verticalSpacer_40">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Vertical</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Policy::Preferred</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
                     </item>
                    </layout>
                   </widget>
@@ -2537,7 +2569,7 @@ Custom option using fparser lib, possible using user-defined equation:
               <widget class="QLineEdit" name="portSettingsNameInput"/>
              </item>
              <item>
-              <widget class="QGroupBox" name="groupBox_4">
+              <widget class="QGroupBox" name="portSettingsTab_portTypeGroup">
                <property name="title">
                 <string>Port Type</string>
                </property>

@@ -572,6 +572,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.nf2ffProcessingTab_openemsTab.setEnabled(True)
 			self.form.nf2ffProcessingTab_emergeTab.setEnabled(False)
 
+			#
+			#	PortSettings Tab - enable all port types for openEMS
+			#
+			[radio.setEnabled(True) for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
+
 		elif (solverTypeStr.lower() == "emerge"):
 			self.form.generateOpenEMSScriptButton.setText("Generate EMerge Files")
 			self.form.radioButton_octaveType.setEnabled(False)
@@ -619,6 +624,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.nf2ffProcessingTab.setCurrentIndex(1)
 			self.form.nf2ffProcessingTab_openemsTab.setEnabled(False)
 			self.form.nf2ffProcessingTab_emergeTab.setEnabled(True)
+
+			#
+			#	PortSettings Tab - enable port types for EMerge
+			#		- enable just lumped port as it's now only one implemented in code generator (Mar2026)
+			#
+			[radio.setEnabled(radio.objectName() == "lumpedPortRadioButton") for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
+			[radio.click() for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton) if radio.objectName() == "lumpedPortRadioButton"]
 
 		else:
 			pass
