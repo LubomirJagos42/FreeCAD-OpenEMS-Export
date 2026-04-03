@@ -15,7 +15,8 @@ import sys
 import inspect
 
 FILE_PATH    = os.path.realpath(__file__)  # full path of this file
-FILE_DIR     = os.path.split(FILE_PATH)[0] # directory of this file 
+FILE_DIR     = os.path.split(FILE_PATH)[0] # directory of this file
+sys.path.insert(0, os.path.join(FILE_DIR, "FreeCAD-OpenEMS-Export"))
 FOE_MOD_NAME = "ExportOpenEMSDialog"
 FOE_MOD_PATH = os.path.join(FILE_DIR, "FreeCAD-OpenEMS-Export/ExportOpenEMSDialog.py") # construct path to target file w.r.t. to this file
 FOE_MOD_PATH_2 = os.path.join(FILE_DIR, "ExportOpenEMSDialog.py") # file directory to load if .FMacro is not copied to parent dir
