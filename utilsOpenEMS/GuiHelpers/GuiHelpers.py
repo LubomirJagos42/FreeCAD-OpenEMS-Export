@@ -28,6 +28,11 @@ class GuiHelpers:
         return msgBox.exec() == QtWidgets.QMessageBox.Save
 
     def initRightColumnTopLevelItems(self):
+        # BOUNDARY CONDITIONS - FEM only, this is for emerge solver or palace solver
+        topItem = QtWidgets.QTreeWidgetItem(["BoundaryCondition"])
+        topItem.setIcon(0, QtGui.QIcon(os.path.join(self.APP_DIR, "img", "boundarycondition.svg")))
+        self.form.objectAssignmentRightTreeWidget.insertTopLevelItem(0, topItem)
+
         # MATERIALS
         topItem = QtWidgets.QTreeWidgetItem(["Material"])
         topItem.setIcon(0, QtGui.QIcon(os.path.join(self.APP_DIR, "img", "material.svg")))
@@ -74,6 +79,7 @@ class GuiHelpers:
         self.form.portSettingsTreeView.clear()  # delete PORT entries
         self.form.probeSettingsTreeView.clear()  # delete PORT entries
         self.form.lumpedPartTreeView.clear()  # delete LUMPED PART entries
+        self.form.boundaryConditionSettingsTreeView.clear()  # delete BOUNDARY CONDITION entries
 
         self.form.portNf2ffObjectList.clear()   #clear NF2FF combobox
         return
@@ -146,6 +152,8 @@ class GuiHelpers:
             treeWidgetRef = self.form.lumpedPartTreeView
         elif (typeStr.lower() == "probe"):
             treeWidgetRef = self.form.probeSettingsTreeView
+        elif (typeStr.lower() == "boundarycondition"):
+            treeWidgetRef = self.form.boundaryConditionSettingsTreeView
         else:
             print('cannot assign item ' + typeStr)
             return
@@ -255,3 +263,9 @@ class GuiHelpers:
                 gridGroupItem = item
 
         return gridGroupItem
+
+    def setVisibleTreeWidgetItem(self, treeWidgetRef, search_text, isVisible):
+        for i in range(treeWidgetRef.topLevelItemCount()):
+            item = treeWidgetRef.topLevelItem(i)
+            if search_text.lower() in item.text(0).lower():
+                item.setHidden(not isVisible)

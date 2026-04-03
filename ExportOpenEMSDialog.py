@@ -1,5 +1,5 @@
 from PySide import QtGui, QtCore, QtWidgets
-from PySide.QtCore import Slot
+from PySide.QtCore import Slot, QTimer
 import os, sys
 import re
 import random
@@ -61,13 +61,14 @@ from utilsOpenEMS.SettingsItem.LumpedPartSettingsItem import LumpedPartSettingsI
 from utilsOpenEMS.SettingsItem.MaterialSettingsItem import MaterialSettingsItem
 from utilsOpenEMS.SettingsItem.SimulationSettingsItem import SimulationSettingsItem
 from utilsOpenEMS.SettingsItem.GridSettingsItem import GridSettingsItem
+from utilsOpenEMS.SettingsItem.BoundaryConditionSettingsItem import BoundaryConditionSettingsItem
 from utilsOpenEMS.SettingsItem.FreeCADSettingsItem import FreeCADSettingsItem
 
 from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator import OctaveScriptLinesGenerator
 from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator import PythonScriptLinesGenerator
 
 from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator2 import OctaveScriptLinesGenerator2				#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
-from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator2 import PythonScriptLinesGenerator2				#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
+from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator2_openems import PythonScriptLinesGenerator2_openems				#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
 from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator3_emerge import PythonScriptLinesGenerator3_emerge	#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
 
 from utilsOpenEMS.GuiHelpers.GuiHelpers import GuiHelpers
@@ -155,18 +156,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		# EXPERIMENTAL using settings to short code and move auxiliary logic for diferent sutff into settings classes
 		# to be able do in python code generatr same stuff as in octave
 		self.octaveScriptGenerator = OctaveScriptLinesGenerator2(self.form, statusBar=self.statusBar)
-		self.pythonScriptGenerator = PythonScriptLinesGenerator2(self.form, statusBar = self.statusBar)
+		self.pythonScriptGenerator = PythonScriptLinesGenerator2_openems(self.form, statusBar = self.statusBar)
 
 		self.scriptGenerator = self.octaveScriptGenerator													#variable which store current script generator
 		#self.scriptGenerator2 = OctaveScriptLinesGenerator2(self.form, statusBar=self.statusBar)
 		#self.scriptGenerator3 = PythonScriptLinesGenerator2(self.form, statusBar=self.statusBar)
-
-		#
-		#	Modify UI based on solver type
-		#		- this UI was originaly developed for openEMS but now I am going to add support for EMerge solver
-		#		- emerge have just python interface, it's FEM so different grid definition is used therefore some UI needs to be disabled to not confues user
-		#
-		self.form.comboBox_solverType.currentIndexChanged.connect(self.updateUiBasedOnSolverType)
 
 		#
 		#	Connect function to change script generator
@@ -251,10 +245,16 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.probeSettingsUpdateButton.clicked.connect(self.probeSettingsUpdateButtonClicked)
 		self.guiSignals.probesChanged.connect(self.probesChanged)
 
+		self.form.boundaryConditionSettingsAddButton.clicked.connect(self.boundaryConditionSettingsAddButtonClicked)
+		self.form.boundaryConditionSettingsRemoveButton.clicked.connect(self.boundaryConditionSettingsRemoveButtonClicked)
+		self.form.boundaryConditionSettingsUpdateButton.clicked.connect(self.boundaryConditionSettingsUpdateButtonClicked)
+		self.guiSignals.boundaryConditionChanged.connect(self.boundaryConditionChanged)
+
 		#
 		# Handle function for grid radio buttons click
 		#
 		self.form.userDefinedRadioButton.clicked.connect(self.userDefinedRadioButtonClicked)
+		self.form.femGridUserDefinedCheckbox.clicked.connect(self.userDefinedRadioButtonClicked)
 		self.form.fixedCountRadioButton.clicked.connect(self.fixedCountRadioButtonClicked)
 		self.form.fixedDistanceRadioButton.clicked.connect(self.fixedDistanceRadioButtonClicked)
 		self.form.smoothMeshRadioButton.clicked.connect(self.smoothMeshRadioButtonClicked)
@@ -288,6 +288,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.drawS11Button.clicked.connect(self.drawS11ButtonClicked)			# Clicked on "Write Draw S11 Script"
 		self.form.drawS21Button.clicked.connect(self.drawS21ButtonClicked)			# Clicked on "Write Draw S21 Script"
 		self.form.writeNf2ffButton.clicked.connect(self.writeNf2ffButtonClicked)	# Clicked on "Write NF2FF"
+		self.form.writeNf2ffEmergeButton.clicked.connect(self.writeNf2ffEmergeButtonClicked)				# Clicked on "Write NF2FF" for EMerge
+		self.form.writeFieldScriptEmergeButton.clicked.connect(self.writeFieldScriptEmergeButtonClicked)	# Clicked on "Write Field Display Script" for EMerge
 
 		#
 		# GRID
@@ -353,6 +355,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.portSettingsTreeView.currentItemChanged.connect(self.portTreeWidgetItemChanged)
 		self.form.lumpedPartTreeView.currentItemChanged.connect(self.lumpedPartTreeWidgetItemChanged)	
 		self.form.probeSettingsTreeView.currentItemChanged.connect(self.probeTreeWidgetItemChanged)
+		self.form.boundaryConditionSettingsTreeView.currentItemChanged.connect(self.boundaryConditionTreeWidgetItemChanged)
 
 		#
 		# PORT tab settings events handlers
@@ -510,6 +513,15 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.guiSignals.portRenamed.connect(self.portRenamed)
 		self.guiSignals.lumpedPartRenamed.connect(self.lumpedPartRenamed)
 		self.guiSignals.probeRenamed.connect(self.probeRenamed)
+		self.guiSignals.boundaryConditionRenamed.connect(self.boundaryConditionRenamed)
+
+		#
+		#	Modify UI based on solver type
+		#		- this UI was originaly developed for openEMS but now I am going to add support for EMerge solver
+		#		- emerge have just python interface, it's FEM so different grid definition is used therefore some UI needs to be disabled to not confues user
+		#
+		self.form.comboBox_solverType.currentIndexChanged.connect(self.updateUiBasedOnSolverType)
+		QTimer.singleShot(0, self.updateUiBasedOnSolverType)	#update gui based on solver type after start
 
 		print(f"----> init finished")
 
@@ -524,7 +536,46 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.gridTab_gridSettings_openems.setEnabled(True)
 			self.form.tabWidget_gridTab_gridSettings.setCurrentIndex(0)
 
-			self.pythonScriptGenerator = PythonScriptLinesGenerator2(self.form, statusBar = self.statusBar)
+			if (self.form.materialUserDefinedRadioButton.isChecked()):
+				self.form.materialKappaNumberInput.setEnabled(True)
+				self.form.materialTanDeltaNumberInput.setEnabled(False)
+
+			self.form.lumpedPortDirectionCustomGroupBox.setEnabled(False)
+
+			self.form.simulationParamsTab_tabWidget.setCurrentIndex(0)
+			self.form.simulationParamsTab_tabWidget_openEMSTab.setEnabled(True)
+			self.form.simulationParamsTab_tabWidget_emergeTab.setEnabled(False)
+
+			#disable main BoundaryConditions tab, not applicable for FDTD simulation in openEMS
+			self.form.boundaryConditionTab.setEnabled(False)
+
+			self.pythonScriptGenerator = PythonScriptLinesGenerator2_openems(self.form, statusBar = self.statusBar)
+
+			#
+			# Hide boundary conditions in right tree widget, not applicable for openEMS
+			#
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "BoundaryCondition", False)
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "BoundaryCondition", False)
+			boundaryConditionTabIndex = self.form.openEMSTab.indexOf(self.form.boundaryConditionTab)
+			self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "")
+
+			#
+			# Display probe settings tab, this is applicable tab just for openEMS
+			#
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "Probe", True)
+			probeTabIndex = self.form.openEMSTab.indexOf(self.form.probeSettingsTab)
+			self.form.openEMSTab.setTabText(probeTabIndex, "Probe Settings")
+			self.form.probeSettingsTab.setEnabled(True)
+
+			# post-processing tab nf2ff tab set
+			self.form.nf2ffProcessingTab.setCurrentIndex(0)
+			self.form.nf2ffProcessingTab_openemsTab.setEnabled(True)
+			self.form.nf2ffProcessingTab_emergeTab.setEnabled(False)
+
+			#
+			#	PortSettings Tab - enable all port types for openEMS
+			#
+			[radio.setEnabled(True) for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
 
 		elif (solverTypeStr.lower() == "emerge"):
 			self.form.generateOpenEMSScriptButton.setText("Generate EMerge Files")
@@ -536,11 +587,50 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.gridTab_gridSettings_openems.setEnabled(False)
 			self.form.tabWidget_gridTab_gridSettings.setCurrentIndex(1)
 
+			if (self.form.materialUserDefinedRadioButton.isChecked()):
+				self.form.materialKappaNumberInput.setEnabled(False)
+				self.form.materialTanDeltaNumberInput.setEnabled(True)
+
+			self.form.lumpedPortDirectionCustomGroupBox.setEnabled(True)
+
 			self.form.excitationSettingsTab_tabWidget_emerge.setEnabled(True)
 			self.form.excitationSettingsTab_tabWidget_openems.setEnabled(False)
 			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(1)
 
+			self.form.simulationParamsTab_tabWidget.setCurrentIndex(1)
+			self.form.simulationParamsTab_tabWidget_openEMSTab.setEnabled(False)
+			self.form.simulationParamsTab_tabWidget_emergeTab.setEnabled(True)
+
 			self.pythonScriptGenerator = PythonScriptLinesGenerator3_emerge(self.form, statusBar=self.statusBar)
+
+			#
+			# Display boundary conditions in right tree widget, applicable for FEM EMerge only
+			#
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "BoundaryCondition", True)
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "BoundaryCondition", True)
+			boundaryConditionTabIndex = self.form.openEMSTab.indexOf(self.form.boundaryConditionTab)
+			self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "Boundary Conditions")
+			self.form.boundaryConditionTab.setEnabled(True)		# enable main BoundaryConditions tab, just for FEM simulations
+
+			#
+			# Hide probe settings tab, not applicable for EMerge
+			#
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "Probe", False)
+			probeTabIndex = self.form.openEMSTab.indexOf(self.form.probeSettingsTab)
+			self.form.openEMSTab.setTabText(probeTabIndex, "")
+			self.form.probeSettingsTab.setEnabled(False)
+
+			# post-processing tab nf2ff tab set
+			self.form.nf2ffProcessingTab.setCurrentIndex(1)
+			self.form.nf2ffProcessingTab_openemsTab.setEnabled(False)
+			self.form.nf2ffProcessingTab_emergeTab.setEnabled(True)
+
+			#
+			#	PortSettings Tab - enable port types for EMerge
+			#		- enable just lumped port as it's now only one implemented in code generator (Mar2026)
+			#
+			[radio.setEnabled(radio.objectName() == "lumpedPortRadioButton") for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
+			[radio.click() for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton) if radio.objectName() == "lumpedPortRadioButton"]
 
 		else:
 			pass
@@ -617,6 +707,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				filterStr = self.form.objectAssignmentFilterLeft.text()
 				self.initLeftColumnTopLevelItems(filterStr)
 
+			#
+			#	Update combobox with port and boundary names
+			#
+			self.portsChanged("update")
+			self.boundaryConditionChanged("update")
+
 	def freecadBeforeObjectDeleted(self,obj):
 		# event is generated before object is being removed, so observing instances have to 
 		# (TODO) un-list the object without drawing upon the FreeCAD objects list, and
@@ -657,6 +753,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		# remove object label from internal list
 		del self.internalObjectNameLabelList[obj.Name]
+
+		#
+		#	Update combobox with port and boundary names
+		#
+		self.portsChanged("update")
+		self.boundaryConditionChanged("update")
 
 	def blenderWindowActivatedHandler(self):
 		"""
@@ -1361,13 +1463,20 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		if (self.form.materialUserDefinedRadioButton.isChecked()):
 			self.form.materialEpsilonNumberInput.setEnabled(True)
 			self.form.materialMueNumberInput.setEnabled(True)
-			self.form.materialKappaNumberInput.setEnabled(True)
 			self.form.materialSigmaNumberInput.setEnabled(True)
+
+			if (self.form.comboBox_solverType.currentText().lower().find("openems") > -1):
+				self.form.materialKappaNumberInput.setEnabled(True)
+				self.form.materialTanDeltaNumberInput.setEnabled(False)
+			if (self.form.comboBox_solverType.currentText().lower().find("emerge") > -1):
+				self.form.materialKappaNumberInput.setEnabled(False)
+				self.form.materialTanDeltaNumberInput.setEnabled(True)
 		else:
 			self.form.materialEpsilonNumberInput.setEnabled(False)
 			self.form.materialMueNumberInput.setEnabled(False)
-			self.form.materialKappaNumberInput.setEnabled(False)
 			self.form.materialSigmaNumberInput.setEnabled(False)
+			self.form.materialKappaNumberInput.setEnabled(False)
+			self.form.materialTanDeltaNumberInput.setEnabled(False)
 
 	def materialConductingSheetRadioButtonToggled(self):
 		if (self.form.materialConductingSheetRadioButton.isChecked()):
@@ -1447,6 +1556,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			probeObjectIsRemoved = True
 			self.guiSignals.probesChanged.emit("remove")
 
+		boundaryObjectIsRemoved = False
+		if (rightItem.parent().parent().text(0) == "BoundaryCondition"):
+			boundaryObjectIsRemoved = True
+			self.guiSignals.boundaryConditionChanged.emit("remove")
+
 		#
 		#	REMOVE ITEM FROM OpenEMS Simulation assignments tree view
 		#
@@ -1457,6 +1571,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.guiSignals.portsChanged.emit("remove")
 		if (probeObjectIsRemoved):
 			self.guiSignals.probesChanged.emit("remove")
+		if (boundaryObjectIsRemoved):
+			self.guiSignals.boundaryConditionChanged.emit("remove")
 
 		return
 
@@ -1573,6 +1689,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 					self.guiSignals.portsChanged.emit("add")
 				elif (reResult.group(1).lower() == 'probe'):
 					self.guiSignals.probesChanged.emit("add")
+				elif (reResult.group(1).lower() == 'boundarycondition'):
+					self.guiSignals.boundaryConditionChanged.emit("add")
 
 			#
 			# If grid settings is not set to be top priority lines, therefore it's disabled (because then it's not take into account when generate mesh lines and it's overlapping something)
@@ -1688,10 +1806,16 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		# Inform GUI that there are some ports updated
 		self.guiSignals.portsChanged.emit("update")
 		self.guiSignals.probesChanged.emit("update")
+		self.guiSignals.boundaryConditionChanged.emit("update")
 
 		# PORT select first item
 		topItem = self.form.portSettingsTreeView.itemAt(0,0)
 		self.form.portSettingsTreeView.setCurrentItem(topItem)
+
+		#
+		# Update UI based on FDTD solver or FEM solver type, some items could be disabled
+		#
+		self.updateUiBasedOnSolverType()
 
 	#
 	#	Change current scripts type generator based on radiobutton from UI
@@ -1770,9 +1894,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#write result .m file into subfolder named after .ini file next to simulation settings .ini file
 		print(f"----> start saving file into {self.simulationOutputDir}")
 
-		self.scriptGenerator.generateOpenEMSScript(self.simulationOutputDir)
-		#self.scriptGenerator2.generateOpenEMSScript(self.simulationOutputDir + "_2nd_generator")
-		#self.scriptGenerator3.generateOpenEMSScript(self.simulationOutputDir + "_3rd_generator")
+		self.scriptGenerator.generateSimulationScript(self.simulationOutputDir)
+		#self.scriptGenerator2.generateSimulationScript(self.simulationOutputDir + "_2nd_generator")
+		#self.scriptGenerator3.generateSimulationScript(self.simulationOutputDir + "_3rd_generator")
 
 	def drawS11ButtonClicked(self):
 		portName = self.form.drawS11Port.currentText()
@@ -1833,14 +1957,28 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		# display message that script was generated
 		self.guiHelpers.displayMessage("Script to display far field generated.")
 
-	# GRID SETTINGS
-	#   _____ _____  _____ _____     _____ ______ _______ _______ _____ _   _  _____  _____ 
-	#  / ____|  __ \|_   _|  __ \   / ____|  ____|__   __|__   __|_   _| \ | |/ ____|/ ____|
-	# | |  __| |__) | | | | |  | | | (___ | |__     | |     | |    | | |  \| | |  __| (___  
-	# | | |_ |  _  /  | | | |  | |  \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \ 
-	# | |__| | | \ \ _| |_| |__| |  ____) | |____   | |     | |   _| |_| |\  | |__| |____) |
-	#  \_____|_|  \_\_____|_____/  |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/ 
+	def writeNf2ffEmergeButtonClicked(self):
+		self.scriptGenerator.writeNf2ffButtonClicked(self.simulationOutputDir)
+
+		# display message that script was generated
+		self.guiHelpers.displayMessage("Script to display far field generated.")
+
+		return
+
+	def writeFieldScriptEmergeButtonClicked(self):
+		self.scriptGenerator.writeFieldButtonClicked(self.simulationOutputDir)
+
+		# display message that script was generated
+		self.guiHelpers.displayMessage("Script to display field generated.")
+
+		return
+
+	#########################################################################################################################################
 	#
+	#	GRID TAB HANDLERS, GRID SETTINGS
+	#
+	#########################################################################################################################################
+
 	def fixedCountRadioButtonClicked(self):
 		self.form.userDefinedGridLinesTextInput.setEnabled(False)
 		self.form.gridTopPriorityLinesCheckbox.setEnabled(True)
@@ -1923,29 +2061,45 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			gridItem.smoothMesh['yMaxRes'] = self.form.smoothMeshYMaxRes.value()
 			gridItem.smoothMesh['zMaxRes'] = self.form.smoothMeshZMaxRes.value()
 
-		if (self.form.userDefinedRadioButton.isChecked()):
+		if (self.form.userDefinedRadioButton.isChecked() or self.form.femGridUserDefinedCheckbox.isChecked()):
 			gridItem.type = "User Defined"
 			gridItem.userDefined['data'] = self.form.userDefinedGridLinesTextInput.toPlainText()
 
-		gridItem.units = self.form.gridUnitsInput.currentText()
-		gridItem.unitsAngle = self.form.gridUnitsInput_2.currentText()
-		gridItem.generateLinesInside = self.form.gridGenerateLinesInsideCheckbox.isChecked()
-		gridItem.topPriorityLines = self.form.gridTopPriorityLinesCheckbox.isChecked()
+		#
+		#	DEFAULT VALUES FOR GRID ITEM FOR openEMS
+		#
+		if (self.form.comboBox_solverType.currentText().lower().find("openems") > -1):
+			gridItem.units = self.form.gridUnitsInput.currentText()
+			gridItem.unitsAngle = self.form.gridUnitsInput_2.currentText()
+			gridItem.generateLinesInside = self.form.gridGenerateLinesInsideCheckbox.isChecked()
+			gridItem.topPriorityLines = self.form.gridTopPriorityLinesCheckbox.isChecked()
 
-		gridItem.gridOffset['x'] = self.form.gridOffsetX.value()
-		gridItem.gridOffset['y'] = self.form.gridOffsetY.value()
-		gridItem.gridOffset['z'] = self.form.gridOffsetZ.value()
-		gridItem.gridOffset['units'] = self.form.gridOffsetUnits.currentText()
+			gridItem.gridOffset['x'] = self.form.gridOffsetX.value()
+			gridItem.gridOffset['y'] = self.form.gridOffsetY.value()
+			gridItem.gridOffset['z'] = self.form.gridOffsetZ.value()
+			gridItem.gridOffset['units'] = self.form.gridOffsetUnits.currentText()
 
 		#
 		#	New items for FEM simulation (emerge)
+		#		- now there is just one only type for FEM grid and that's to specify max size of element, boundary, volume and domain
 		#
-		if (self.form.femGridMaxElementSizeRadio.isChecked()):
-			gridItem.type = "FEM Max Element Size"
+		if (self.form.comboBox_solverType.currentText().lower().find("emerge") > -1):
+			gridItem.type = "FEM Max Size"
 
 			gridItem.femMesh = {}
-			gridItem.femMesh['femMaxElementSizeUnits'] = self.form.femGridMaxElementSizeUnits.currentText()
+			gridItem.femMesh['femMaxSizeUnits'] = self.form.femGridMaxSizeUnits.currentText()
+
 			gridItem.femMesh['femMaxElementSize'] = self.form.femGridMaxElementSizeValue.value()
+			gridItem.femMesh['femMaxBoundarySize'] = self.form.femGridMaxBoundarySizeValue.value()
+			gridItem.femMesh['femMaxFaceSize'] = self.form.femGridMaxFaceSizeValue.value()
+			gridItem.femMesh['femMaxDomainSize'] = self.form.femGridMaxDomainSizeValue.value()
+
+			gridItem.femMesh['femUseMaxElementSize'] = self.form.femGridMaxElementSizeCheckbox.isChecked()
+			gridItem.femMesh['femUseMaxBoundarySize'] = self.form.femGridMaxBoundarySizeCheckbox.isChecked()
+			gridItem.femMesh['femUseMaxFaceSize'] = self.form.femGridMaxFaceSizeCheckbox.isChecked()
+			gridItem.femMesh['femUseMaxDomainSize'] = self.form.femGridMaxDomainSizeCheckbox.isChecked()
+
+			gridItem.femMesh['femUseMaxUserDefined'] = self.form.femGridUserDefinedCheckbox.isChecked()
 
 		return gridItem
 		
@@ -2144,15 +2298,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			if self.form.gridZEnable.checkState() == QtCore.Qt.Checked:
 				self.form.gridOffsetZ.setEnabled(True)
 
+	#########################################################################################################################################
 	#
-	# MATERIAL SETTINGS
-	#  __  __       _______ ______ _____  _____          _         _____ ______ _______ _______ _____ _   _  _____  _____ 
-	# |  \/  |   /\|__   __|  ____|  __ \|_   _|   /\   | |       / ____|  ____|__   __|__   __|_   _| \ | |/ ____|/ ____|
-	# | \  / |  /  \  | |  | |__  | |__) | | |    /  \  | |      | (___ | |__     | |     | |    | | |  \| | |  __| (___  
-	# | |\/| | / /\ \ | |  |  __| |  _  /  | |   / /\ \ | |       \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \ 
-	# | |  | |/ ____ \| |  | |____| | \ \ _| |_ / ____ \| |____   ____) | |____   | |     | |   _| |_| |\  | |__| |____) |
-	# |_|  |_/_/    \_\_|  |______|_|  \_\_____/_/    \_\______| |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/ 
-	#      
+	#	MATERIAL TAB HANDLERS, MATERIAL SETTINGS
+	#
+	#########################################################################################################################################
 
 	def getMaterialItemFromGui(self):
 		name = self.form.materialSettingsNameInput.text()
@@ -2160,6 +2310,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		mue = self.form.materialMueNumberInput.value()
 		kappa = self.form.materialKappaNumberInput.value()
 		sigma = self.form.materialSigmaNumberInput.value()
+		tand = self.form.materialTanDeltaNumberInput.value()
 
 		# LuboJ, added at March 2023 so this is here to prevent errors
 		try:
@@ -2178,6 +2329,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		materialItem.constants['mue'] = mue
 		materialItem.constants['kappa'] = kappa
 		materialItem.constants['sigma'] = sigma	
+		materialItem.constants['tand'] = tand
 
 		materialItem.constants['conductingSheetThicknessValue'] = conductingSheetThicknessValue
 		materialItem.constants['conductingSheetThicknessUnits'] = conductingSheetThicknessUnits
@@ -2466,14 +2618,22 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.guiHelpers.displayMessage("ERROR: " + str(e), forceModal=False)
 			self.cadHelpers.printError(traceback.format_exc())
 
-	# EXCITATION SETTINGS
-	#  ________   _______ _____ _______    _______ _____ ____  _   _    _____ ______ _______ _______ _____ _   _  _____  _____ 
-	# |  ____\ \ / / ____|_   _|__   __|/\|__   __|_   _/ __ \| \ | |  / ____|  ____|__   __|__   __|_   _| \ | |/ ____|/ ____|
-	# | |__   \ V / |      | |    | |  /  \  | |    | || |  | |  \| | | (___ | |__     | |     | |    | | |  \| | |  __| (___  
-	# |  __|   > <| |      | |    | | / /\ \ | |    | || |  | | . ` |  \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \ 
-	# | |____ / . \ |____ _| |_   | |/ ____ \| |   _| || |__| | |\  |  ____) | |____   | |     | |   _| |_| |\  | |__| |____) |
-	# |______/_/ \_\_____|_____|  |_/_/    \_\_|  |_____\____/|_| \_| |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/ 
-	#                                                                                                                          
+	@Slot(str, str)
+	def boundaryConditionRenamed(self, oldName, newName):
+		try:
+			self.renameObjectAssignmentRightTreeWidgetItem("BoundaryCondition", oldName, newName)
+			self.renameObjectAssignmentPriorityTreeViewItem("BoundaryCondition", oldName, newName)
+			self.renameTreeViewItem(self.form.boundaryConditionSettingsTreeView, oldName, newName)
+			self.guiHelpers.displayMessage("BoundaryCondition " + oldName + " renamed to " + newName, forceModal=False)
+		except Exception as e:
+			self.guiHelpers.displayMessage("ERROR: " + str(e), forceModal=False)
+			self.cadHelpers.printError(traceback.format_exc())
+
+	#########################################################################################################################################
+	#
+	#	EXCITATION TAB HANDLERS, EXCITATION SETTINGS
+	#
+	#########################################################################################################################################
 
 	def getExcitationItemFromGui(self):
 		name = self.form.excitationSettingsNameInput.text()
@@ -2572,14 +2732,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		self.guiHelpers.displayMessage("Excitation updated.", forceModal=False)
 
-	# PORT SETTINGS
-	#  _____   ____  _____ _______    _____ ______ _______ _______ _____ _   _  _____  _____ 
-	# |  __ \ / __ \|  __ \__   __|  / ____|  ____|__   __|__   __|_   _| \ | |/ ____|/ ____|
-	# | |__) | |  | | |__) | | |    | (___ | |__     | |     | |    | | |  \| | |  __| (___  
-	# |  ___/| |  | |  _  /  | |     \___ \|  __|    | |     | |    | | | . ` | | |_ |\___ \ 
-	# | |    | |__| | | \ \  | |     ____) | |____   | |     | |   _| |_| |\  | |__| |____) |
-	# |_|     \____/|_|  \_\ |_|    |_____/|______|  |_|     |_|  |_____|_| \_|\_____|_____/ 
-	#    
+	#########################################################################################################################################
+	#
+	#	PORT TAB HANDLERS, PORT SETTINGS
+	#
+	#########################################################################################################################################
 
 	def getPortItemFromGui(self):
 		name = self.form.portSettingsNameInput.text()
@@ -2594,7 +2751,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			portItem.infiniteResistance = self.form.lumpedPortInfinitResistance.isChecked()
 			portItem.isActive = self.form.lumpedPortActive.isChecked()
 			portItem.direction = self.form.lumpedPortDirection.currentText()
-			portItem.excitationAmplitude = self.form.lumpedPortExcitationAmplitude.value()
+			portItem.directionCustomVector = [
+				self.form.lumpedPortDirectionCustomX.value(),
+				self.form.lumpedPortDirectionCustomY.value(),
+				self.form.lumpedPortDirectionCustomZ.value()
+			]
 
 		if (self.form.microstripPortRadioButton.isChecked()):
 			portItem.type = "microstrip"
@@ -2750,7 +2911,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		priorityName = portGroupItem.parent().text(0) + ", " + portGroupItem.text(0);
 		self.guiHelpers.removePriorityName(priorityName)
 
-		# Removing from Object Assugnment Tree
+		# Removing from Object Assignment Tree
 		self.form.portSettingsTreeView.invisibleRootItem().removeChild(selectedItem)
 		portGroupItem.parent().removeChild(portGroupItem)
 
@@ -2895,6 +3056,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		if (operation in ["add", "remove", "update"]):
 			self.updateComboboxWithAllowedItems(self.form.portNf2ffObjectList, "Probe", ["nf2ff box"])
+
+	@Slot(str)
+	def boundaryConditionChanged(self, operation):
+		print(f"@Slot boundaryConditionChanged: {operation}")
+
+		if (operation in ["add", "remove", "update"]):
+			self.updateComboboxWithAllowedItems(self.form.portNf2ffEmergeObjectList, "BoundaryCondition", ["Absorbing"])
 
 	#########################################################################################################################################
 	#
@@ -3060,6 +3228,104 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		return
 
+	#########################################################################################################################################
+	#
+	#	BOUNDARY CONDITION TAB HANDLERS
+	#
+	#########################################################################################################################################
+
+	def getBoundaryConditionItemFromGui(self):
+		name = self.form.boundaryConditionSettingsNameInput.text()
+
+		boundaryConditionItem = BoundaryConditionSettingsItem()
+		boundaryConditionItem.name = name
+		if (self.form.boundaryConditionTypePredefinedRadio.isChecked()):
+			boundaryConditionItem.type = self.form.boundaryConditionTypeCombobox.currentText()
+		elif (self.form.boundaryConditionTypeCustomRadio.isChecked()):
+			boundaryConditionItem.type = "custom"
+			boundaryConditionItem.customType = self.form.boundaryConditionTypeCustomTextInput.text()
+
+		return boundaryConditionItem
+
+	def boundaryConditionSettingsAddButtonClicked(self):
+		settingsInst = self.getBoundaryConditionItemFromGui()
+
+		# check for duplicity in names if there is some warning message displayed
+		isDuplicityName = self.checkTreeWidgetForDuplicityName(self.form.boundaryConditionSettingsTreeView, settingsInst.name)
+
+		if (not isDuplicityName):
+			self.guiHelpers.addSettingsItemGui(settingsInst)
+			self.guiSignals.boundaryConditionChanged.emit("add")
+
+	def boundaryConditionSettingsRemoveButtonClicked(self, name=None):
+		# if there is no name it's called from UI, if there is name it's called as function this is done to have one function removing port properly for both cases
+		if (type(name) != "str"):
+			selectedItem = self.form.boundaryConditionSettingsTreeView.selectedItems()[0]
+			print("Selected boundaryCondition name: " + selectedItem.text(0))
+		else:
+			selectedItem = self.form.boundaryConditionSettingsTreeView.findItems(name, QtCore.Qt.MatchExactly)[0]
+			print("Called by name to remove boundaryCondition: " + selectedItem.text(0))
+
+		boundaryConditionGroupWidgetItems = self.form.objectAssignmentRightTreeWidget.findItems(
+			selectedItem.text(0),
+			QtCore.Qt.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive
+		)
+		boundaryConditionGroupItem = None
+		for item in boundaryConditionGroupWidgetItems:
+			if (item.parent().text(0) == "BoundaryCondition"):
+				boundaryConditionGroupItem = item
+		print("Currently removing boundaryCondition item: " + boundaryConditionGroupItem.text(0))
+
+		# Removing from Priority List
+		priorityName = boundaryConditionGroupItem.parent().text(0) + ", " + boundaryConditionGroupItem.text(0);
+		self.guiHelpers.removePriorityName(priorityName)
+
+		# Removing from Object Assignment Tree
+		self.form.probeSettingsTreeView.invisibleRootItem().removeChild(selectedItem)
+		boundaryConditionGroupItem.parent().removeChild(boundaryConditionGroupItem)
+
+	def boundaryConditionSettingsUpdateButtonClicked(self):
+		### capture UI settings
+		settingsInst = self.getBoundaryConditionItemFromGui()
+
+		### replace old with new settingsInst
+		selectedItems = self.form.boundaryConditionSettingsTreeView.selectedItems()
+		if len(selectedItems) != 1:
+			return
+
+		isDuplicityName = self.checkTreeWidgetForDuplicityName(self.form.boundaryConditionSettingsTreeView, settingsInst.name, ignoreSelectedItem=False)
+		if (not isDuplicityName):
+			selectedItems[0].setData(0, QtCore.Qt.UserRole, settingsInst)
+
+			### update other UI elements to propagate changes
+			# replace oudated copy of settingsInst
+			self.updateObjectAssignmentRightTreeWidgetItemData("BoundaryCondition", selectedItems[0].text(0), settingsInst)
+
+			# emit rename signal
+			if (selectedItems[0].text(0) != settingsInst.name):
+				self.guiSignals.boundaryConditionRenamed.emit(selectedItems[0].text(0), settingsInst.name)
+
+			# Display message to user
+			self.guiHelpers.displayMessage(f"BoundaryCondition {settingsInst.name} was updated", forceModal=False)
+
+	def boundaryConditionTreeWidgetItemChanged(self, current, previous):
+		print("BoundaryCondition item changed.")
+
+		#if last item was erased from port list do nothing
+		if not self.form.boundaryConditionSettingsTreeView.currentItem():
+			return
+
+		currSetting = self.form.boundaryConditionSettingsTreeView.currentItem().data(0, QtCore.Qt.UserRole)
+		self.form.boundaryConditionSettingsNameInput.setText(currSetting.name)
+		if (currSetting.type == "custom"):
+			self.form.boundaryConditionTypeCustomRadio.click()
+			self.form.boundaryConditionTypeCustomTextInput.setText(currSetting.customType)
+		else:
+			self.form.boundaryConditionTypePredefinedRadio.click()
+			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeCombobox, currSetting.type)
+			self.form.boundaryConditionTypeCustomTextInput.setText("")
+
+		return
 
 	#########################################################################################################################################
 	#
@@ -3187,16 +3453,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		self.guiHelpers.setComboboxItem(self.form.striplinePortPropagationComboBox, previousPropagationValue)
 
-	#  _     _    _ __  __ _____  ______ _____    _____        _____ _______            _   _   _
-	# | |   | |  | |  \/  |  __ \|  ____|  __ \  |  __ \ /\   |  __ \__   __|          | | | | (_)                
-	# | |   | |  | | \  / | |__) | |__  | |  | | | |__) /  \  | |__) | | |     ___  ___| |_| |_ _ _ __   __ _ ___ 
-	# | |   | |  | | |\/| |  ___/|  __| | |  | | |  ___/ /\ \ |  _  /  | |    / __|/ _ \ __| __| | '_ \ / _` / __|
-	# | |___| |__| | |  | | |    | |____| |__| | | |  / ____ \| | \ \  | |    \__ \  __/ |_| |_| | | | | (_| \__ \
-	# |______\____/|_|  |_|_|    |______|_____/  |_| /_/    \_\_|  \_\ |_|    |___/\___|\__|\__|_|_| |_|\__, |___/
-	#                                                                                                    __/ |    
-	#                                                                                                   |___/    
+	#########################################################################################################################################
 	#
-	
+	#	LUMPED PART TAB HANDLERS
+	#
+	#########################################################################################################################################
+
 	def getLumpedPartItemFromGui(self):
 		name = self.form.lumpedPartSettingsNameInput.text()
 
@@ -3280,12 +3542,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 			self.guiHelpers.displayMessage(f"LumpedPart {settingsInst.name} updated.", forceModal=False)
 
-	#   _____________   ____________  ___    __       _____ _______________________   _____________
-	#  / ____/ ____/ | / / ____/ __ \/   |  / /      / ___// ____/_  __/_  __/  _/ | / / ____/ ___/
-	# / / __/ __/ /  |/ / __/ / /_/ / /| | / /       \__ \/ __/   / /   / /  / //  |/ / / __ \__ \ 
-	#/ /_/ / /___/ /|  / /___/ _, _/ ___ |/ /___    ___/ / /___  / /   / / _/ // /|  / /_/ /___/ / 
-	#\____/_____/_/ |_/_____/_/ |_/_/  |_/_____/   /____/_____/ /_/   /_/ /___/_/ |_/\____//____/  
+	#########################################################################################################################################
 	#
+	#	GENERAL SETTINGS
+	#
+	#########################################################################################################################################
+
 	def materialTreeWidgetItemChanged(self, current, previous):
 		print("materialTreeWidgetItemChanged(): Material item changed.")
 
@@ -3302,10 +3564,15 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		elif (currSetting.type == 'userdefined'):
 			self.form.materialUserDefinedRadioButton.click()
 
-			self.form.materialEpsilonNumberInput.setValue(float(currSetting.constants['epsilon']))
-			self.form.materialMueNumberInput.setValue(float(currSetting.constants['mue']))
-			self.form.materialKappaNumberInput.setValue(float(currSetting.constants['kappa']))
-			self.form.materialSigmaNumberInput.setValue(float(currSetting.constants['sigma']))
+			try:
+				self.form.materialEpsilonNumberInput.setValue(float(currSetting.constants['epsilon']))
+				self.form.materialMueNumberInput.setValue(float(currSetting.constants['mue']))
+				self.form.materialKappaNumberInput.setValue(float(currSetting.constants['kappa']))
+				self.form.materialSigmaNumberInput.setValue(float(currSetting.constants['sigma']))
+				self.form.materialTanDeltaNumberInput.setValue(float(currSetting.constants['tand']))	#added for emerge solver
+			except:
+				pass
+
 		elif (currSetting.type == 'conducting sheet'):
 			self.form.materialConductingSheetRadioButton.click()
 
@@ -3359,7 +3626,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.guiHelpers.setComboboxItem(self.form.gridOffsetUnits, 'um')
 
 		self.form.femGridMaxElementSizeValue.setValue(0)
-		self.form.femGridMaxElementSizeUnits.setCurrentIndex(2)
+		self.form.femGridMaxSizeUnits.setCurrentIndex(2)
 
 		#set values in grid settings by actual selected item
 		currSetting = self.form.gridSettingsTreeView.currentItem().data(0, QtCore.Qt.UserRole)
@@ -3404,17 +3671,43 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			except:
 				pass
 
-		elif (currSetting.type == "FEM Max Element Size"):
+		elif (currSetting.type == "FEM Max Size"):
 			try:
-				self.form.femGridMaxElementSizeRadio.click()
+				self.form.femGridMaxElementSizeCheckbox.click()
 
-				self.form.femGridMaxElementSizeValue.setValue(currSetting.femMesh['femMaxElementSize'])
-				self.guiHelpers.setComboboxItem(self.form.femGridMaxElementSizeUnits, currSetting.femMesh['femMaxElementSize'])
+				try:
+					self.guiHelpers.setComboboxItem(self.form.femGridMaxSizeUnits, currSetting.femMesh['femMaxSizeUnits'])
+				except:
+					pass
+
+				try:
+					self.form.femGridMaxElementSizeValue.setValue(currSetting.femMesh['femMaxElementSize'])
+					self.form.femGridMaxBoundarySizeValue.setValue(currSetting.femMesh['femMaxBoundarySize'])
+					self.form.femGridMaxFaceSizeValue.setValue(currSetting.femMesh['femMaxFaceSize'])
+					self.form.femGridMaxDomainSizeValue.setValue(currSetting.femMesh['femMaxDomainSize'])
+				except:
+					pass
+
+				try:
+					self.form.femGridMaxElementSizeCheckbox.setChecked(currSetting.femMesh['femUseMaxElementSize'])
+					self.form.femGridMaxBoundarySizeCheckbox.setChecked(currSetting.femMesh['femUseMaxBoundarySize'])
+					self.form.femGridMaxFaceSizeCheckbox.setChecked(currSetting.femMesh['femUseMaxFaceSize'])
+					self.form.femGridMaxDomainSizeCheckbox.setChecked(currSetting.femMesh['femUseMaxDomainSize'])
+				except:
+					pass
+
+				self.form.femGridUserDefinedCheckbox.setChecked(currSetting.femMesh['femUseMaxUserDefined'])
 			except:
 				pass
 
 		elif (currSetting.type == "User Defined"):
-			self.form.userDefinedRadioButton.click()
+
+			# don't have to do any if due since on Grid Settings tab one of tabs "openEMS grid" or "FEM grid" is active at time,
+			# therefore if radiobutton is disabled then nothing happens when it's disabled
+			#
+			self.form.userDefinedRadioButton.click()	#when FDTD openEMS solver active this will be one which will be triggered
+			self.form.femGridUserDefinedCheckbox.click()	#when FEM EMerge solver active this will be one which will be triggered
+
 			self.form.userDefinedGridLinesTextInput.setPlainText(currSetting.userDefined['data'])
 
 		else:
@@ -3501,6 +3794,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 				self.form.lumpedPortInfinitResistance.setChecked(currSetting.infiniteResistance)
 				self.form.lumpedPortExcitationAmplitude.setValue(currSetting.excitationAmplitude)
+
+				self.form.lumpedPortDirectionCustomX.setValue(float(currSetting.directionCustomVector[0]))
+				self.form.lumpedPortDirectionCustomY.setValue(float(currSetting.directionCustomVector[1]))
+				self.form.lumpedPortDirectionCustomZ.setValue(float(currSetting.directionCustomVector[2]))
+
 			except Exception as e:
 				self.guiHelpers.displayMessage(f"ERROR update lumped current settings: {e}", forceModal=False)
 

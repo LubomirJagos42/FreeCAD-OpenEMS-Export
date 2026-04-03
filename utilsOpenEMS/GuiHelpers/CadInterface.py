@@ -42,6 +42,8 @@ class CadInterface:
             iconPath = os.path.join(self.APP_DIR, "img", "probe.svg")
         elif 'Port' in categoryName:
             iconPath = os.path.join(self.APP_DIR, "img", "port.svg")
+        elif 'BoundaryCondition' in categoryName:
+            iconPath = os.path.join(self.APP_DIR, "img", "boundarycondition.svg")
         else:
             iconPath = os.path.join(self.APP_DIR, "img", "error.svg")
 

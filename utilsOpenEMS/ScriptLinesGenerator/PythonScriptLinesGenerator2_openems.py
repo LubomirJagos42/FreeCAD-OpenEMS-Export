@@ -14,13 +14,13 @@ from utilsOpenEMS.GuiHelpers.FactoryCadInterface import FactoryCadInterface
 
 from utilsOpenEMS.ScriptLinesGenerator.CommonScriptLinesGenerator import CommonScriptLinesGenerator
 
-class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
+class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
 
     #
     #   constructor, get access to form GUI
     #
     def __init__(self, form, statusBar = None):
-        super(PythonScriptLinesGenerator2, self).__init__(form, statusBar)
+        super(PythonScriptLinesGenerator2_openems, self).__init__(form, statusBar)
 
     def getCoordinateSystemScriptLines(self):
         genScript = ""
@@ -1528,18 +1528,18 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 
         return genScript
 
-    #########################################################################################################################
-    #                                  _                       _       _          _ _      _            _
-    #                                 | |                     (_)     | |        | (_)    | |          | |
-    #   __ _  ___ _ __   ___ _ __ __ _| |_ ___   ___  ___ _ __ _ _ __ | |_    ___| |_  ___| | _____  __| |
-    #  / _` |/ _ \ '_ \ / _ \ '__/ _` | __/ _ \ / __|/ __| '__| | '_ \| __|  / __| | |/ __| |/ / _ \/ _` |
-    # | (_| |  __/ | | |  __/ | | (_| | ||  __/ \__ \ (__| |  | | |_) | |_  | (__| | | (__|   <  __/ (_| |
-    #  \__, |\___|_| |_|\___|_|  \__,_|\__\___| |___/\___|_|  |_| .__/ \__|  \___|_|_|\___|_|\_\___|\__,_|
-    #   __/ |                                                   | |
-    #  |___/
-    #
+    ###################################################################################################################
     #	GENERATE SCRIPT CLICKED - go through object assignment tree categories, output child item data.
-    #
+    ###################################################################################################################
+
+    def generateSimulationScript(self, outputDir=None):
+        """
+        General method which should be used as interface in other objects. Generate simulation script.
+        :param outputDir:
+        :return:
+        """
+        self.generateOpenEMSScript(outputDir)
+
     def generateOpenEMSScript(self, outputDir=None):
 
         # Create outputDir relative to local FreeCAD file if output dir does not exists

@@ -343,7 +343,7 @@
                 <enum>QAbstractItemView::SelectionMode::ContiguousSelection</enum>
                </property>
                <attribute name="headerVisible">
-                <bool>false</bool>
+                <bool>true</bool>
                </attribute>
                <column>
                 <property name="text">
@@ -401,7 +401,7 @@
                 <enum>QAbstractItemView::SelectionMode::ContiguousSelection</enum>
                </property>
                <attribute name="headerVisible">
-                <bool>false</bool>
+                <bool>true</bool>
                </attribute>
                <attribute name="headerCascadingSectionResizes">
                 <bool>false</bool>
@@ -590,7 +590,7 @@
                <property name="currentIndex">
                 <number>0</number>
                </property>
-               <widget class="QWidget" name="gridTab_gridSettings_openems" native="true">
+               <widget class="QWidget" name="gridTab_gridSettings_openems">
                 <attribute name="title">
                  <string>openEMS grid</string>
                 </attribute>
@@ -1132,7 +1132,7 @@ in grid units</string>
                  </item>
                 </layout>
                </widget>
-               <widget class="QWidget" name="gridTab_gridSettings_emerge" native="true">
+               <widget class="QWidget" name="gridTab_gridSettings_emerge">
                 <attribute name="title">
                  <string>FEM grid</string>
                 </attribute>
@@ -1144,45 +1144,22 @@ in grid units</string>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_23">
                     <item row="2" column="0">
-                     <spacer name="verticalSpacer_33">
+                     <spacer name="verticalSpacer_39">
                       <property name="orientation">
                        <enum>Qt::Orientation::Vertical</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Policy::Preferred</enum>
                       </property>
                       <property name="sizeHint" stdset="0">
                        <size>
                         <width>20</width>
-                        <height>40</height>
+                        <height>20</height>
                        </size>
                       </property>
                      </spacer>
                     </item>
-                    <item row="0" column="0">
-                     <widget class="QRadioButton" name="femGridMaxElementSizeRadio">
-                      <property name="text">
-                       <string>max element size</string>
-                      </property>
-                      <property name="checkable">
-                       <bool>true</bool>
-                      </property>
-                      <property name="checked">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="QDoubleSpinBox" name="femGridMaxElementSizeValue">
-                      <property name="maximum">
-                       <double>10000000.000000000000000</double>
-                      </property>
-                      <property name="singleStep">
-                       <double>0.100000000000000</double>
-                      </property>
-                      <property name="value">
-                       <double>1.000000000000000</double>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="3">
+                    <item row="0" column="2">
                      <spacer name="horizontalSpacer_51">
                       <property name="orientation">
                        <enum>Qt::Orientation::Horizontal</enum>
@@ -1195,8 +1172,105 @@ in grid units</string>
                       </property>
                      </spacer>
                     </item>
-                    <item row="0" column="2">
-                     <widget class="QComboBox" name="femGridMaxElementSizeUnits">
+                    <item row="8" column="0">
+                     <spacer name="verticalSpacer_33">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="4" column="1">
+                     <widget class="QDoubleSpinBox" name="femGridMaxFaceSizeValue">
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
+                      <property name="maximum">
+                       <double>10000000.000000000000000</double>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.100000000000000</double>
+                      </property>
+                      <property name="value">
+                       <double>1.000000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="0">
+                     <widget class="QCheckBox" name="femGridMaxDomainSizeCheckbox">
+                      <property name="text">
+                       <string>max domain size</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>true</bool>
+                      </property>
+                      <property name="checked">
+                       <bool>false</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="0">
+                     <widget class="QCheckBox" name="femGridMaxBoundarySizeCheckbox">
+                      <property name="text">
+                       <string>max boundary size</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>true</bool>
+                      </property>
+                      <property name="checked">
+                       <bool>false</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QCheckBox" name="femGridMaxElementSizeCheckbox">
+                      <property name="text">
+                       <string>max element size</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>true</bool>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="7" column="0">
+                     <widget class="QCheckBox" name="femGridUserDefinedCheckbox">
+                      <property name="text">
+                       <string>user defined</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>true</bool>
+                      </property>
+                      <property name="checked">
+                       <bool>false</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="QDoubleSpinBox" name="femGridMaxBoundarySizeValue">
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
+                      <property name="maximum">
+                       <double>10000000.000000000000000</double>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.100000000000000</double>
+                      </property>
+                      <property name="value">
+                       <double>1.000000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QComboBox" name="femGridMaxSizeUnits">
                       <property name="currentIndex">
                        <number>2</number>
                       </property>
@@ -1232,10 +1306,33 @@ in grid units</string>
                       </item>
                      </widget>
                     </item>
-                    <item row="1" column="0">
-                     <widget class="QRadioButton" name="femGridUserDefinedRadio">
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="label_125">
                       <property name="text">
-                       <string>user defined</string>
+                       <string>Max Size Anything Units</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="1">
+                     <widget class="QDoubleSpinBox" name="femGridMaxDomainSizeValue">
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
+                      <property name="maximum">
+                       <double>10000000.000000000000000</double>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.100000000000000</double>
+                      </property>
+                      <property name="value">
+                       <double>1.000000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="0">
+                     <widget class="QCheckBox" name="femGridMaxFaceSizeCheckbox">
+                      <property name="text">
+                       <string>max face size</string>
                       </property>
                       <property name="checkable">
                        <bool>true</bool>
@@ -1244,6 +1341,38 @@ in grid units</string>
                        <bool>false</bool>
                       </property>
                      </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QDoubleSpinBox" name="femGridMaxElementSizeValue">
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
+                      <property name="maximum">
+                       <double>10000000.000000000000000</double>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.100000000000000</double>
+                      </property>
+                      <property name="value">
+                       <double>1.000000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="6" column="0">
+                     <spacer name="verticalSpacer_40">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Vertical</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Policy::Preferred</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
                     </item>
                    </layout>
                   </widget>
@@ -1553,6 +1682,44 @@ VALUES OF MESH.X,Y,Z WHEN USED</string>
                     </property>
                    </widget>
                   </item>
+                  <item row="3" column="1">
+                   <widget class="QLabel" name="label_120">
+                    <property name="text">
+                     <string>tan delta (dissipation factor)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QDoubleSpinBox" name="materialEpsilonNumberInput">
+                    <property name="maximum">
+                     <double>1000000.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>1.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="4">
+                   <widget class="QDoubleSpinBox" name="materialSigmaNumberInput">
+                    <property name="maximum">
+                     <double>9999999999999999455752309870428160.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="5">
+                   <widget class="QLabel" name="label_9">
+                    <property name="text">
+                     <string>Kappa</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="5">
+                   <widget class="QDoubleSpinBox" name="materialKappaNumberInput">
+                    <property name="decimals">
+                     <number>9</number>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="0" column="3">
                    <widget class="QLabel" name="label_8">
                     <property name="text">
@@ -1567,26 +1734,6 @@ VALUES OF MESH.X,Y,Z WHEN USED</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="1">
-                   <widget class="QDoubleSpinBox" name="materialEpsilonNumberInput">
-                    <property name="maximum">
-                     <double>1000000.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>1.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="5">
-                   <widget class="QLabel" name="label_9">
-                    <property name="text">
-                     <string>Kappa</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="4">
-                   <widget class="QDoubleSpinBox" name="materialSigmaNumberInput"/>
-                  </item>
                   <item row="2" column="3">
                    <widget class="QDoubleSpinBox" name="materialMueNumberInput">
                     <property name="decimals">
@@ -1600,10 +1747,19 @@ VALUES OF MESH.X,Y,Z WHEN USED</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="5">
-                   <widget class="QDoubleSpinBox" name="materialKappaNumberInput">
+                  <item row="4" column="1">
+                   <widget class="QDoubleSpinBox" name="materialTanDeltaNumberInput">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="decimals">
-                     <number>9</number>
+                     <number>4</number>
+                    </property>
+                    <property name="maximum">
+                     <double>1000000.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.000000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -2413,7 +2569,7 @@ Custom option using fparser lib, possible using user-defined equation:
               <widget class="QLineEdit" name="portSettingsNameInput"/>
              </item>
              <item>
-              <widget class="QGroupBox" name="groupBox_4">
+              <widget class="QGroupBox" name="portSettingsTab_portTypeGroup">
                <property name="title">
                 <string>Port Type</string>
                </property>
@@ -2634,6 +2790,11 @@ on its size, ie. if in axis length is 1mm then
                         <string>y</string>
                        </property>
                       </item>
+                      <item>
+                       <property name="text">
+                        <string>custom</string>
+                       </property>
+                      </item>
                      </widget>
                     </item>
                     <item row="5" column="0">
@@ -2649,6 +2810,82 @@ on its size, ie. if in axis length is 1mm then
                        <string>infinite resistance</string>
                       </property>
                      </widget>
+                    </item>
+                    <item row="3" column="2">
+                     <layout class="QHBoxLayout" name="horizontalLayout_63">
+                      <item>
+                       <widget class="QGroupBox" name="lumpedPortDirectionCustomGroupBox">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
+                        <property name="title">
+                         <string>Custom Direction (FEM only)</string>
+                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_64">
+                         <item>
+                          <widget class="QLabel" name="label_122">
+                           <property name="text">
+                            <string>x</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="lumpedPortDirectionCustomX">
+                           <property name="minimum">
+                            <double>-1000000.000000000000000</double>
+                           </property>
+                           <property name="maximum">
+                            <double>1000000.000000000000000</double>
+                           </property>
+                           <property name="singleStep">
+                            <double>0.100000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_123">
+                           <property name="text">
+                            <string>y</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="lumpedPortDirectionCustomY">
+                           <property name="minimum">
+                            <double>-1000000.000000000000000</double>
+                           </property>
+                           <property name="maximum">
+                            <double>1000000.000000000000000</double>
+                           </property>
+                           <property name="singleStep">
+                            <double>0.100000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_124">
+                           <property name="text">
+                            <string>z</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="lumpedPortDirectionCustomZ">
+                           <property name="minimum">
+                            <double>-1000000.000000000000000</double>
+                           </property>
+                           <property name="maximum">
+                            <double>1000000.000000000000000</double>
+                           </property>
+                           <property name="singleStep">
+                            <double>0.100000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
                     </item>
                    </layout>
                   </widget>
@@ -6466,7 +6703,7 @@ no TM modes.</string>
            <item>
             <widget class="QTabWidget" name="simulationParamsTab_tabWidget">
              <property name="currentIndex">
-              <number>1</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="simulationParamsTab_tabWidget_openEMSTab">
               <attribute name="title">
@@ -7179,7 +7416,7 @@ than min spacing</string>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_115">
                  <property name="text">
-                  <string>geometry units</string>
+                  <string>solver engine</string>
                  </property>
                 </widget>
                </item>
@@ -7223,6 +7460,205 @@ than min spacing</string>
               </layout>
              </widget>
             </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="boundaryConditionTab">
+          <property name="accessibleName">
+           <string/>
+          </property>
+          <attribute name="title">
+           <string>Boundary Conditions</string>
+          </attribute>
+          <layout class="QHBoxLayout" name="horizontalLayout_61">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_42">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QTreeWidget" name="boundaryConditionSettingsTreeView">
+               <column>
+                <property name="text">
+                 <string>Boundary Conditions Settings List</string>
+                </property>
+               </column>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_62">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QPushButton" name="boundaryConditionSettingsAddButton">
+                 <property name="text">
+                  <string>+</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="boundaryConditionSettingsRemoveButton">
+                 <property name="text">
+                  <string>-</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_53">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="boundaryConditionSettingsUpdateButton">
+                 <property name="text">
+                  <string>Update</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_41">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
+             <property name="topMargin">
+              <number>5</number>
+             </property>
+             <property name="rightMargin">
+              <number>5</number>
+             </property>
+             <property name="bottomMargin">
+              <number>5</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_121">
+               <property name="text">
+                <string>Boundary Settings Name</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="boundaryConditionSettingsNameInput"/>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_10">
+               <property name="title">
+                <string>Boundary Condition Type</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_26">
+                <item row="0" column="1">
+                 <widget class="QComboBox" name="boundaryConditionTypeCombobox">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="currentIndex">
+                   <number>3</number>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>PEC</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>PMC</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Robin</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Absorbing</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QRadioButton" name="boundaryConditionTypePredefinedRadio">
+                  <property name="text">
+                   <string>predefined</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <spacer name="horizontalSpacer_52">
+                  <property name="orientation">
+                   <enum>Qt::Orientation::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QRadioButton" name="boundaryConditionTypeCustomRadio">
+                  <property name="text">
+                   <string>custom</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="boundaryConditionTypeCustomTextInput"/>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_34">
+               <property name="orientation">
+                <enum>Qt::Orientation::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -7551,285 +7987,912 @@ than min spacing</string>
               </widget>
              </item>
              <item>
-              <widget class="QGroupBox" name="nf2ffGroupProcessing">
-               <property name="title">
-                <string>Post-Processing: NF2FF Display Script</string>
+              <widget class="QTabWidget" name="nf2ffProcessingTab">
+               <property name="currentIndex">
+                <number>0</number>
                </property>
-               <layout class="QGridLayout" name="gridLayout_9">
-                <item row="2" column="1">
-                 <layout class="QHBoxLayout" name="horizontalLayout_54">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_93">
-                    <property name="text">
-                     <string>Active port for drawing far field</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QComboBox" name="portNf2ffInput"/>
-                  </item>
-                 </layout>
-                </item>
-                <item row="4" column="1">
-                 <layout class="QHBoxLayout" name="horizontalLayout_24">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_40">
-                    <property name="text">
-                     <string>Frequency points count between f0 +- fc</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QSpinBox" name="portNf2ffFreqCount">
-                    <property name="minimum">
-                     <number>1</number>
-                    </property>
-                    <property name="maximum">
-                     <number>1000000000</number>
-                    </property>
-                    <property name="value">
-                     <number>501</number>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-                <item row="5" column="1">
-                 <layout class="QGridLayout" name="gridLayout_10">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item row="1" column="1">
-                   <widget class="QDoubleSpinBox" name="portNf2ffThetaStart">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="minimum">
-                     <double>-360.000000000000000</double>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="3">
-                   <widget class="QDoubleSpinBox" name="portNf2ffPhiStep">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>2.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="2">
-                   <widget class="QDoubleSpinBox" name="portNf2ffThetaStop">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="minimum">
-                     <double>-360.000000000000000</double>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>180.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_42">
-                    <property name="text">
-                     <string>phi (deg)</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="2">
-                   <widget class="QDoubleSpinBox" name="portNf2ffPhiStop">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="minimum">
-                     <double>-360.000000000000000</double>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>360.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QDoubleSpinBox" name="portNf2ffPhiStart">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="minimum">
-                     <double>-360.000000000000000</double>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="2">
-                   <widget class="QLabel" name="label_44">
-                    <property name="text">
-                     <string>Stop</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_41">
-                    <property name="text">
-                     <string>theta (deg)</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="3">
-                   <widget class="QDoubleSpinBox" name="portNf2ffThetaStep">
-                    <property name="decimals">
-                     <number>1</number>
-                    </property>
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>0.500000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="3">
-                   <widget class="QLabel" name="label_45">
-                    <property name="text">
-                     <string>Step</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QLabel" name="label_43">
-                    <property name="text">
-                     <string>Start</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-                <item row="1" column="1">
-                 <layout class="QHBoxLayout" name="horizontalLayout_53">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_85">
-                    <property name="text">
-                     <string>NF2FF probe</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QComboBox" name="portNf2ffObjectList"/>
-                  </item>
-                 </layout>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QPushButton" name="writeNf2ffButton">
-                  <property name="text">
-                   <string>Write NF2FF </string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="6" column="1">
-                 <widget class="QLabel" name="label_50">
-                  <property name="text">
-                   <string>Hints:
+               <widget class="QWidget" name="nf2ffProcessingTab_openemsTab">
+                <attribute name="title">
+                 <string>openEMS</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="verticalLayout_43">
+                 <item>
+                  <widget class="QGroupBox" name="nf2ffOpenEMSGroupProcessing">
+                   <property name="title">
+                    <string>Post-Processing: OpenEMS: NF2FF Display Script</string>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_9">
+                    <item row="2" column="1">
+                     <layout class="QHBoxLayout" name="horizontalLayout_54">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_93">
+                        <property name="text">
+                         <string>Active port for drawing far field</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QComboBox" name="portNf2ffInput"/>
+                      </item>
+                     </layout>
+                    </item>
+                    <item row="4" column="1">
+                     <layout class="QHBoxLayout" name="horizontalLayout_24">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_40">
+                        <property name="text">
+                         <string>Frequency points count between f0 +- fc</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QSpinBox" name="portNf2ffFreqCount">
+                        <property name="minimum">
+                         <number>1</number>
+                        </property>
+                        <property name="maximum">
+                         <number>1000000000</number>
+                        </property>
+                        <property name="value">
+                         <number>501</number>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item row="5" column="1">
+                     <layout class="QGridLayout" name="gridLayout_10">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item row="1" column="1">
+                       <widget class="QDoubleSpinBox" name="portNf2ffThetaStart">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="minimum">
+                         <double>-360.000000000000000</double>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="3">
+                       <widget class="QDoubleSpinBox" name="portNf2ffPhiStep">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                        <property name="value">
+                         <double>2.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="2">
+                       <widget class="QDoubleSpinBox" name="portNf2ffThetaStop">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="minimum">
+                         <double>-360.000000000000000</double>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                        <property name="value">
+                         <double>180.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="0">
+                       <widget class="QLabel" name="label_42">
+                        <property name="text">
+                         <string>phi (deg)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="2">
+                       <widget class="QDoubleSpinBox" name="portNf2ffPhiStop">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="minimum">
+                         <double>-360.000000000000000</double>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                        <property name="value">
+                         <double>360.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="1">
+                       <widget class="QDoubleSpinBox" name="portNf2ffPhiStart">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="minimum">
+                         <double>-360.000000000000000</double>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="2">
+                       <widget class="QLabel" name="label_44">
+                        <property name="text">
+                         <string>Stop</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_41">
+                        <property name="text">
+                         <string>theta (deg)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="3">
+                       <widget class="QDoubleSpinBox" name="portNf2ffThetaStep">
+                        <property name="decimals">
+                         <number>1</number>
+                        </property>
+                        <property name="maximum">
+                         <double>360.000000000000000</double>
+                        </property>
+                        <property name="value">
+                         <double>0.500000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="3">
+                       <widget class="QLabel" name="label_45">
+                        <property name="text">
+                         <string>Step</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QLabel" name="label_43">
+                        <property name="text">
+                         <string>Start</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item row="1" column="1">
+                     <layout class="QHBoxLayout" name="horizontalLayout_53">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_85">
+                        <property name="text">
+                         <string>NF2FF probe</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QComboBox" name="portNf2ffObjectList"/>
+                      </item>
+                     </layout>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QPushButton" name="writeNf2ffButton">
+                      <property name="text">
+                       <string>Write NF2FF</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="6" column="1">
+                     <widget class="QLabel" name="label_50">
+                      <property name="text">
+                       <string>Hints:
 360deg display settings:
     theta: start: 0deg stop:180deg
     phi: start: 0deg stop: 360deg</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <layout class="QHBoxLayout" name="horizontalLayout_57">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_104">
-                    <property name="text">
-                     <string>Frequency to plot far field (MHz)</string>
-                    </property>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="1">
+                     <layout class="QHBoxLayout" name="horizontalLayout_57">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_104">
+                        <property name="text">
+                         <string>Frequency to plot far field (MHz)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QDoubleSpinBox" name="portNf2ffFreq">
+                        <property name="decimals">
+                         <number>8</number>
+                        </property>
+                        <property name="maximum">
+                         <double>10000000000.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="nf2ffProcessingTab_emergeTab">
+                <attribute name="title">
+                 <string>EMerge</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="verticalLayout_44">
+                 <item>
+                  <widget class="QTabWidget" name="probeProcessingEmergeTab">
+                   <property name="currentIndex">
+                    <number>0</number>
+                   </property>
+                   <widget class="QWidget" name="probeProcessingEmergeTab_nf2ffTab">
+                    <attribute name="title">
+                     <string>NF2FF</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="verticalLayout_46">
+                     <item>
+                      <widget class="QGroupBox" name="nf2ffEMergeGroupProcessing">
+                       <property name="title">
+                        <string>Post-Processing: EMerge: NF2FF Display Script</string>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_45">
+                        <item>
+                         <widget class="QPushButton" name="writeNf2ffEmergeButton">
+                          <property name="text">
+                           <string>Write NF2FF</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <layout class="QFormLayout" name="formLayout_2">
+                          <property name="horizontalSpacing">
+                           <number>0</number>
+                          </property>
+                          <property name="leftMargin">
+                           <number>5</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>5</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>5</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>5</number>
+                          </property>
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_126">
+                            <property name="text">
+                             <string>Absorbing boundary condition</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QComboBox" name="portNf2ffEmergeObjectList"/>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_127">
+                            <property name="text">
+                             <string>Frequency to plot far field (MHz)</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="QDoubleSpinBox" name="boundaryNf2ffEmergeFreq">
+                            <property name="decimals">
+                             <number>8</number>
+                            </property>
+                            <property name="maximum">
+                             <double>10000000000.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="label_128">
+                            <property name="text">
+                             <string>Polarization</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <widget class="QComboBox" name="polarizationNf2ffEmerge">
+                            <item>
+                             <property name="text">
+                              <string>normE</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Erhcp</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Elhcp</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Etheta</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ephi</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ex</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ey</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ez</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>AR</string>
+                             </property>
+                            </item>
+                           </widget>
+                          </item>
+                          <item row="3" column="0">
+                           <widget class="QLabel" name="label_129">
+                            <property name="text">
+                             <string>Quantity</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="1">
+                           <widget class="QComboBox" name="quantityNf2ffEmerge">
+                            <item>
+                             <property name="text">
+                              <string>abs</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>real</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>imag</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>angle</string>
+                             </property>
+                            </item>
+                           </widget>
+                          </item>
+                          <item row="4" column="0">
+                           <spacer name="horizontalSpacer_54">
+                            <property name="orientation">
+                             <enum>Qt::Orientation::Horizontal</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>320</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                          <item row="4" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_65">
+                            <property name="leftMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="topMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="rightMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="bottomMargin">
+                             <number>5</number>
+                            </property>
+                            <item>
+                             <widget class="QCheckBox" name="useDecibelsNf2ffEmerge">
+                              <property name="text">
+                               <string>Plot using dB</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="label_130">
+                              <property name="text">
+                               <string>dB floor</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="dBFloorNf2ffEmerge">
+                              <property name="minimum">
+                               <double>-100000000.000000000000000</double>
+                              </property>
+                              <property name="maximum">
+                               <double>100000000.000000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <spacer name="horizontalSpacer_55">
+                              <property name="orientation">
+                               <enum>Qt::Orientation::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="5" column="0">
+                           <widget class="QLabel" name="label_131">
+                            <property name="text">
+                             <string>Diagram maximum size in milimeters</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="1">
+                           <widget class="QDoubleSpinBox" name="diagramRMaxNF2FFEmerge"/>
+                          </item>
+                          <item row="6" column="0">
+                           <widget class="QLabel" name="label_132">
+                            <property name="text">
+                             <string>Diagram placement (X,Y,Z) in milimeters</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="6" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_66">
+                            <property name="leftMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="topMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="rightMargin">
+                             <number>5</number>
+                            </property>
+                            <property name="bottomMargin">
+                             <number>5</number>
+                            </property>
+                            <item>
+                             <widget class="QLabel" name="label_133">
+                              <property name="text">
+                               <string>X</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="diagramPlacementXNF2FFEmerge">
+                              <property name="decimals">
+                               <number>3</number>
+                              </property>
+                              <property name="minimum">
+                               <double>-100000000.000000000000000</double>
+                              </property>
+                              <property name="maximum">
+                               <double>100000000.000000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="label_134">
+                              <property name="text">
+                               <string>Y</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="diagramPlacementYNF2FFEmerge">
+                              <property name="decimals">
+                               <number>3</number>
+                              </property>
+                              <property name="minimum">
+                               <double>-100000000.000000000000000</double>
+                              </property>
+                              <property name="maximum">
+                               <double>100000000.000000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="label_135">
+                              <property name="text">
+                               <string>Z</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="diagramPlacementZNF2FFEmerge">
+                              <property name="decimals">
+                               <number>3</number>
+                              </property>
+                              <property name="minimum">
+                               <double>-100000000.000000000000000</double>
+                              </property>
+                              <property name="maximum">
+                               <double>100000000.000000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <spacer name="horizontalSpacer_56">
+                              <property name="orientation">
+                               <enum>Qt::Orientation::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="7" column="1">
+                           <widget class="QCheckBox" name="diagramIsotropicNF2FFEmerge">
+                            <property name="text">
+                             <string>Isotropic</string>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </item>
+                        <item>
+                         <spacer name="verticalSpacer_35">
+                          <property name="orientation">
+                           <enum>Qt::Orientation::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                    </layout>
                    </widget>
-                  </item>
-                  <item>
-                   <widget class="QDoubleSpinBox" name="portNf2ffFreq">
-                    <property name="decimals">
-                     <number>8</number>
-                    </property>
-                    <property name="maximum">
-                     <double>10000000000.000000000000000</double>
-                    </property>
+                   <widget class="QWidget" name="probeProcessingEmergeTab_fieldTab">
+                    <attribute name="title">
+                     <string>Field</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="verticalLayout_47">
+                     <item>
+                      <widget class="QGroupBox" name="fieldEMergeGroupProcessing">
+                       <property name="title">
+                        <string>Post-Processing: EMerge: Field Display Script</string>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_52">
+                        <item>
+                         <widget class="QPushButton" name="writeFieldScriptEmergeButton">
+                          <property name="text">
+                           <string>Write Field Display Script</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <layout class="QFormLayout" name="formLayout_3">
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_136">
+                            <property name="text">
+                             <string>Frequency to plot field (MHz)</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QDoubleSpinBox" name="frequencyFieldProcessingEmerge">
+                            <property name="decimals">
+                             <number>3</number>
+                            </property>
+                            <property name="maximum">
+                             <double>100000000000.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_137">
+                            <property name="text">
+                             <string>Field</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="QComboBox" name="typeFieldProcessingEmerge">
+                            <item>
+                             <property name="text">
+                              <string>normE</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>normH</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ex</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ey</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Ez</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Hx</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Hy</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>Hz</string>
+                             </property>
+                            </item>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="label_138">
+                            <property name="text">
+                             <string>Metric</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <widget class="QComboBox" name="metricFieldProcessingEmerge">
+                            <item>
+                             <property name="text">
+                              <string>abs</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>real</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>imag</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>complex</string>
+                             </property>
+                            </item>
+                           </widget>
+                          </item>
+                          <item row="4" column="0">
+                           <widget class="QLabel" name="label_139">
+                            <property name="text">
+                             <string>Discretization step size</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="1">
+                           <widget class="QDoubleSpinBox" name="discretizationStepSizeFieldProcessingEmerge">
+                            <property name="decimals">
+                             <number>3</number>
+                            </property>
+                            <property name="maximum">
+                             <double>10000000.000000000000000</double>
+                            </property>
+                            <property name="singleStep">
+                             <double>0.010000000000000</double>
+                            </property>
+                            <property name="value">
+                             <double>0.001000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="1">
+                           <widget class="QCheckBox" name="animateFieldProcessingEmerge">
+                            <property name="text">
+                             <string>animate</string>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </item>
+                        <item>
+                         <widget class="QGroupBox" name="groupBox_11">
+                          <property name="title">
+                           <string>Cutplane (meters)</string>
+                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_67">
+                           <item>
+                            <widget class="QLabel" name="label_142">
+                             <property name="text">
+                              <string>X</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QDoubleSpinBox" name="cutplaneXFieldProcessingEmerge">
+                             <property name="decimals">
+                              <number>3</number>
+                             </property>
+                             <property name="minimum">
+                              <double>-10000000.000000000000000</double>
+                             </property>
+                             <property name="maximum">
+                              <double>10000000.000000000000000</double>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QLabel" name="label_141">
+                             <property name="text">
+                              <string>Y</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QDoubleSpinBox" name="cutplaneYFieldProcessingEmerge">
+                             <property name="decimals">
+                              <number>3</number>
+                             </property>
+                             <property name="minimum">
+                              <double>-10000000.000000000000000</double>
+                             </property>
+                             <property name="maximum">
+                              <double>10000000.000000000000000</double>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QLabel" name="label_140">
+                             <property name="text">
+                              <string>Z</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QDoubleSpinBox" name="cutplaneZFieldProcessingEmerge">
+                             <property name="decimals">
+                              <number>3</number>
+                             </property>
+                             <property name="minimum">
+                              <double>-10000000.000000000000000</double>
+                             </property>
+                             <property name="maximum">
+                              <double>10000000.000000000000000</double>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <spacer name="horizontalSpacer_57">
+                             <property name="orientation">
+                              <enum>Qt::Orientation::Horizontal</enum>
+                             </property>
+                             <property name="sizeHint" stdset="0">
+                              <size>
+                               <width>40</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </spacer>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="verticalSpacer_36">
+                          <property name="orientation">
+                           <enum>Qt::Orientation::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                    </layout>
                    </widget>
-                  </item>
-                 </layout>
-                </item>
-               </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
               </widget>
              </item>
              <item>

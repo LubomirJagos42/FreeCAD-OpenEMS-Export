@@ -12,6 +12,11 @@ from utilsOpenEMS.SettingsItem.SettingsItem import SettingsItem
 from utilsOpenEMS.GuiHelpers.GuiHelpers import GuiHelpers
 from utilsOpenEMS.GuiHelpers.FactoryCadInterface import FactoryCadInterface
 
+try:
+	import FreeCAD
+except:
+    pass
+
 class CommonScriptLinesGenerator:
 
     #
@@ -41,6 +46,10 @@ class CommonScriptLinesGenerator:
         # [qtyStr, standardUnitsPerTargetUnit, targetUnitStr] = App.Units.schemaTranslate( App.Units.Quantity("1.0 m"), App.Units.Scheme.SI2 )
         # return 1.0 / standardUnitsPerTargetUnit # standard unit is mm : return 1.0 / 1000 [m]
         return 0.001
+
+    def getFreeCADInternalUnitLengthStr(self):
+        [qtyStr, standardUnitsPerTargetUnit, targetUnitStr] = FreeCAD.Units.schemaTranslate( FreeCAD.Units.Quantity("1.0 m"), FreeCAD.Units.Scheme.SI2 )
+        return targetUnitStr
 
     def getItemsByClassName(self):
         categoryCount = self.form.objectAssignmentRightTreeWidget.invisibleRootItem().childCount()
