@@ -48,7 +48,11 @@ class CommonScriptLinesGenerator:
         return 0.001
 
     def getFreeCADInternalUnitLengthStr(self):
-        [qtyStr, standardUnitsPerTargetUnit, targetUnitStr] = FreeCAD.Units.schemaTranslate( FreeCAD.Units.Quantity("1.0 m"), FreeCAD.Units.Scheme.SI2 )
+        try:
+            [qtyStr, standardUnitsPerTargetUnit, targetUnitStr] = FreeCAD.Units.schemaTranslate( FreeCAD.Units.Quantity("1.0 m"), FreeCAD.Units.Scheme.SI2 )
+        except:
+            [qtyStr, standardUnitsPerTargetUnit, targetUnitStr] = FreeCAD.Units.schemaTranslate( FreeCAD.Units.Quantity("1.0 m"), FreeCAD.Units.Scheme.MmMin )
+
         return targetUnitStr
 
     def getItemsByClassName(self):
