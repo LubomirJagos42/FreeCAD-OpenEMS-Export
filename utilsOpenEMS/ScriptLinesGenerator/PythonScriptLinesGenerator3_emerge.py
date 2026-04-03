@@ -1054,7 +1054,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     if  bcType == "absorbing":
                         genScript += f"simulationObj.mw.bc.AbsorbingBoundary(boundary_selection)"
                     elif bcType == "pec":
-                        genScript += f"simulationObj.mw.bc.PECBoundary(boundary_selection)"
+                        # genScript += f"simulationObj.mw.bc.PECBoundary(boundary_selection)"   #old method for <= 2.3.x
+                        genScript += f"simulationObj.mw.bc.PEC(boundary_selection)"             #new method for 2.4.0 and above
                     else:
                         genScript += f"# ERROR: Unknown boundary condition type \"{currentSetting.getType()}\""
 
