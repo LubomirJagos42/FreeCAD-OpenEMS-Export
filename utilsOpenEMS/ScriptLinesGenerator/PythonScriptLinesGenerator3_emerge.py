@@ -1041,7 +1041,6 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     genScript += f"for geometryObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():\n"
                     genScript += f"\tif geometryObj.name == '{childName}' or geometryObj.name.startswith('{childName}'):\n"
                     genScript += f"\t\tboundary_selection = geometryObj.boundary()\n"
-                    genScript += f"\n"
 
                     #
                     #	getting item priority
@@ -1059,7 +1058,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     else:
                         genScript += f"# ERROR: Unknown boundary condition type \"{currentSetting.getType()}\""
 
-                    genScript += f"\n"
+                    genScript += f"\n\n"
 
 
             genScript += "\n"
@@ -1591,6 +1590,17 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         # Write port definitions.
         genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None))
 
+        #
+        #   Commit geometry before mesh definition.
+        #       This will reassign dimtags associated inside OpenCASCADe core, so it's done before mesh size definitions.
+        #
+        genScript += "#######################################################################################################################################\n"
+        genScript += "# COMPLETE GEOMETRY\n"
+        genScript += "#######################################################################################################################################\n"
+        genScript += "\n"
+        genScript += "simulationObj.commit_geometry()\n"
+        genScript += "\n"
+
         # Write grid definitions.
         genScript += self.getOrderedGridDefinitionsScriptLines(itemsByClassName.get("GridSettingsItem", None))
 
@@ -1603,7 +1613,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "#\n"
         genScript += "# First mesh must be created on existing geometry\n"
         genScript += "#\n"
-        genScript += "simulationObj.commit_geometry()\n"
+        # genScript += "simulationObj.commit_geometry()\n"
         genScript += "simulationObj.generate_mesh()\n"
         genScript += "\n"
         genScript += "\n"
@@ -1768,7 +1778,7 @@ for geoObj in simulationObj.state.manager.geometry_list[simulationObj.modelname]
 # display far field
 field = simulationResult.field.find(freq={self.form.boundaryNf2ffEmergeFreq.value()}*1e6)
 ff3d = field.farfield_3d(boundary_selection, origin=({self.form.diagramPlacementXNF2FFEmerge.value()}*{cadLengthUnit}, {self.form.diagramPlacementYNF2FFEmerge.value()}*{cadLengthUnit}, {self.form.diagramPlacementZNF2FFEmerge.value()}*{cadLengthUnit}))
-simulationObj.display.add_field(ff3d.surfplot('{self.form.polarizationNf2ffEmerge.currentText()}','{self.form.quantityNf2ffEmerge.currentText()}',True, dB=True, rmax={self.form.diagramRMaxNF2FFEmerge.value()}*{cadLengthUnit}, offset=({self.form.diagramPlacementXNF2FFEmerge.value()}, {self.form.diagramPlacementYNF2FFEmerge.value()}, {self.form.diagramPlacementZNF2FFEmerge.value()})))
+simulationObj.display.add_field(ff3d.surfplot('{self.form.polarizationNf2ffEmerge.currentText()}','{self.form.quantityNf2ffEmerge.currentText()}',True, dB=True, rmax={self.form.diagramRMaxNF2FFEmerge.value()}*{cadLengthUnit}, offset=({self.form.diagramPlacementXNF2FFEmerge.value()}*mm, {self.form.diagramPlacementYNF2FFEmerge.value()}*mm, {self.form.diagramPlacementZNF2FFEmerge.value()}*mm)))
 simulationObj.display.show()
 
 """

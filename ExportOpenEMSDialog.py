@@ -1844,6 +1844,17 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		objListStr = ""
 
 		if APP_CONTEXT == "FreeCAD":
+
+			#
+			#	Don't do this check if material contains just 2D objects for EMerge as it is FEM solver and for FEM it's required to have these
+			#	2D objects.
+			#
+			if self.form.comboBox_solverType.currentText().lower().startswith("emerge"):
+				return ""
+
+			#
+			#	Do check for 2D objects for openEMS solver.
+			#
 			materialCategories = self.scriptGenerator.getItemsByClassName().get("MaterialSettingsItem", None)
 			for [materialItem, currSetting] in materialCategories:
 
