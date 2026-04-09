@@ -7387,32 +7387,6 @@ than min spacing</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="2">
-                <spacer name="horizontalSpacer_46">
-                 <property name="orientation">
-                  <enum>Qt::Orientation::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="2" column="0">
-                <spacer name="verticalSpacer_30">
-                 <property name="orientation">
-                  <enum>Qt::Orientation::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_115">
                  <property name="text">
@@ -7455,6 +7429,41 @@ than min spacing</string>
                    <string>UMFPACK</string>
                   </property>
                  </item>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <spacer name="horizontalSpacer_46">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="3" column="0">
+                <spacer name="verticalSpacer_30">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="2" column="1">
+                <widget class="QCheckBox" name="simParamsDisableRAMCheck_emerge">
+                 <property name="text">
+                  <string>Disable memory check on
+simulation start
+RAM swap will be used if no enough RAM</string>
+                 </property>
                 </widget>
                </item>
               </layout>

@@ -1690,6 +1690,9 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "# RUN and save results\n"
         genScript += "#######################################################################################################################################\n"
 
+        if self.form.simParamsDisableRAMCheck_emerge.isChecked():
+            genScript += "simulationObj.settings.check_ram = False\n"
+
         if self.form.generateJustPreviewCheckbox.isChecked():
             genScript += "#simulationResult = simulationObj.mw.run_sweep()\n"
             genScript += "#simulationObj.save()\n"

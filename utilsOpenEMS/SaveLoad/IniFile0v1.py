@@ -355,7 +355,7 @@ class IniFile0v1:
         #write all settings from "Simulation Params" tab from EMerge tab
         simulationSettings.params['base_length_unit_m_emerge'] = self.form.simParamsDeltaUnitList_emerge.currentText()
         simulationSettings.params['solverEngine_emerge'] = self.form.simParamsSolverEngine_emerge.currentText()
-
+        simulationSettings.params['disableRAMCheck_emerge'] = self.form.simParamsDisableRAMCheck_emerge.isChecked()
 
         simulationSettings.params['outputScriptType'] = 'octave'
         if self.form.radioButton_pythonType.isChecked():
@@ -821,6 +821,7 @@ class IniFile0v1:
                 try:
                     self.form.simParamsDeltaUnitList_emerge.setCurrentText(simulationSettings.params['base_length_unit_m_emerge'])
                     self.form.simParamsSolverEngine_emerge.setCurrentText(simulationSettings.params['solverEngine_emerge'])
+                    self.form.simParamsDisableRAMCheck_emerge.setChecked(simulationSettings.params['disableRAMCheck_emerge'])
                 except:
                     pass
 
