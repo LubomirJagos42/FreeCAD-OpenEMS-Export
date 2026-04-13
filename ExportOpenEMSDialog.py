@@ -12,6 +12,7 @@ import traceback
 
 import webbrowser		#webbrowser is used to open help page and so
 
+
 APP_CONTEXT = "None"
 
 try:
@@ -67,9 +68,10 @@ from utilsOpenEMS.SettingsItem.FreeCADSettingsItem import FreeCADSettingsItem
 from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator import OctaveScriptLinesGenerator
 from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator import PythonScriptLinesGenerator
 
-from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator2 import OctaveScriptLinesGenerator2				#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
-from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator2_openems import PythonScriptLinesGenerator2_openems				#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
-from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator3_emerge import PythonScriptLinesGenerator3_emerge	#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
+from utilsOpenEMS.ScriptLinesGenerator.OctaveScriptLinesGenerator2 import OctaveScriptLinesGenerator2					#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
+from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator2_openems import PythonScriptLinesGenerator2_openems	#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
+from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator3_emerge import PythonScriptLinesGenerator3_emerge		#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
+from utilsOpenEMS.ScriptLinesGenerator.PythonScriptLinesGenerator4_palace import PythonScriptLinesGenerator4_palace		#EXPERIMENTAL JUST FOR DEBUGGING TILL MOVE TO RELEASE
 
 from utilsOpenEMS.GuiHelpers.GuiHelpers import GuiHelpers
 from utilsOpenEMS.GuiHelpers.FactoryCadInterface import FactoryCadInterface
@@ -577,8 +579,14 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			#
 			[radio.setEnabled(True) for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
 
-		elif (solverTypeStr.lower() == "emerge"):
-			self.form.generateOpenEMSScriptButton.setText("Generate EMerge Files")
+		elif (solverTypeStr.lower() in ["emerge", "palace"]):
+			tempSolverType = solverTypeStr.lower()
+
+			if tempSolverType == "emerge":
+				self.form.generateOpenEMSScriptButton.setText("Generate EMerge Files")
+			elif tempSolverType == "palace":
+				self.form.generateOpenEMSScriptButton.setText("Generate Palace Files")
+
 			self.form.radioButton_octaveType.setEnabled(False)
 			self.form.radioButton_pythonType.setChecked(True)
 			self.form.groupBox_gridTab_coordinateType.setEnabled(False)
@@ -601,7 +609,10 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.simulationParamsTab_tabWidget_openEMSTab.setEnabled(False)
 			self.form.simulationParamsTab_tabWidget_emergeTab.setEnabled(True)
 
-			self.pythonScriptGenerator = PythonScriptLinesGenerator3_emerge(self.form, statusBar=self.statusBar)
+			if tempSolverType == "emerge":
+				self.pythonScriptGenerator = PythonScriptLinesGenerator3_emerge(self.form, statusBar=self.statusBar)
+			elif tempSolverType == "palace":
+				self.pythonScriptGenerator = PythonScriptLinesGenerator4_palace(self.form, statusBar=self.statusBar)
 
 			#
 			# Display boundary conditions in right tree widget, applicable for FEM EMerge only
