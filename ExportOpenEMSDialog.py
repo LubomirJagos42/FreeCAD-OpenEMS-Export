@@ -547,6 +547,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.simulationParamsTab_tabWidget.setCurrentIndex(0)
 			self.form.simulationParamsTab_tabWidget_openEMSTab.setEnabled(True)
 			self.form.simulationParamsTab_tabWidget_emergeTab.setEnabled(False)
+			self.form.simulationParamsTab_tabWidget_palaceTab.setEnabled(False)
 
 			#disable main BoundaryConditions tab, not applicable for FDTD simulation in openEMS
 			self.form.boundaryConditionTab.setEnabled(False)
@@ -605,9 +606,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.excitationSettingsTab_tabWidget_openems.setEnabled(False)
 			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(1)
 
-			self.form.simulationParamsTab_tabWidget.setCurrentIndex(1)
 			self.form.simulationParamsTab_tabWidget_openEMSTab.setEnabled(False)
-			self.form.simulationParamsTab_tabWidget_emergeTab.setEnabled(True)
+			self.form.simulationParamsTab_tabWidget_emergeTab.setEnabled(tempSolverType == "emerge")
+			self.form.simulationParamsTab_tabWidget_palaceTab.setEnabled(tempSolverType == "palace")
+			if tempSolverType == "emerge":
+				self.form.simulationParamsTab_tabWidget.setCurrentIndex(1)
+			elif tempSolverType == "palace":
+				self.form.simulationParamsTab_tabWidget.setCurrentIndex(2)
 
 			if tempSolverType == "emerge":
 				self.pythonScriptGenerator = PythonScriptLinesGenerator3_emerge(self.form, statusBar=self.statusBar)
@@ -663,14 +668,16 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#deprecated in new FreeCAD 1.0.2
 		#WebGui.openBrowser(f"{os.path.dirname(__file__)}\\documentation\\help\\index.html")
 
-		webbrowser.open(f"{os.path.dirname(__file__)}\\documentation\\help\\index.html")
+		# webbrowser.open(f"{os.path.dirname(__file__)}\\documentation\\help\\index.html")
+		webbrowser.open(os.path.join(os.path.dirname(__file__), 'documentation', 'help', 'index.html'))
 
 	def openBlenderWebGuiHelp(self):
 		"""
 		Open index help html webpage in OS webbrowser.
 		:return:
 		"""
-		webbrowser.open(f"{os.path.dirname(__file__)}\\documentation\\help\\index.html", new=2)
+		# webbrowser.open(f"{os.path.dirname(__file__)}\\documentation\\help\\index.html", new=2)
+		webbrowser.open(os.path.join(os.path.dirname(__file__), 'documentation', 'help', 'index.html'))
 
 	def freecadObjectCreated(self, obj):
 		print("freecadObjectCreated :{} ('{}')".format(obj.FullName, obj.Label))
@@ -2689,7 +2696,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#
 		#	EMerge
 		#
-		if (self.getSolverType().lower() == "emerge"):
+		if (self.getSolverType().lower() in ["emerge", "palace"]):
 			excitationItem.type = 'sweep'
 			excitationItem.sweep = {}
 			excitationItem.sweep['fmin'] = self.form.sweepExcitationFmin.value()

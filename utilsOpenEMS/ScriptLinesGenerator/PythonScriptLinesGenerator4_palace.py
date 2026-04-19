@@ -73,6 +73,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "## Palace simulation\n"
         genScript += "#\n"
         genScript += "#\n"
+        genScript += "import os\n"
 
         genScript += "\n"
         genScript += "currDir = os.getcwd()\n"
@@ -102,13 +103,22 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "\n"
         genScript += "mesherObj = BasicMfemMesher()\n"
         genScript += "\n"
-        genScript += "##########################################################################################################\n"
-        genScript += "# GEOMETRY\n"
-        genScript += "##########################################################################################################\n"
-        # genScript += "mesherObj.addStepfile('substrate', 'stepfiles/substrate.step', priority=2000)\n"
+        genScript += "# variable to store ID in gmsh to identify groups, these IDs are later used in result .json file for simulation in palace in 'Attributes'\n"
+        genScript += "gmshGroupId = {}\n"
+        genScript += "\n"
+
         genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None), outputDir)
         genScript += self.getBoundaryConditionObjectImportScriptLines(itemsByClassName.get("BoundaryConditionSettingsItem", None), outputDir)
+
+        genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None))
         genScript += "\n"
+        #
+        #   Port are added when geometry is created because they must be meshed but then there is also needed to create boundary condition for them
+        #
+        for portBcScriptLine in self.portBoundaryConditionScriptLinesBuffer:
+            genScript += portBcScriptLine
+        genScript += "\n"
+
 
         genScript += "#\n"
         genScript += "# Create continuous mesh, subtract objects between each other based on their priority and perform fragmentation, reassing internal gmsh tags to objects\n"
@@ -128,14 +138,14 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "##########################################################################################################\n"
         genScript += "# Define physical groups for volumes and surfaces\n"
         genScript += "##########################################################################################################\n"
-        genScript += "gmshGroupId = {}\n"
-        genScript += "#gmshGroupId[\"airbox_volume\"] = 1\n"
-        genScript += "#gmshGroupId[\"port_in\"] = 2000\n"
-        genScript += "#gmshGroupId[\"coil\"] = 3000\n"
+        genScript += "##USE .createGroupsForAllImportedObjects() JUST FOR DEBUGGING, palace solver will not run IF SAME ELEMENT IN MULTIPLE GROUPS!!!\n"
+        genScript += "#mesherObj.createGroupsForAllImportedObjects()\n"
         genScript += "\n"
-        genScript += "#mesherObj.createGroup(\"airbox\", \"airbox\", 3)\n"
-        genScript += "#mesherObj.createGroup(\"coil\", \"coil\", 2, groupTag=gmshGroupId[\"coil\"])\n"
-        genScript += "#mesherObj.createGroup(\"port_in\", \"port_in\", 2, groupTag=gmshGroupId[\"port_in\"])\n"
+        genScript += "## also use just for debugging!!!\n"
+        genScript += "#mesherObj.createGroupsForAllMaterials()\n"
+        genScript += "\n"
+        genScript += "mesherObj.createGroupsForAllBoundaryConditions()\n"
+        genScript += "#TODO: Need create method to create mesh groups for all ports\n"
         genScript += "\n"
 
         genScript += "##########################################################################################################\n"
@@ -185,40 +195,15 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += f'simulationConfig["Model"]["L0"] = {simParamsModelMeshBaseUnits_palace}\n'
         genScript += '\n'
 
-
-
         genScript += 'simulationConfig["Domains"] = {}\n'
-        genScript += 'simulationConfig["Domains"]["Materials"] = []\n'
-        genScript += 'for materialName, materialAttributes in materialList:\n'
-        genScript += '\tsimulationConfig["Domains"]["Materials"].append({\n'
-        genScript += '\t\t"Attributes": [",".join(gmshGroupId[materialName])],\n'
-        genScript += '\t\t"Permeability": 1.0\n'
-        genScript += '\t})\n'
-
-
-
-        # genScript += '\n'
-        # genScript += 'simulationConfig["Domains"]["Postprocessing"] = {}\n'
-        # genScript += 'simulationConfig["Domains"]["Postprocessing"]["Probe"] = []\n'
-        # genScript += 'simulationConfig["Domains"]["Postprocessing"]["Probe"].append({\n'
-        # genScript += '\t"Index": 1,\n'
-        # genScript += '\t"Center": [0.0, 0.0, 0.004]\n'
-        # genScript += '})\n'
-        # genScript += 'simulationConfig["Domains"]["Postprocessing"]["Energy"] = []\n'
-        # genScript += 'simulationConfig["Domains"]["Postprocessing"]["Energy"].append({\n'
-        # genScript += '\t"Index": 1,\n'
-        # genScript += '\t"Attributes": [gmshGroupId["airbox_volume"]]\n'
-        # genScript += '})\n'
-        # genScript += '\n'
+        genScript += 'simulationConfig["Domains"]["Materials"] = mesherObj.getAllMaterialObjectForPalace()\n'
+        genScript += 'simulationConfig["Boundaries"] = mesherObj.getAllBoundaryConditionsObjectForPalace()\n'
+        genScript += 'simulationConfig["Boundaries"]["LumpedPort"] = mesherObj.getAllLumpedPortObjectForPalace()\n'
 
 
 
 
-        genScript += 'simulationConfig["Boundaries"] = {}\n'
-        genScript += 'for boundaryName, boundaryAttributes in boundaryConditionList:\n'
-        genScript += f'\tsimulationConfig["Boundaries"][boundaryName] = \n'
-        genScript += '\t\t"Attributes": [",".join(gmshGroupId[boundaryName+"_boundary"])]\n'
-        genScript += '\t}\n'
+
 
         # genScript += 'simulationConfig["Boundaries"]["SurfaceCurrent"] = []\n'
         # genScript += 'simulationConfig["Boundaries"]["SurfaceCurrent"].append({\n'
@@ -232,6 +217,10 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
 
 
 
+        genScript += '\n'
+        genScript += '#\n'
+        genScript += '# Linear solver is used for all problem types, here is its specification\n'
+        genScript += '#\n'
         genScript += 'simulationConfig["Solver"] = {}\n'
         genScript += 'simulationConfig["Solver"]["Linear"] = {}\n'
         genScript += f'simulationConfig["Solver"]["Linear"]["Type"] = "{linearSolverType}"\n'
@@ -240,14 +229,34 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += f'simulationConfig["Solver"]["Linear"]["MaxIts"] = {linearSolverMaxIterationCount}\n'
         genScript += f'simulationConfig["Solver"]["Order"] = {solverOrder}\n'
         genScript += f'simulationConfig["Solver"]["Device"] = "{solverDevice}"\n'
-
-        genScript += 'simulationConfig["Solver"]["Magnetostatic"] = {}\n'
-        genScript += 'simulationConfig["Solver"]["Magnetostatic"]["Save"] = 2\n'
         genScript += '\n'
+
+        if simulationProblemType.lower() == "magnetostatic":
+            genScript += 'simulationConfig["Solver"]["Magnetostatic"] = {}\n'
+            genScript += 'simulationConfig["Solver"]["Magnetostatic"]["Save"] = 2\n'
+            genScript += '\n'
+        elif simulationProblemType.lower() == "electrostatic":
+            #help: https://awslabs.github.io/palace/stable/guide/problem/
+            #   - need to specify grounded terminal
+            #
+            genScript += 'simulationConfig["Solver"]["Electrostatic"] = {}\n'
+            genScript += 'simulationConfig["Solver"]["Electrostatic"]["Save"] = 2\n'
+            genScript += '\n'
+        elif simulationProblemType.lower() == "driven":
+            genScript += self.getExcitationScriptLines(definitionsOnly=False)
+            genScript += '\n'
+        else:
+            genScript += f"#ERROR - simulation type '{simulationProblemType}' IS UNKNOWN!!!\n"
+            genScript += "\n"
 
         currDir, nameBase = self.getCurrDir()
 
         genScript += f'json.dump(simulationConfig, open("{nameBase}.json", "w"), indent=2)\n'
+        genScript += '\n'
+        genScript += f'with open("{nameBase}.json", "a") as outfile:\n'
+        genScript += '\toutfile.write("\n")\n'
+        genScript += '\tfor k, v in mesherObj.getGmshGroupIdList().items():\n'
+        genScript += '\t\toutfile.write(f"//{k}\\t-> {v}\\n")\n'
         genScript += '\n'
 
         ##################################################################################
@@ -279,8 +288,6 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         # PEC is created by default due it's used when microstrip port is defined, so it's here to have it here.
         # Note that the user will need to create a metal named 'PEC' and populate it to avoid a warning
         # about "no primitives assigned to metal 'PEC'".
-        genScript += "materialList = {}\n"                              # !!!THIS IS ON PURPOSE NOT LITERAL {} brackets are generated into code for python
-        genScript += "\n"
 
         if not items:
             return genScript
@@ -310,30 +317,32 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                 print("#" + str(currSetting.constants['epsilon']) + ", " + str(currSetting.constants['mue']) + ", " + str(currSetting.constants['kappa']) + ", " + str(currSetting.constants['sigma']))
 
                 genScript += f"## MATERIAL - {currSetting.getName()}\n"
-                materialPythonVariable = f"materialList['{currSetting.getName()}']"
-                genScript += materialPythonVariable + " = {}\n"
+                # materialPythonVariable = f"materialList['{currSetting.getName()}']"
+                # genScript += materialPythonVariable + " = {}\n"
 
                 if (currSetting.type == 'metal'):
-                    #this is working, same as in lib
-                    # genScript += f"{materialPythonVariable} = em.Material(name='{currSetting.getName()}', _metal=True, cond=1e30)\n"
 
                     #using predefined library with materials
-                    genScript += f"{materialPythonVariable} = em.lib.PEC\n"
+                    genScript += f"mesherObj.addMaterial('{currSetting.getName()}', conductivity=1e30)\n"
 
-                    self.internalMaterialIndexNamesList[currSetting.getName()] = materialPythonVariable
                 elif (currSetting.type == 'userdefined'):
-                    self.internalMaterialIndexNamesList[currSetting.getName()] = materialPythonVariable
 
-                    smp_args = []
+                    materialArgumentsList = {}
                     if str(currSetting.constants['epsilon']) != "0":
-                        genScript += f"{materialPythonVariable}['er'] = {str(currSetting.constants['epsilon'])}\n"
+                        materialArgumentsList["er"] = currSetting.constants['epsilon']
                     if str(currSetting.constants['mue']) != "0":
-                        genScript += f"{materialPythonVariable}['mue'] = {str(currSetting.constants['mue'])}\n"
-                    if ("tand" in currSetting.constants) \
-                       and type(currSetting.constants['tand']) is float:
-                            genScript += f"{materialPythonVariable}['tand'] = {str(currSetting.constants['tand'])}\n"
+                        materialArgumentsList["ur"] = currSetting.constants['mue']
+                    if ("tand" in currSetting.constants) and type(currSetting.constants['tand']) is float:
+                        materialArgumentsList["tand"] = currSetting.constants['tand']
                     if str(currSetting.constants['sigma']) != "0":
-                        genScript += f"{materialPythonVariable}['cond'] = {str(currSetting.constants['sigma'])}\n"
+                        materialArgumentsList["conductivity"] = currSetting.constants['sigma']
+
+                    materialIndex = 1
+                    genScript += f"mesherObj.addMaterial('{currSetting.getName()}', "
+                    for materialParamName, materialParamValue in materialArgumentsList.items():
+                        genScript += f"{materialParamName}={str(materialParamValue)}{', ' if materialIndex < len(materialArgumentsList) else ''}"
+                        materialIndex += 1
+                    genScript += ")\n"
 
                 # first print all current material children names
                 for k in range(item.childCount()):
@@ -342,7 +351,6 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     print("\t" + childName)
 
                 # now export material children, if it's object export as STL, if it's curve export as curve
-                genScript += f"{materialPythonVariable}['objects'] = []\n"
                 for k in range(item.childCount()):
                     simObjectCounter += 1               #counter for objects
                     childName = item.child(k).text(0)
@@ -365,7 +373,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     stepModelFileName = childName + "_gen_model.step"
 
                     genScript += f"mesherObj.addStepfile('{childName}', os.path.join(currDir, 'stepfiles', '{stepModelFileName}'), priority={objModelPriority})\n"
-                    genScript += f"{materialPythonVariable}['objects'].append('{childName}')\n"
+                    genScript += f"mesherObj.addObjectToMaterial('{currSetting.getName()}', '{childName}')\n"
 
                     #output directory path construction, if there is no parameter for output dir then output is in current freecad file dir
                     if (not outputDir is None):
@@ -397,12 +405,15 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
 
         genScript += "# Imported objects used as boundary conditions\n"
         genScript += "#\n"
-        boundaryPythonVariable = "boundaryConditionList"
-        genScript += f"{boundaryPythonVariable} = []\n"
-        genScript += "\n"
 
         # now export material children, if it's object export as STL, if it's curve export as curve
         for [item, currSetting] in items:
+
+            #
+            #   Create array of boundary condition boundaryList[<type ie. Absorbing, PEC, ...>] = list[str]
+            #       - key must be proper palace boundary name as they are used in palace .json file under {...Boundary{ PEC: {Attributes: [...]...
+            #
+            print(f"Working on boundary condition named '{currSetting.getName()}' type: '{currSetting.getType()}'")
 
             # first print all current material children names
             for k in range(item.childCount()):
@@ -432,7 +443,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                 stepModelFileName = childName + "_gen_model.step"
 
                 genScript += f"mesherObj.addStepfile('{childName}', os.path.join(currDir, 'stepfiles', '{stepModelFileName}'), priority={objModelPriority})\n"
-                genScript += f"{boundaryPythonVariable}.append({{'name': '{childName}', 'type': ''}})\n"
+                genScript += f"mesherObj.addObjectToBoundaryCondition('{currSetting.getType()}', '{childName}')\n"
 
                 #output directory path construction, if there is no parameter for output dir then output is in current freecad file dir
                 if (not outputDir is None):
@@ -514,32 +525,24 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                 if (not "Shape" in dir(fcObject)):
                     continue
 
-                genScript += f"#\tmax element size for '{FreeCADObjectName}'\n"
-                genScript += f"#\n"
-                genScript += f"for geometryObj in simulationObj.state.manager.geometry_list[simulationObj.modelname].values():\n"
-                genScript += f"\t\tif geometryObj.name == '{FreeCADObjectName}' or geometryObj.name.startswith('{FreeCADObjectName}_'):\n"
-
                 if gridSettingsInst.femMesh['femUseMaxElementSize'] == True:
                     # genScript += f"\t\t\tsimulationObj.mesher.set_size(geometryObj, {gridSettingsInst.femMesh['femMaxElementSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
-                    genScript += "#TODO: femUseMaxElementSize not implemented yet!\n"
+                    genScript += f"#TODO: {FreeCADObjectName} - femUseMaxElementSize not implemented yet!\n"
                 if gridSettingsInst.femMesh['femUseMaxBoundarySize'] == True:
                     # genScript += f"\t\t\tsimulationObj.mesher.set_boundary_size(geometryObj, {gridSettingsInst.femMesh['femMaxBoundarySize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
-                genScript += "#TODO: femUseMaxBoundarySize not implemented yet!\n"
+                    genScript += f"#TODO: {FreeCADObjectName} - femUseMaxBoundarySize not implemented yet!\n"
                 if gridSettingsInst.femMesh['femUseMaxFaceSize'] == True:
                     # genScript += f"\t\t\tsimulationObj.mesher.set_face_size(geometryObj, {gridSettingsInst.femMesh['femMaxFaceSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
-                    genScript += f"\t\t\tmesherObj.setSizeOnFace(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femMaxFaceSize']})\n"
+                    genScript += f"mesherObj.setSizeOnFace(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femMaxFaceSize']})\n"
                 if gridSettingsInst.femMesh['femUseMaxDomainSize'] == True:
                     # genScript += f"\t\t\tsimulationObj.mesher.set_domain_size(geometryObj, {gridSettingsInst.femMesh['femMaxDomainSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
-                    genScript += "#TODO: femUseMaxDomainSize not implemented yet!\n"
+                    genScript += f"#TODO: {FreeCADObjectName} - femUseMaxDomainSize not implemented yet!\n"
 
                 #
                 #   TODO: Add user defined mesh, code block will be placed into code
                 #
 
-                genScript += f"\n"
-
-            genScript += "\n"
-
+        genScript += "\n"
         genScript += "# Set background field automaticaly using internal field list created during mesh size definition\n"
         genScript += "mesherObj.setBackgroundMinFieldUsingAllDefinedFields()\n"
         genScript += "\n"
@@ -549,6 +552,159 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "\n"
 
         return genScript
+
+    def getPortDefinitionsScriptLines(self, items):
+        genScript = ""
+        if not items:
+            return genScript
+
+        refUnit = self.getUnitLengthFromUI_m()  # Coordinates need to be given in drawing units
+        sf = self.getFreeCADUnitLength_m() / refUnit  # scaling factor for FreeCAD units to drawing units
+
+        # port index counter, they are generated into port{} cell variable for octave, cells index starts at 1
+        genScriptPortCount = 1
+
+        genScript += "#######################################################################################################################################\n"
+        genScript += "# PORTS\n"
+        genScript += "#######################################################################################################################################\n"
+        genScript += "port = {}\n"
+        genScript += "portNamesAndNumbersList = {}\n"
+        genScript += "\n"
+        genScript += "\n"
+
+        for [item, currSetting] in items:
+
+            print(f"#PORT - {currSetting.getName()} - {currSetting.getType()}")
+
+            objs = self.cadHelpers.getObjects()
+            for k in range(item.childCount()):
+                childName = item.child(k).text(0)
+
+                self.createdObjectNameList.append(childName)  # add this object into list of created objects which will be used to create named group in exported mesh
+
+                genScript += "## PORT - " + currSetting.getName() + " - " + childName + "\n"
+
+                freecadObjects = [i for i in objs if (i.Label) == childName]
+
+                # print(freecadObjects)
+                for obj in freecadObjects:
+                    # BOUNDING BOX
+                    bbCoords = obj.Shape.BoundBox
+                    print('\tFreeCAD lumped port BoundBox: ' + str(bbCoords))
+
+                    #
+                    #	getting item priority
+                    #
+                    priorityItemName = item.parent().text(0) + ", " + item.text(0) + ", " + childName
+                    priorityIndex = self.getItemPriority(priorityItemName)
+
+                    #
+                    # PORT openEMS GENERATION INTO VARIABLE
+                    #
+                    if (currSetting.getType() == 'lumped'):
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
+
+                        genScript += f"w = abs(portStart[0] - portStop[0])\n"
+                        genScript += f"h = abs(portStart[1] - portStop[1])\n"
+                        genScript += f"th = abs(portStart[2] - portStop[2])\n"
+
+                        if bbCoords.XLength == 0 or bbCoords.YLength == 0 or bbCoords.ZLength == 0:
+
+                            #
+                            #   Create lumped port script line based on its orientation for now supports X,Y,Z axis
+                            #
+                            if bbCoords.XLength == 0:
+                                genScript += f"tags = mesherObj.gmshCreatePlate(origin=portStart, u=[0,h,0], v=[0,0,th])\n"
+                            elif bbCoords.YLength == 0:
+                                genScript += f"tags = mesherObj.gmshCreatePlate(origin=portStart, u=[w,0,0], v=[0,0,th])\n"
+                            elif bbCoords.ZLength == 0:
+                                genScript += f"tags = mesherObj.gmshCreatePlate(origin=portStart, u=[w,0,0], v=[0,h,0])\n"
+                        else:
+                            genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(width=w, height=h, depth=th, position=tuple(portStart))\n"
+                            #TODO: Add obtain box surface tags
+
+                        genScript += "# add created plate into gmsh model\n"
+                        genScript += f"mesherObj.addGmshObjectUsingDimtags('port_{genScriptPortCount}', [(2, k) for k in tags], priority=990000, type='surface')\n\n"
+
+                        genScript += f"mesherObj.addPort("
+                        genScript += f"objectName='port_{genScriptPortCount}', "
+                        genScript += f"direction='{currSetting.direction}', "
+                        genScript += f"R={str(currSetting.R)}*{str(currSetting.getRUnits())}, "
+                        genScript += f"excitation={str(currSetting.excitationAmplitude)}, "
+                        genScript += f"type='lumped', "
+                        genScript += f"index={genScriptPortCount}"
+                        genScript += f")\n"
+
+                        internalPortName = currSetting.name + " - " + obj.Label
+                        self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
+                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount}\n'
+                        genScriptPortCount += 1
+
+                    #
+                    #   ERROR - BELOW STILL NOT REWRITTEN INTO PYTHON!!!
+                    #
+
+                    else:
+                        genScript += '# Unknown port type. Nothing was generated.\n'
+                        genScript += 'raise BaseException("Unknown port type. Nothing was generated.")\n'
+
+            genScript += "\n"
+
+        return genScript
+
+    def getExcitationScriptLines(self, definitionsOnly=False):
+        genScript = ""
+
+        excitationCategory = self.form.objectAssignmentRightTreeWidget.findItems("Excitation", QtCore.Qt.MatchFixedString)
+        if len(excitationCategory) >= 0:
+            print("Excitation Settings detected")
+            print("#")
+            print("#EXCITATION")
+
+            # FOR WHOLE SIMULATION THERE IS JUST ONE EXCITATION DEFINED, so first is taken!
+            if (excitationCategory[0].childCount() > 0):
+                item = excitationCategory[0].child(0)
+                currSetting = item.data(0, QtCore.Qt.UserRole)  # At index 0 is Default Excitation.
+                # Currently only 1 excitation is allowed. Multiple excitations could be managed by setting one of them as "selected" or "active", while all others are deactivated.
+                # This would help the user to manage different analysis scenarios / excitation ranges.
+
+                print("#name: " + currSetting.getName())
+                print("#type: " + currSetting.getType())
+
+                # genScript += "#######################################################################################################################################\n"
+                # genScript += "# EXCITATION " + currSetting.getName() + "\n"
+                # genScript += "#######################################################################################################################################\n"
+
+                if (currSetting.getType() == 'sweep'):
+                    genScript += 'simulationConfig["Solver"]["Driven"] = {}\n'
+                    genScript += f'simulationConfig["Solver"]["Driven"]["MinFreq"] = {str(currSetting.sweep["fmin"])} * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
+                    genScript += f'simulationConfig["Solver"]["Driven"]["MaxFreq"] = {str(currSetting.sweep["fmax"])} * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
+                    genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = ({str(currSetting.sweep["fmax"])} - {str(currSetting.sweep["fmin"])}) * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
+                    genScript += f'simulationConfig["Solver"]["Driven"]["SaveStep"] = 1\n'
+                    genScript += f'simulationConfig["Solver"]["Driven"]["AdaptiveTol"] = 1e-3\n'
+                    pass
+                else:
+                    genScript += f"# ERROR: Excitation type \"{currSetting.getType()}\" not implemented in script generator!\n"
+
+                genScript += "\n"
+            else:
+                self.guiHelpers.displayMessage("Missing excitation, please define one.")
+                pass
+            pass
+        return genScript
+
+'''
+Notes TODO 20Apr2026:
+    - FreeCAD addon not saving and loading palace simulation params tab - need to be added
+    - creating mesh named group based on what is used, cannot use same elements in multiple groups this cause palace solver error that element in multiple attributes
+        - this makes question how to properly create named group for materials??? probably just 3D mesh for them since if material is defined
+          on 2D surface it is specified as boundary
+        - for boundary generate just 2D surface mesh
+        - whole strategy of import STEP files and define mesh on them should be rethinked and not to mesh everything just needed objects
+    - for Magnetostatic solver SuperLU crash with some error of matrix with zeros or whatever but AMS solver run OK
+    - port priority is wrong, take it from FreeCAD widget!
+    - ...
+'''
 
 
 
