@@ -1189,6 +1189,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     genScript += f"\t\t\tsimulationObj.mesher.set_face_size(geometryObj, {gridSettingsInst.femMesh['femMaxFaceSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
                 if gridSettingsInst.femMesh['femUseMaxDomainSize'] == True:
                     genScript += f"\t\t\tsimulationObj.mesher.set_domain_size(geometryObj, {gridSettingsInst.femMesh['femMaxDomainSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
+                if gridSettingsInst.femMesh['femUseSurfaceMeshSize'] == True:
+                    genScript += f"\t\t\t#TODO: {FreeCADObjectName} - femUseSurfaceMeshSize not implemented yet!\n"
 
                 #
                 #   TODO: Add user defined mesh, code block will be placed into code

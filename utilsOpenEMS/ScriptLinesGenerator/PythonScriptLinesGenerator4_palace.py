@@ -137,15 +137,16 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
 
         genScript += "##########################################################################################################\n"
         genScript += "# Define physical groups for volumes and surfaces\n"
+        genScript += "#\n"
+        genScript += "#\tfor debugging purposes there are also following other methods in mesher object, but use them just\n"
+        genScript += "#\tto visualize model, palace solver will not run IF SAME ELEMENT IN MULTIPLE GROUPS!!!\n"
+        genScript += "#\t\t- mesherObj.createGroupsForAllImportedObjects()\n"
+        genScript += "#\t\t- mesherObj.createGroupsForAllMaterials()\n"
+        genScript += "#\t\t- mesherObj.createGroupsForAllBoundaryConditions()\n"
         genScript += "##########################################################################################################\n"
-        genScript += "## DEBUGGING ONLY - use .createGroupsForAllImportedObjects(), palace solver will not run IF SAME ELEMENT IN MULTIPLE GROUPS!!!\n"
-        genScript += "#mesherObj.createGroupsForAllImportedObjects()\n"
-        genScript += "\n"
-        genScript += "## DEBUGGING ONLY\n"
-        genScript += "#mesherObj.createGroupsForAllMaterials()\n"
-        genScript += "\n"
-        genScript += "mesherObj.createGroupsForAllBoundaryConditions()\n"
-        genScript += "#TODO: Need create method to create mesh groups for all ports\n"
+        genScript += "mesherObj.createGroupsForObjectVolumesUsedInMaterials()\n"
+        genScript += "mesherObj.createGroupsForObjectSurfacesUsedInBoundaryConditions()\n"
+        genScript += "mesherObj.createGroupsForObjectSurfacesUsedInPort()\n"
         genScript += "\n"
 
         genScript += "##########################################################################################################\n"
@@ -247,9 +248,10 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += f'json.dump(simulationConfig, open("{nameBase}.json", "w"), indent=2)\n'
         genScript += '\n'
         genScript += f'with open("{nameBase}.json", "a") as outfile:\n'
-        genScript += '\toutfile.write("\\n")\n'
+        genScript += '\toutfile.write("\\n\\n")\n'
+        genScript += '\toutfile.write("//internal mesher gmsh group table: (group name -> group id)\\n")\n'
         genScript += '\tfor k, v in mesherObj.getGmshGroupIdList().items():\n'
-        genScript += '\t\toutfile.write(f"//{k}\\t\\t\\t-> {v}\\n")\n'
+        genScript += '\t\toutfile.write(f"//{k}\\t-> {v}\\n")\n'
         genScript += '\n'
 
         ##################################################################################
@@ -477,7 +479,6 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "##########################################################################################################\n"
         genScript += "# MESH SIZE DEFINITION\n"
         genScript += "##########################################################################################################\n"
-        genScript += "\n"
 
         # Create lists and dict to be able to resolve ordered list of (grid settings instance <-> FreeCAD object) associations.
         # In its current form, this implies user-defined grid lines have to be associated with the simulation volume.
@@ -519,17 +520,20 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     continue
 
                 if gridSettingsInst.femMesh['femUseMaxElementSize'] == True:
-                    # genScript += f"\t\t\tsimulationObj.mesher.set_size(geometryObj, {gridSettingsInst.femMesh['femMaxElementSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
                     genScript += f"#TODO: {FreeCADObjectName} - femUseMaxElementSize not implemented yet!\n"
                 if gridSettingsInst.femMesh['femUseMaxBoundarySize'] == True:
-                    # genScript += f"\t\t\tsimulationObj.mesher.set_boundary_size(geometryObj, {gridSettingsInst.femMesh['femMaxBoundarySize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
                     genScript += f"#TODO: {FreeCADObjectName} - femUseMaxBoundarySize not implemented yet!\n"
                 if gridSettingsInst.femMesh['femUseMaxFaceSize'] == True:
-                    # genScript += f"\t\t\tsimulationObj.mesher.set_face_size(geometryObj, {gridSettingsInst.femMesh['femMaxFaceSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
                     genScript += f"mesherObj.setSizeOnFace(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femMaxFaceSize']})\n"
                 if gridSettingsInst.femMesh['femUseMaxDomainSize'] == True:
-                    # genScript += f"\t\t\tsimulationObj.mesher.set_domain_size(geometryObj, {gridSettingsInst.femMesh['femMaxDomainSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
                     genScript += f"#TODO: {FreeCADObjectName} - femUseMaxDomainSize not implemented yet!\n"
+
+                #due backward compatibility older files doesn't have these params when loaded so try/except use to continue program
+                try:
+                    if gridSettingsInst.femMesh['femUseSurfaceMeshSize'] == True:
+                        genScript += f"mesherObj.setSurfaceMeshSize(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femSurfaceMeshSizeSizeMin']}, {gridSettingsInst.femMesh['femSurfaceMeshSizeSizeMax']}, {gridSettingsInst.femMesh['femSurfaceMeshSizeDistanceMin']}, {gridSettingsInst.femMesh['femSurfaceMeshSizeDistanceMax']})\n"
+                except:
+                    pass
 
                 #
                 #   TODO: Add user defined mesh, code block will be placed into code
@@ -539,7 +543,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "# Set background field automaticaly using internal field list created during mesh size definition\n"
         genScript += "mesherObj.setBackgroundMinFieldUsingAllDefinedFields()\n"
         genScript += "\n"
-        genScript += "# Global limits - use if needed\n"
+        genScript += "# Global limits - use if needed, SET OWN LIMITS!\n"
         genScript += "#gmsh.option.setNumber(\"Mesh.MeshSizeMin\", 0.1)  # Absolute minimum\n"
         genScript += "#gmsh.option.setNumber(\"Mesh.MeshSizeMax\", 10.0)  # Absolute maximum\n"
         genScript += "\n"
@@ -560,9 +564,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "#######################################################################################################################################\n"
         genScript += "# PORTS\n"
         genScript += "#######################################################################################################################################\n"
-        genScript += "port = {}\n"
         genScript += "portNamesAndNumbersList = {}\n"
-        genScript += "\n"
         genScript += "\n"
 
         for [item, currSetting] in items:
@@ -617,10 +619,10 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                             #TODO: Add obtain box surface tags
 
                         genScript += "# add created plate into gmsh model\n"
-                        genScript += f"mesherObj.addGmshObjectUsingDimtags('port_{genScriptPortCount}', [(2, k) for k in tags], priority={priorityIndex}, type='surface')\n\n"
+                        genScript += f"mesherObj.addGmshObjectUsingDimtags('{obj.Label}', [(2, k) for k in tags], priority={priorityIndex}, type='surface')\n\n"
 
                         genScript += f"mesherObj.addPort("
-                        genScript += f"objectName='port_{genScriptPortCount}', "
+                        genScript += f"objectName='{obj.Label}', "
                         genScript += f"direction='{currSetting.direction}', "
                         genScript += f"R={str(currSetting.R)}*{str(currSetting.getRUnits())}, "
                         genScript += f"excitation={str(currSetting.excitationAmplitude)}, "
@@ -672,7 +674,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     genScript += 'simulationConfig["Solver"]["Driven"] = {}\n'
                     genScript += f'simulationConfig["Solver"]["Driven"]["MinFreq"] = {str(currSetting.sweep["fmin"])} * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
                     genScript += f'simulationConfig["Solver"]["Driven"]["MaxFreq"] = {str(currSetting.sweep["fmax"])} * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
-                    genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = ({str(currSetting.sweep["fmax"])} - {str(currSetting.sweep["fmin"])}) * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
+                    genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = ({str(currSetting.sweep["fmax"])} - {str(currSetting.sweep["fmin"])}) * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9 / {str(currSetting.sweep["npoints"])}\n'
                     genScript += f'simulationConfig["Solver"]["Driven"]["SaveStep"] = 1\n'
                     genScript += f'simulationConfig["Solver"]["Driven"]["AdaptiveTol"] = 1e-3\n'
                     pass
@@ -686,16 +688,94 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
             pass
         return genScript
 
+    def drawS11ButtonClicked(self, outputDir=None, portName=""):
+        genScript = ""
+
+        itemsByClassName = self.getItemsByClassName()
+        items = itemsByClassName.get("PortSettingsItem", None)
+
+        genScriptPortCount = 1
+        portNamesAndNumbersList = {}
+        for [item, currSetting] in items:
+            for k in range(item.childCount()):
+                childName = item.child(k).text(0)
+                portName = f"{currSetting.name} - {childName}"
+
+                # PORT openEMS GENERATION INTO VARIABLE
+                if (currSetting.getType() == 'lumped'):
+                    portNamesAndNumbersList[portName] = genScriptPortCount
+                    genScriptPortCount += 1
+
+        sourcePortName = self.form.drawS11Port.currentText()
+        sourcePortNumber = portNamesAndNumbersList[sourcePortName]
+
+        genScript += f"## Palace simulation - S{sourcePortNumber}{sourcePortNumber}\n"
+        genScript += "#\n"
+        genScript += "#\n"
+        genScript += "import matplotlib.pyplot as plt\n"
+        genScript += "import pandas as pd\n"
+        genScript += "\n"
+
+        #
+        #   Get port names and their numbers from GUI
+        #
+        genScript += "###############################################################################\n"
+        genScript += "# PORT NAME AND THEIR NUMBERS LIST\n"
+        genScript += "###############################################################################\n"
+        genScript += "portNamesAndNumbersList = {}\n"
+        for portName, portNumber in portNamesAndNumbersList.items():
+            genScript += f'portNamesAndNumbersList["{portName}"] = {portNumber}\n'
+        genScript += "\n"
+
+        genScript += "###############################################################################\n"
+        genScript += "# PLOT S DATA\n"
+        genScript += "###############################################################################\n"
+        genScript += "\n"
+        genScript += "# Load the file without header (columns will be numbered 0, 1, 2...)\n"
+        genScript += f'df = pd.read_csv("{self.form.simParamsOutputDirectory_palace.text()}/port-S.csv", comment="#", skiprows=1, header=None)\n'
+        genScript += "\n"
+        genScript += "# Plot: column 0 = Frequency, column 1 = S11\n"
+        genScript += 'plt.plot(df.iloc[:, 0], df.iloc[:, 1], marker="o", label="|S11| (dB)")\n'
+        genScript += "\n"
+        genScript += 'plt.xlabel("Frequency (GHz)")\n'
+        genScript += 'plt.ylabel("S11 (dB)")\n'
+        genScript += 'plt.title("S11 vs Frequency")\n'
+        genScript += 'plt.grid(True)\n'
+        genScript += 'plt.legend()\n'
+        genScript += 'plt.tight_layout()\n'
+        genScript += 'plt.show()\n'
+        genScript += '\n'
+
+        #
+        # WRITE OpenEMS Script file into current dir
+        #
+        currDir, nameBase = self.getCurrDir()
+
+        self.createOuputDir(outputDir)
+        if (not outputDir is None):
+            fileName = f"{outputDir}/{nameBase}_draw_S{sourcePortNumber}{sourcePortNumber}.py"
+        else:
+            fileName = f"{currDir}/{nameBase}_draw_S{sourcePortNumber}{sourcePortNumber}.py"
+
+        f = open(fileName, "w", encoding='utf-8')
+        f.write(genScript)
+        f.close()
+        print('Draw result from simulation file written into: ' + fileName)
+        self.guiHelpers.displayMessage('Draw result from simulation file written into: ' + fileName, forceModal=False)
+
+
 '''
 Notes TODO 20Apr2026:
     + DONE -> FreeCAD addon not saving and loading palace simulation params tab - need to be added
-    - creating mesh named group based on what is used, cannot use same elements in multiple groups this cause palace solver error that element in multiple attributes
+    + creating mesh named group based on what is used, cannot use same elements in multiple groups this cause palace solver error that element in multiple attributes
         - this makes question how to properly create named group for materials??? probably just 3D mesh for them since if material is defined
           on 2D surface it is specified as boundary
         - for boundary generate just 2D surface mesh
         - whole strategy of import STEP files and define mesh on them should be rethinked and not to mesh everything just needed objects
     + for Magnetostatic solver SuperLU crash with some error of matrix with zeros or whatever but AMS solver run OK
     + port priority is wrong, take it from FreeCAD widget!
+    - forbit multiple assignment same object to multiple material
+    - forbit multiple assignment same object to multiple boundaries
     - ...
 '''
 

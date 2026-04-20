@@ -57,7 +57,23 @@ class GridSettingsItem(SettingsItem):
         self.fixedDistance = {'x': 0, 'y': 0, 'z': 0} if fixedDistance is None else fixedDistance
         self.smoothMesh = {'xMaxRes': 0, 'yMaxRes': 0, 'zMaxRes': 0} if smoothMeshDefault is None else smoothMeshDefault
         self.userDefined = {'data': ""} if userDefined is None else userDefined
-        self.femMesh = {'femMaxSizeUnits': 'mm', 'femMaxElementSize': 1.0, 'femMaxBoundarySize': 1.0, 'femMaxFaceSize': 1.0, 'femMaxDomainSize': 1.0, 'femUseMaxElementSize': False, 'femUseMaxBoundarySize': False, 'femUseMaxFaceSize': False, 'femUseMaxDomainSize': False, 'femUseMaxUserDefined': False} if femMeshDefault is None else femMeshDefault
+        self.femMesh = {
+            'femMaxSizeUnits': 'mm',
+            'femMaxElementSize': 1.0,
+            'femMaxBoundarySize': 1.0,
+            'femMaxFaceSize': 1.0,
+            'femMaxDomainSize': 1.0,
+            'femSurfaceMeshSizeSizeMin': 0.1,
+            'femSurfaceMeshSizeSizeMax': 10.0,
+            'femSurfaceMeshSizeDistanceMin': 0.0,
+            'femSurfaceMeshSizeDistanceMax': 10.0,
+            'femUseMaxElementSize': False,
+            'femUseMaxBoundarySize': False,
+            'femUseMaxFaceSize': False,
+            'femUseMaxDomainSize': False,
+            'femUseMaxUserDefined': False,
+            'femUseSurfaceMeshSize': False
+        } if femMeshDefault is None else femMeshDefault
 
         self.generateLinesInside = False
         self.gridOffset = {'x': 0, 'y': 0, 'z': 0, 'units': 'um'} if gridOffset is None else gridOffset

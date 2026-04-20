@@ -2112,7 +2112,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#	New items for FEM simulation (emerge)
 		#		- now there is just one only type for FEM grid and that's to specify max size of element, boundary, volume and domain
 		#
-		if (self.form.comboBox_solverType.currentText().lower().find("emerge") > -1):
+		if (self.form.comboBox_solverType.currentText().lower().find("emerge") > -1 or self.form.comboBox_solverType.currentText().lower().find("palace") > -1):
 			gridItem.type = "FEM Max Size"
 
 			gridItem.femMesh = {}
@@ -2123,10 +2123,17 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			gridItem.femMesh['femMaxFaceSize'] = self.form.femGridMaxFaceSizeValue.value()
 			gridItem.femMesh['femMaxDomainSize'] = self.form.femGridMaxDomainSizeValue.value()
 
+			gridItem.femMesh['femSurfaceMeshSizeSizeMin'] = self.form.femGridSurfaceMeshSize_sizeMin.value()
+			gridItem.femMesh['femSurfaceMeshSizeSizeMax'] = self.form.femGridSurfaceMeshSize_sizeMax.value()
+			gridItem.femMesh['femSurfaceMeshSizeDistanceMin'] = self.form.femGridSurfaceMeshSize_distanceMin.value()
+			gridItem.femMesh['femSurfaceMeshSizeDistanceMax'] = self.form.femGridSurfaceMeshSize_distanceMax.value()
+
 			gridItem.femMesh['femUseMaxElementSize'] = self.form.femGridMaxElementSizeCheckbox.isChecked()
 			gridItem.femMesh['femUseMaxBoundarySize'] = self.form.femGridMaxBoundarySizeCheckbox.isChecked()
 			gridItem.femMesh['femUseMaxFaceSize'] = self.form.femGridMaxFaceSizeCheckbox.isChecked()
 			gridItem.femMesh['femUseMaxDomainSize'] = self.form.femGridMaxDomainSizeCheckbox.isChecked()
+
+			gridItem.femMesh['femUseSurfaceMeshSize'] = self.form.femGridSurfaceMeshSizeCheckbox.isChecked()
 
 			gridItem.femMesh['femUseMaxUserDefined'] = self.form.femGridUserDefinedCheckbox.isChecked()
 
@@ -3722,6 +3729,15 @@ class ExportOpenEMSDialog(QtCore.QObject):
 					self.form.femGridMaxBoundarySizeCheckbox.setChecked(currSetting.femMesh['femUseMaxBoundarySize'])
 					self.form.femGridMaxFaceSizeCheckbox.setChecked(currSetting.femMesh['femUseMaxFaceSize'])
 					self.form.femGridMaxDomainSizeCheckbox.setChecked(currSetting.femMesh['femUseMaxDomainSize'])
+				except:
+					pass
+
+				try:
+					self.form.femGridSurfaceMeshSizeCheckbox.setChecked(currSetting.femMesh['femUseSurfaceMeshSize'])
+					self.form.femGridSurfaceMeshSize_sizeMin.setValue(currSetting.femMesh['femSurfaceMeshSizeSizeMin'])
+					self.form.femGridSurfaceMeshSize_sizeMax.setValue(currSetting.femMesh['femSurfaceMeshSizeSizeMax'])
+					self.form.femGridSurfaceMeshSize_distanceMin.setValue(currSetting.femMesh['femSurfaceMeshSizeDistanceMin'])
+					self.form.femGridSurfaceMeshSize_distanceMax.setValue(currSetting.femMesh['femSurfaceMeshSizeDistanceMax'])
 				except:
 					pass
 
