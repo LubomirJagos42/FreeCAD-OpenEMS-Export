@@ -138,10 +138,10 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "##########################################################################################################\n"
         genScript += "# Define physical groups for volumes and surfaces\n"
         genScript += "##########################################################################################################\n"
-        genScript += "##USE .createGroupsForAllImportedObjects() JUST FOR DEBUGGING, palace solver will not run IF SAME ELEMENT IN MULTIPLE GROUPS!!!\n"
+        genScript += "## DEBUGGING ONLY - use .createGroupsForAllImportedObjects(), palace solver will not run IF SAME ELEMENT IN MULTIPLE GROUPS!!!\n"
         genScript += "#mesherObj.createGroupsForAllImportedObjects()\n"
         genScript += "\n"
-        genScript += "## also use just for debugging!!!\n"
+        genScript += "## DEBUGGING ONLY\n"
         genScript += "#mesherObj.createGroupsForAllMaterials()\n"
         genScript += "\n"
         genScript += "mesherObj.createGroupsForAllBoundaryConditions()\n"
@@ -155,8 +155,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "gmsh.option.setNumber(\"General.Terminal\", 1)  # print messages\n"
         genScript += "gmsh.option.setNumber(\"Mesh.MshFileVersion\", 2.2)\n"
         genScript += "gmsh.option.setNumber(\"Mesh.Binary\", 0)  # text .msh file\n"
-        genScript += "# gmsh.option.setNumber(\"Mesh.Algorithm3D\", 10)\n"
-        genScript += "gmsh.option.setNumber(\"Mesh.Algorithm3D\", 1)  # delaunay\n"
+        genScript += "gmsh.option.setNumber(\"Mesh.Algorithm3D\", 1)  # 1: Delaunay, 3: Initial mesh only, 4: Frontal, 7: MMG3D, 9: R-tree, 10: HXT\n"
         genScript += "\n"
         genScript += "gmsh.model.occ.removeAllDuplicates()\n"
         genScript += "gmsh.model.occ.synchronize()\n"
@@ -198,24 +197,18 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += 'simulationConfig["Domains"] = {}\n'
         genScript += 'simulationConfig["Domains"]["Materials"] = mesherObj.getAllMaterialObjectForPalace()\n'
         genScript += 'simulationConfig["Boundaries"] = mesherObj.getAllBoundaryConditionsObjectForPalace()\n'
-        genScript += 'simulationConfig["Boundaries"]["LumpedPort"] = mesherObj.getAllLumpedPortObjectForPalace()\n'
 
-
-
-
-
-
-        # genScript += 'simulationConfig["Boundaries"]["SurfaceCurrent"] = []\n'
-        # genScript += 'simulationConfig["Boundaries"]["SurfaceCurrent"].append({\n'
-        # genScript += '\t"Index": 1,\n'
-        # genScript += '\t"Attributes": [gmshGroupId["port_in"]],\n'
-        # genScript += '\t"Direction": [0.0, 0.0, 1.0]\n'
-        # genScript += '})\n'
-        # genScript += '\n'
-
-
-
-
+        #
+        #   Lumped port are used in:
+        #       - Driven - yes
+        #       - Eigenmode - TODO: Need to be tested!
+        #
+        #   For electrostatic or magnetostatic are used terminals or something else.
+        #
+        if simulationProblemType.lower() in ["magnetostatic", "electrostatic"]:
+            genScript += 'simulationConfig["Boundaries"]["SurfaceCurrent"] = mesherObj.getAllSurfaceCurrentForPortObjectForPalace()\n'
+        else:
+            genScript += 'simulationConfig["Boundaries"]["LumpedPort"] = mesherObj.getAllLumpedPortObjectForPalace()\n'
 
         genScript += '\n'
         genScript += '#\n'
@@ -254,9 +247,9 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += f'json.dump(simulationConfig, open("{nameBase}.json", "w"), indent=2)\n'
         genScript += '\n'
         genScript += f'with open("{nameBase}.json", "a") as outfile:\n'
-        genScript += '\toutfile.write("\n")\n'
+        genScript += '\toutfile.write("\\n")\n'
         genScript += '\tfor k, v in mesherObj.getGmshGroupIdList().items():\n'
-        genScript += '\t\toutfile.write(f"//{k}\\t-> {v}\\n")\n'
+        genScript += '\t\toutfile.write(f"//{k}\\t\\t\\t-> {v}\\n")\n'
         genScript += '\n'
 
         ##################################################################################
@@ -624,7 +617,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                             #TODO: Add obtain box surface tags
 
                         genScript += "# add created plate into gmsh model\n"
-                        genScript += f"mesherObj.addGmshObjectUsingDimtags('port_{genScriptPortCount}', [(2, k) for k in tags], priority=990000, type='surface')\n\n"
+                        genScript += f"mesherObj.addGmshObjectUsingDimtags('port_{genScriptPortCount}', [(2, k) for k in tags], priority={priorityIndex}, type='surface')\n\n"
 
                         genScript += f"mesherObj.addPort("
                         genScript += f"objectName='port_{genScriptPortCount}', "
@@ -695,14 +688,14 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
 
 '''
 Notes TODO 20Apr2026:
-    - FreeCAD addon not saving and loading palace simulation params tab - need to be added
+    + DONE -> FreeCAD addon not saving and loading palace simulation params tab - need to be added
     - creating mesh named group based on what is used, cannot use same elements in multiple groups this cause palace solver error that element in multiple attributes
         - this makes question how to properly create named group for materials??? probably just 3D mesh for them since if material is defined
           on 2D surface it is specified as boundary
         - for boundary generate just 2D surface mesh
         - whole strategy of import STEP files and define mesh on them should be rethinked and not to mesh everything just needed objects
-    - for Magnetostatic solver SuperLU crash with some error of matrix with zeros or whatever but AMS solver run OK
-    - port priority is wrong, take it from FreeCAD widget!
+    + for Magnetostatic solver SuperLU crash with some error of matrix with zeros or whatever but AMS solver run OK
+    + port priority is wrong, take it from FreeCAD widget!
     - ...
 '''
 

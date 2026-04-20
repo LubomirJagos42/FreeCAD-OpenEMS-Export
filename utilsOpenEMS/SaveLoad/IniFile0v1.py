@@ -15,7 +15,7 @@ from utilsOpenEMS.SettingsItem.ProbeSettingsItem import ProbeSettingsItem
 from utilsOpenEMS.SettingsItem.ExcitationSettingsItem import ExcitationSettingsItem
 from utilsOpenEMS.SettingsItem.LumpedPartSettingsItem import LumpedPartSettingsItem
 from utilsOpenEMS.SettingsItem.MaterialSettingsItem import MaterialSettingsItem
-from utilsOpenEMS.SettingsItem.SimulationSettingsItem import SimulationSettingsItem
+from utilsOpenEMS.SettingsItem.SimulationSettingsItem import SimulationSettingsItem, SimulationPalaceSettingsItem
 from utilsOpenEMS.SettingsItem.BoundaryConditionSettingsItem import BoundaryConditionSettingsItem
 from utilsOpenEMS.SettingsItem.GridSettingsItem import GridSettingsItem
 from utilsOpenEMS.SettingsItem.FreeCADSettingsItem import FreeCADSettingsItem
@@ -362,11 +362,28 @@ class IniFile0v1:
             simulationSettings.params['outputScriptType'] = 'python'
 
         #
+        #   Save simulation params for Palace tab
+        #
+        simulationPalaceSettings = SimulationPalaceSettingsItem("Palace_Simulation_Settings_1")
+        simulationPalaceSettings.palaceParams["problemType"] = self.form.simParamsSimulationTypeList_palace.currentText()
+        simulationPalaceSettings.palaceParams["problemVerbose"] = self.form.simParamsVerbose_palace.value()
+        simulationPalaceSettings.palaceParams["problemOutput"] = self.form.simParamsOutputDirectory_palace.text()
+        simulationPalaceSettings.palaceParams["modelMeshName"] = self.form.simParamsModelMeshName_palace.text()
+        simulationPalaceSettings.palaceParams["modelMeshBaseUnits"] = self.form.simParamsModelMeshBaseUnits_palace.currentText()
+        simulationPalaceSettings.palaceParams["linearSolverType"] = self.form.simParamsLinearSolverType_palace.currentText()
+        simulationPalaceSettings.palaceParams["linearSolverKSPType"] = self.form.simParamsLinearSolverKSPType_palace.currentText()
+        simulationPalaceSettings.palaceParams["linearSolverTolerance"] = self.form.simParamsLinearSolverTolerance_palace.value()
+        simulationPalaceSettings.palaceParams["linearSolverMaxIterationCount"] = self.form.simParamsLinearSolverMaximumIterationCount_palace.value()
+        simulationPalaceSettings.palaceParams["solverOrder"] = self.form.simParamsLinearSolverOrder_palace.value()
+        simulationPalaceSettings.palaceParams["solverDevice"] = self.form.simParamsSolverDevice_palace.currentText()
+
+        #
         #   Write parameters frp, above into JSON
         #
         settings.beginGroup("SIMULATION-" + simulationSettings.name)
         settings.setValue("name", simulationSettings.name)
         settings.setValue("params", json.dumps(simulationSettings.params))
+        settings.setValue("paramsPalace", json.dumps(simulationPalaceSettings.palaceParams))
         settings.endGroup()
 
         #
@@ -793,6 +810,16 @@ class IniFile0v1:
                 simulationSettings.name = itemName
                 simulationSettings.type = settings.value('type')
                 simulationSettings.params = json.loads(settings.value('params'))
+
+                #
+                #   Backward compatibility - try/except load params for palace simulation settings tab
+                #
+                simulationPalaceSettings = SimulationPalaceSettingsItem()
+                try:
+                    simulationPalaceSettings.palaceParams = json.loads(settings.value('paramsPalace'))
+                except:
+                    pass
+
                 settings.endGroup()
                 print(f'loading SIMULATION PARAMS: {(simulationSettings.params)}')
 
@@ -856,6 +883,24 @@ class IniFile0v1:
                 #
                 try:
                     self.form.simParamsOverSampling.setValue(simulationSettings.params['OverSampling'])
+                except:
+                    pass
+
+                #
+                #   try catch block here due backward compatibility, loading simulation settings for palace solver tab
+                #
+                try:
+                    self.guiHelpers.setComboboxItem(self.form.simParamsSimulationTypeList_palace, simulationPalaceSettings.palaceParams["problemType"])
+                    self.form.simParamsVerbose_palace.setValue(simulationPalaceSettings.palaceParams["problemVerbose"])
+                    self.form.simParamsOutputDirectory_palace.setText(simulationPalaceSettings.palaceParams["problemOutput"])
+                    self.form.simParamsModelMeshName_palace.setText(simulationPalaceSettings.palaceParams["modelMeshName"])
+                    self.guiHelpers.setComboboxItem(self.form.simParamsModelMeshBaseUnits_palace, simulationPalaceSettings.palaceParams["modelMeshBaseUnits"])
+                    self.guiHelpers.setComboboxItem(self.form.simParamsLinearSolverType_palace, simulationPalaceSettings.palaceParams["linearSolverType"])
+                    self.guiHelpers.setComboboxItem(self.form.simParamsLinearSolverKSPType_palace, simulationPalaceSettings.palaceParams["linearSolverKSPType"])
+                    self.form.simParamsLinearSolverTolerance_palace.setValue(simulationPalaceSettings.palaceParams["linearSolverTolerance"])
+                    self.form.simParamsLinearSolverMaximumIterationCount_palace.setValue(simulationPalaceSettings.palaceParams["linearSolverMaxIterationCount"])
+                    self.form.simParamsLinearSolverOrder_palace.setValue(simulationPalaceSettings.palaceParams["solverOrder"])
+                    self.guiHelpers.setComboboxItem(self.form.simParamsSolverDevice_palace, simulationPalaceSettings.palaceParams["solverDevice"])
                 except:
                     pass
 
