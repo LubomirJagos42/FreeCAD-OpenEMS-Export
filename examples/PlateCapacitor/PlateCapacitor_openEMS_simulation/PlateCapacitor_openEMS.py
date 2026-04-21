@@ -169,9 +169,9 @@ portNamesAndNumbersList = {}
 ## PORT - port - Port
 portStart = [ -0.25, -0.25, -0.5 ]
 portStop  = [ 0.25, 0.25, 0.5 ]
-portR = inf
+portR = 50.0
 portUnits = 1
-portExcitationAmplitude = 1.0
+portExcitationAmplitude = 10.0
 portDirection = 'z'
 port[1] = FDTD.AddLumpedPort(port_nr=1, R=portR*portUnits, start=portStart, stop=portStop, p_dir=portDirection, priority=10000, excite=1.0*portExcitationAmplitude)
 portNamesAndNumbersList["Port"] = 1;

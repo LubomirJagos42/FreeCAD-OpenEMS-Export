@@ -470,7 +470,7 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 						genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
 						if currSetting.infiniteResistance:
-							genScript += 'portR = inf\n'
+							genScript += 'portR = math.inf\n'
 						else:
 							genScript += 'portR = ' + str(currSetting.R) + '\n'
 
@@ -505,7 +505,7 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 						genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
 						if currSetting.infiniteResistance:
-							genScript += 'portR = inf\n'
+							genScript += 'portR = math.inf\n'
 						else:
 							genScript += 'portR = ' + str(currSetting.R) + '\n'
 
@@ -1502,6 +1502,15 @@ class PythonScriptLinesGenerator2(CommonScriptLinesGenerator):
 #######################################################################################################################################
 # MINIMAL GRIDLINES SPACING, removing gridlines which are closer as defined in GUI
 #######################################################################################################################################
+def removeMeshLines(meshLines, minDistance):
+	resultMesh = [meshLines[0]]
+
+	for val in meshLines[1:]:
+		if all(abs(val - f) >= minDistance for f in resultMesh):
+			resultMesh.append(val)
+
+	return np.array(resultMesh)
+
 mesh.x = openEMS_grid.GetLines("x", True)
 mesh.y = openEMS_grid.GetLines("y", True)
 mesh.z = openEMS_grid.GetLines("z", True)
@@ -1518,24 +1527,9 @@ mesh.x = np.unique(mesh.x)
 mesh.y = np.unique(mesh.y)
 mesh.z = np.unique(mesh.z)
 
-for k in range(len(mesh.x)-1):
-	if (not np.isinf(mesh.x[k]) and abs(mesh.x[k+1]-mesh.x[k]) <= {:.15f}):
-		print("Removing line at x: " + str(mesh.x[k+1]))
-		mesh.x[k+1] = np.inf
-
-for k in range(len(mesh.y)-1):
-	if (not np.isinf(mesh.y[k]) and abs(mesh.y[k+1]-mesh.y[k]) <= {:.15f}):
-		print("Removing line at y: " + str(mesh.y[k+1]))
-		mesh.y[k+1] = np.inf
-
-for k in range(len(mesh.z)-1):
-	if (not np.isinf(mesh.z[k]) and abs(mesh.z[k+1]-mesh.z[k]) <= {:.15f}):
-		print("Removing line at z: " + str(mesh.z[k+1]))
-		mesh.z[k+1] = np.inf
-
-mesh.x = mesh.x[~np.isinf(mesh.x)]
-mesh.y = mesh.y[~np.isinf(mesh.y)]
-mesh.z = mesh.z[~np.isinf(mesh.z)]
+mesh.x = removeMeshLines(mesh.x, {:.15f})
+mesh.y = removeMeshLines(mesh.y, {:.15f})
+mesh.z = removeMeshLines(mesh.z, {:.15f})
 
 openEMS_grid.AddLine('x', mesh.x)
 openEMS_grid.AddLine('y', mesh.y)
@@ -1563,7 +1557,8 @@ openEMS_grid.AddLine('z', mesh.z)\n""".format(minSpacingX, minSpacingY, minSpaci
 		if self.form.simParamsOverSampling.value() > 1:
 			genScript += ", OverSampling=simulation_oversampling"
 		genScript += ")\n"
-
+		
+		genScript += "parameterSet = CSX.GetParameterSet()\n"
 		genScript += "FDTD.SetCSX(CSX)\n"
 		genScript += "\n"
 		return genScript
