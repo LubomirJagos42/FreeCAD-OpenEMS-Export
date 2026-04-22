@@ -120,9 +120,10 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "\n"
 
 
-        genScript += "#\n"
-        genScript += "# Create continuous mesh, subtract objects between each other based on their priority and perform fragmentation, reassing internal gmsh tags to objects\n"
-        genScript += "#\n"
+        genScript += "##########################################################################################################\n"
+        genScript += "# Create continuous mesh, subtract objects between each other based on their priority and\n"
+        genScript += "# perform fragmentation, reassing internal gmsh tags to objects\n"
+        genScript += "##########################################################################################################\n"
         genScript += "gmsh.model.occ.synchronize()\n"
         genScript += "#mesherObj.cutVolumesInsideModel()\n"
         genScript += "mesherObj.cutOnlyVolumesInModelBetweenEachOther(allowSurfacesToBeCutted=True)\n"
@@ -131,6 +132,10 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "mesherObj.performFragmentationAndReassignTags()\n"
         genScript += "gmsh.model.occ.synchronize()\n"
         genScript += "gmsh.fltk.run()\n"
+        genScript += "\n"
+        genScript += "# this is auxiliary method since fragmentation seems to left some fragments in both objects when they are fragmented\n"
+        genScript += "# once when cutting and fragmentation will be done totaly right and tested this could be removed without any effect\n"
+        genScript += "mesherObj.removeDuplicateTagsInGeometryObjects()\n"
         genScript += "\n"
 
         genScript += self.getOrderedGridDefinitionsScriptLines(itemsByClassName.get("GridSettingsItem", None))
@@ -147,6 +152,19 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "mesherObj.createGroupsForObjectVolumesUsedInMaterials()\n"
         genScript += "mesherObj.createGroupsForObjectSurfacesUsedInBoundaryConditions()\n"
         genScript += "mesherObj.createGroupsForObjectSurfacesUsedInPort()\n"
+        genScript += "\n"
+        genScript += "## GOOD TO KNOW in case of error during palace simulation preparation in MFEM part:\n"
+        genScript += "#\tMFEM Warning: Non - positive attributes on the boundary!\n"
+        genScript += "#\t\t... in function: virtual void mfem::Mesh::SetAttributes(bool, bool)\n"
+        genScript += "#\t\t... in file: / opt / palace - build / extern / mfem / mesh / mesh.cpp: 1955\n"
+        genScript += "#\n"
+        genScript += "# EXAPLANATION:\n"
+        genScript += "#   You have surfaces without a physical group assigned:\n"
+        genScript += "#     When gmsh saves a mesh with physical groups defined, any surface NOT in a physical group gets attribute 0. Palace/MFEM then chokes on it.\n"
+        genScript += "#\n"
+        genScript += "#   Some surface in simulation object is not part of any group and therefore in MFEM it has tag 0 which causes error, check gmsh model if all surfaces are assigned to object.\n"
+        genScript += "#\n"
+        genScript += "mesherObj.createGroupsForUntaggedSurfacesAndVolumes()\n"
         genScript += "\n"
 
         genScript += "##########################################################################################################\n"
@@ -172,6 +190,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "\n"
         genScript += f"print('PASS - Mesh generated and saved as {simulationOutputMeshFile}')\n"
         genScript += "\n"
+
         genScript += "##########################################################################################################\n"
         genScript += "# Open generated msh file\n"
         genScript += "##########################################################################################################\n"
@@ -200,14 +219,17 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += 'simulationConfig["Boundaries"] = mesherObj.getAllBoundaryConditionsObjectForPalace()\n'
 
         #
-        #   Lumped port are used in:
-        #       - Driven - yes
-        #       - Eigenmode - TODO: Need to be tested!
+        #   Simulation types using to specify input/output ports:
+        #       - Eigenmode     - TODO: Need to be figured out!
+        #       - Driven        - LumpedPort
+        #       - Electrostatic - Terminal
+        #       - Magnetostatic - SurfaceCurrent
+        #       - ...
         #
-        #   For electrostatic or magnetostatic are used terminals or something else.
-        #
-        if simulationProblemType.lower() in ["magnetostatic", "electrostatic"]:
+        if simulationProblemType.lower() == "magnetostatic":
             genScript += 'simulationConfig["Boundaries"]["SurfaceCurrent"] = mesherObj.getAllSurfaceCurrentForPortObjectForPalace()\n'
+        elif simulationProblemType.lower() == "electrostatic":
+            genScript += 'simulationConfig["Boundaries"]["Terminal"] = mesherObj.getAllTerminalForPortObjectForPalace()\n'
         else:
             genScript += 'simulationConfig["Boundaries"]["LumpedPort"] = mesherObj.getAllLumpedPortObjectForPalace()\n'
 
@@ -540,7 +562,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                 #
 
         genScript += "\n"
-        genScript += "# Set background field automaticaly using internal field list created during mesh size definition\n"
+        genScript += "# Set background field automatically using internal field list created during mesh size definition\n"
         genScript += "mesherObj.setBackgroundMinFieldUsingAllDefinedFields()\n"
         genScript += "\n"
         genScript += "# Global limits - use if needed, SET OWN LIMITS!\n"
