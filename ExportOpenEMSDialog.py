@@ -292,6 +292,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.writeNf2ffButton.clicked.connect(self.writeNf2ffButtonClicked)	# Clicked on "Write NF2FF"
 		self.form.writeNf2ffEmergeButton.clicked.connect(self.writeNf2ffEmergeButtonClicked)				# Clicked on "Write NF2FF" for EMerge
 		self.form.writeFieldScriptEmergeButton.clicked.connect(self.writeFieldScriptEmergeButtonClicked)	# Clicked on "Write Field Display Script" for EMerge
+		self.form.writeNf2ffPalaceButton.clicked.connect(self.writeNf2ffPalaceButtonClicked)				# Clicked on "Write NF2FF" for Palace
 
 		#
 		# GRID
@@ -2002,6 +2003,14 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		return
 
+	def writeNf2ffPalaceButtonClicked(self):
+		self.scriptGenerator.writeNf2ffButtonClicked(self.simulationOutputDir)
+
+		# display message that script was generated
+		self.guiHelpers.displayMessage("Script to display far field generated.")
+
+		return
+
 	#########################################################################################################################################
 	#
 	#	GRID TAB HANDLERS, GRID SETTINGS
@@ -3099,6 +3108,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		if (operation in ["add", "remove", "update"]):
 			self.updateComboboxWithAllowedItems(self.form.portNf2ffEmergeObjectList, "BoundaryCondition", ["Absorbing"])
+			self.updateComboboxWithAllowedItems(self.form.portNf2ffPalaceObjectList, "BoundaryCondition", ["Absorbing"])
 
 	#########################################################################################################################################
 	#

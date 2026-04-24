@@ -110,7 +110,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None), outputDir)
         genScript += self.getBoundaryConditionObjectImportScriptLines(itemsByClassName.get("BoundaryConditionSettingsItem", None), outputDir)
 
-        genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None))
+        genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None), outputDir)
         genScript += "\n"
         #
         #   Port are added when geometry is created because they must be meshed but then there is also needed to create boundary condition for them
@@ -215,7 +215,10 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += '\n'
 
         genScript += 'simulationConfig["Domains"] = {}\n'
-        genScript += 'simulationConfig["Domains"]["Materials"] = mesherObj.getAllMaterialObjectForPalace()\n'
+        genScript += 'simulationConfig["Domains"]["Materials"] = []\n'
+        genScript += 'simulationConfig["Domains"]["Materials"].extend(mesherObj.getAllMaterialObjectForPalace())\n'
+        genScript += '\n'
+        genScript += 'simulationConfig["Boundaries"] = {}\t#definition is here just to be clear that this is dictionary\n'
         genScript += 'simulationConfig["Boundaries"] = mesherObj.getAllBoundaryConditionsObjectForPalace()\n'
 
         #
@@ -229,9 +232,11 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         if simulationProblemType.lower() == "magnetostatic":
             genScript += 'simulationConfig["Boundaries"]["SurfaceCurrent"] = mesherObj.getAllSurfaceCurrentForPortObjectForPalace()\n'
         elif simulationProblemType.lower() == "electrostatic":
-            genScript += 'simulationConfig["Boundaries"]["Terminal"] = mesherObj.getAllTerminalForPortObjectForPalace()\n'
+            genScript += 'simulationConfig["Boundaries"]["Terminal"] = []\n'
+            genScript += 'simulationConfig["Boundaries"]["Terminal"].extend(mesherObj.getAllTerminalForPortObjectForPalace())\n'
         else:
-            genScript += 'simulationConfig["Boundaries"]["LumpedPort"] = mesherObj.getAllLumpedPortObjectForPalace()\n'
+            genScript += 'simulationConfig["Boundaries"]["LumpedPort"] = []\n'
+            genScript += 'simulationConfig["Boundaries"]["LumpedPort"].extend(mesherObj.getAllLumpedPortObjectForPalace())\n'
 
         genScript += '\n'
         genScript += '#\n'
@@ -261,6 +266,19 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         elif simulationProblemType.lower() == "driven":
             genScript += self.getExcitationScriptLines(definitionsOnly=False)
             genScript += '\n'
+
+            if self.form.simParamsUseNf2ff_palace.isChecked():
+                boundaryConditionName = self.form.portNf2ffPalaceObjectList.currentText()   #boundary name is like 'Absorbing - airbox'
+                boundaryConditionName = boundaryConditionName.split("-")[1].strip()
+
+                NSample = self.form.boundaryNf2ffPalaceNSample.value()
+                theta = self.form.boundaryNf2ffPalaceTheta.value()
+                phi = self.form.boundaryNf2ffPalacePhi.value()
+
+                genScript += 'simulationConfig["Boundaries"]["Postprocessing"] = {}\n'
+                genScript += f'simulationConfig["Boundaries"]["Postprocessing"]["FarField"] = {{"Attributes": [mesherObj.getGmshGroupId("{boundaryConditionName}_2D")], "NSample": {NSample}, "ThetaPhis": [[{theta}, {phi}]]}}\n'
+                genScript += '\n'
+
         else:
             genScript += f"#ERROR - simulation type '{simulationProblemType}' IS UNKNOWN!!!\n"
             genScript += "\n"
@@ -542,13 +560,13 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     continue
 
                 if gridSettingsInst.femMesh['femUseMaxElementSize'] == True:
-                    genScript += f"#TODO: {FreeCADObjectName} - femUseMaxElementSize not implemented yet!\n"
+                    genScript += f"mesherObj.setSize(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femMaxElementSize']})\n"
                 if gridSettingsInst.femMesh['femUseMaxBoundarySize'] == True:
-                    genScript += f"#TODO: {FreeCADObjectName} - femUseMaxBoundarySize not implemented yet!\n"
+                    genScript += f"mesherObj.setSizeBoundary(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femMaxBoundarySize']})\n"
                 if gridSettingsInst.femMesh['femUseMaxFaceSize'] == True:
                     genScript += f"mesherObj.setSizeOnFace(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femMaxFaceSize']})\n"
                 if gridSettingsInst.femMesh['femUseMaxDomainSize'] == True:
-                    genScript += f"#TODO: {FreeCADObjectName} - femUseMaxDomainSize not implemented yet!\n"
+                    genScript += f"mesherObj.setSizeForVolume(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femMaxDomainSize']})\n"
 
                 #due backward compatibility older files doesn't have these params when loaded so try/except use to continue program
                 try:
@@ -572,7 +590,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
 
         return genScript
 
-    def getPortDefinitionsScriptLines(self, items):
+    def getPortDefinitionsScriptLines(self, items, outputDir=None):
         genScript = ""
         if not items:
             return genScript
@@ -586,6 +604,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "#######################################################################################################################################\n"
         genScript += "# PORTS\n"
         genScript += "#######################################################################################################################################\n"
+        genScript += "port = []\n"
         genScript += "portNamesAndNumbersList = {}\n"
         genScript += "\n"
 
@@ -626,7 +645,6 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                         genScript += f"th = abs(portStart[2] - portStop[2])\n"
 
                         if bbCoords.XLength == 0 or bbCoords.YLength == 0 or bbCoords.ZLength == 0:
-
                             #
                             #   Create lumped port script line based on its orientation for now supports X,Y,Z axis
                             #
@@ -636,12 +654,35 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                                 genScript += f"tags = mesherObj.gmshCreatePlate(origin=portStart, u=[w,0,0], v=[0,0,th])\n"
                             elif bbCoords.ZLength == 0:
                                 genScript += f"tags = mesherObj.gmshCreatePlate(origin=portStart, u=[w,0,0], v=[0,h,0])\n"
-                        else:
-                            genScript += f"port[{str(genScriptPortCount)}]['object'] = em.geo.Box(width=w, height=h, depth=th, position=tuple(portStart))\n"
-                            #TODO: Add obtain box surface tags
 
-                        genScript += "# add created plate into gmsh model\n"
-                        genScript += f"mesherObj.addGmshObjectUsingDimtags('{obj.Label}', [(2, k) for k in tags], priority={priorityIndex}, type='surface')\n\n"
+                            genScript += "# add created plate into gmsh model\n"
+                            genScript += f"mesherObj.addGmshObjectUsingDimtags('{obj.Label}', [(2, k) for k in tags], priority={priorityIndex}, type='surface')\n\n"
+                        else:
+                            #
+                            #   Port object is not plane polygon therefore use STEP file to import it and later use its surface
+                            #
+                            currDir, baseName = self.getCurrDir()
+                            stepModelFileName = childName + "_gen_model.step"
+                            genScript += f"mesherObj.addStepfile('{childName}', os.path.join(currDir, 'stepfiles', '{stepModelFileName}'), priority={priorityIndex})\n"
+
+                            # output directory path construction, if there is no parameter for output dir then output is in current freecad file dir
+                            if (not outputDir is None):
+                                stepfileOutputDir = os.path.join(outputDir, 'stepfiles')
+                                try:
+                                    os.makedirs(stepfileOutputDir)
+                                except:
+                                    pass
+                                exportFileName = os.path.join(stepfileOutputDir, stepModelFileName)
+                            else:
+                                stepfileOutputDir = os.path.join(currDir, 'stepfiles')
+                                try:
+                                    os.makedirs(stepfileOutputDir)
+                                except:
+                                    pass
+                                exportFileName = os.path.join(stepfileOutputDir, stepModelFileName)
+
+                            self.cadHelpers.exportSTEP([obj], exportFileName)
+                            print("Material object exported as STEP into: " + stepModelFileName)
 
                         genScript += f"mesherObj.addPort("
                         genScript += f"objectName='{obj.Label}', "
@@ -696,10 +737,19 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     genScript += 'simulationConfig["Solver"]["Driven"] = {}\n'
                     genScript += f'simulationConfig["Solver"]["Driven"]["MinFreq"] = {str(currSetting.sweep["fmin"])} * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
                     genScript += f'simulationConfig["Solver"]["Driven"]["MaxFreq"] = {str(currSetting.sweep["fmax"])} * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
-                    genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = ({str(currSetting.sweep["fmax"])} - {str(currSetting.sweep["fmin"])}) * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9 / {str(currSetting.sweep["npoints"])}\n'
+
+                    if currSetting.sweep["fmax"] - currSetting.sweep["fmin"] > 0:
+                        genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = ({str(currSetting.sweep["fmax"])} - {str(currSetting.sweep["fmin"])}) * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9 / {str(currSetting.sweep["npoints"])}\n'
+                    else:
+                        genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = 1e-9\n'
+
                     genScript += f'simulationConfig["Solver"]["Driven"]["SaveStep"] = 1\n'
                     genScript += f'simulationConfig["Solver"]["Driven"]["AdaptiveTol"] = 1e-3\n'
-                    pass
+
+                    if self.form.simParamsUseNf2ff_palace.isChecked():
+                        genScript += f'simulationConfig["Solver"]["Driven"]["Samples"] = []\n'
+                        genScript += f'simulationConfig["Solver"]["Driven"]["Samples"].append({{"Type": "Point", "Freq": [{self.form.boundaryNf2ffPalaceFreq.value()/1e3}], "SaveStep": 1}})\n'
+
                 else:
                     genScript += f"# ERROR: Excitation type \"{currSetting.getType()}\" not implemented in script generator!\n"
 
@@ -785,6 +835,46 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         print('Draw result from simulation file written into: ' + fileName)
         self.guiHelpers.displayMessage('Draw result from simulation file written into: ' + fileName, forceModal=False)
 
+    #
+    #	Write NF2FF Button clicked, generate script to display far field pattern
+    #
+    def writeNf2ffButtonClicked(self, outputDir=None):
+        currDir, nameBase = self.getCurrDir()
+
+        genScript = ""
+        genScript += "# Plot far field for structure.\n"
+        genScript += "#\n"
+        genScript += "import os\n"
+        genScript += "from basicpalacesolverhelperpackage import PlotDiagramUtils\n"
+        genScript += "\n"
+
+        genScript += "currDir = os.getcwd()\n"
+        genScript += "print(currDir)\n"
+        genScript += "\n"
+
+        genScript += "#######################################################################################################################################\n"
+        genScript += "# Farfield plot and 3D gain generated\n"
+        genScript += "#######################################################################################################################################\n"
+        genScript += "plotter = PlotDiagramUtils()\n"
+        genScript += f'plotter.readFromFileComputeDirectivityRadiationDiagram("{self.form.simParamsOutputDirectory_palace.text()}/farfield-rE.csv", outputfile="{nameBase}_farfield.vtk")\n'
+        genScript += "\n"
+
+        #
+        # WRITE OpenEMS Script file into current dir
+        #
+        currDir, nameBase = self.getCurrDir()
+
+        self.createOuputDir(outputDir)
+        if (not outputDir is None):
+            fileName = f"{outputDir}/{nameBase}_draw_NF2FF.py"
+        else:
+            fileName = f"{currDir}/{nameBase}_draw_NF2FF.py"
+
+        f = open(fileName, "w", encoding='utf-8')
+        f.write(genScript)
+        f.close()
+        print('Script to display far field written into: ' + fileName)
+        self.guiHelpers.displayMessage('Script to display far field written into: ' + fileName, forceModal=False)
 
 '''
 Notes TODO 20Apr2026:

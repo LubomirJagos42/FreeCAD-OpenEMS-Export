@@ -376,6 +376,12 @@ class IniFile0v1:
         simulationPalaceSettings.palaceParams["linearSolverMaxIterationCount"] = self.form.simParamsLinearSolverMaximumIterationCount_palace.value()
         simulationPalaceSettings.palaceParams["solverOrder"] = self.form.simParamsLinearSolverOrder_palace.value()
         simulationPalaceSettings.palaceParams["solverDevice"] = self.form.simParamsSolverDevice_palace.currentText()
+        simulationPalaceSettings.palaceParams['useNf2ff'] = self.form.simParamsUseNf2ff_palace.isChecked()
+        simulationPalaceSettings.palaceParams["nf2ffBoundaryConditionName"] = self.form.portNf2ffPalaceObjectList.currentText()
+        simulationPalaceSettings.palaceParams["nf2ffFreqMHz"] = self.form.boundaryNf2ffPalaceFreq.value()
+        simulationPalaceSettings.palaceParams["nf2ffTheta"] = self.form.boundaryNf2ffPalaceTheta.value()
+        simulationPalaceSettings.palaceParams["nf2ffPhi"] = self.form.boundaryNf2ffPalacePhi.value()
+        simulationPalaceSettings.palaceParams["nf2ffNSample"] = self.form.boundaryNf2ffPalaceNSample.value()
 
         #
         #   Write parameters frp, above into JSON
@@ -901,6 +907,13 @@ class IniFile0v1:
                     self.form.simParamsLinearSolverMaximumIterationCount_palace.setValue(simulationPalaceSettings.palaceParams["linearSolverMaxIterationCount"])
                     self.form.simParamsLinearSolverOrder_palace.setValue(simulationPalaceSettings.palaceParams["solverOrder"])
                     self.guiHelpers.setComboboxItem(self.form.simParamsSolverDevice_palace, simulationPalaceSettings.palaceParams["solverDevice"])
+
+                    self.form.simParamsUseNf2ff_palace.setChecked(simulationPalaceSettings.palaceParams['useNf2ff'])
+                    self.guiHelpers.setComboboxItem(self.form.portNf2ffPalaceObjectList, simulationPalaceSettings.palaceParams["nf2ffBoundaryConditionName"])
+                    self.form.boundaryNf2ffPalaceFreq.setValue(simulationPalaceSettings.palaceParams["nf2ffFreqMHz"])
+                    self.form.boundaryNf2ffPalaceTheta.setValue(simulationPalaceSettings.palaceParams["nf2ffTheta"])
+                    self.form.boundaryNf2ffPalacePhi.setValue(simulationPalaceSettings.palaceParams["nf2ffPhi"])
+                    self.form.boundaryNf2ffPalaceNSample.setValue(simulationPalaceSettings.palaceParams["nf2ffNSample"])
                 except:
                     pass
 
