@@ -111,7 +111,6 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += self.getBoundaryConditionObjectImportScriptLines(itemsByClassName.get("BoundaryConditionSettingsItem", None), outputDir)
 
         genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None), outputDir)
-        genScript += "\n"
         #
         #   Port are added when geometry is created because they must be meshed but then there is also needed to create boundary condition for them
         #
@@ -119,6 +118,8 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
             genScript += portBcScriptLine
         genScript += "\n"
 
+        genScript += self.getLumpedPartDefinitionsScriptLines(itemsByClassName.get("LumpedPartSettingsItem", None), outputDir)
+        genScript += "\n"
 
         genScript += "##########################################################################################################\n"
         genScript += "# Create continuous mesh, subtract objects between each other based on their priority and\n"
@@ -133,8 +134,8 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "gmsh.model.occ.synchronize()\n"
         genScript += "gmsh.fltk.run()\n"
         genScript += "\n"
-        genScript += "# this is auxiliary method since fragmentation seems to left some fragments in both objects when they are fragmented\n"
-        genScript += "# once when cutting and fragmentation will be done totaly right and tested this could be removed without any effect\n"
+        genScript += "# this is auxiliary method since fragmentation seems to leave some fragments in both objects when they are fragmented\n"
+        genScript += "# once when cutting and fragmentation will be done totally right and tested this could be removed without any effect\n"
         genScript += "mesherObj.removeDuplicateTagsInGeometryObjects()\n"
         genScript += "\n"
 
@@ -638,13 +639,17 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     # PORT openEMS GENERATION INTO VARIABLE
                     #
                     if (currSetting.getType() == 'lumped'):
-                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
-
-                        genScript += f"w = abs(portStart[0] - portStop[0])\n"
-                        genScript += f"h = abs(portStart[1] - portStop[1])\n"
-                        genScript += f"th = abs(portStart[2] - portStop[2])\n"
 
                         if bbCoords.XLength == 0 or bbCoords.YLength == 0 or bbCoords.ZLength == 0:
+                            #
+                            #   Port is 2D, therefore it's generated as plate
+                            #
+                            genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
+
+                            genScript += f"w = abs(portStart[0] - portStop[0])\n"
+                            genScript += f"h = abs(portStart[1] - portStop[1])\n"
+                            genScript += f"th = abs(portStart[2] - portStop[2])\n"
+
                             #
                             #   Create lumped port script line based on its orientation for now supports X,Y,Z axis
                             #
@@ -656,7 +661,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                                 genScript += f"tags = mesherObj.gmshCreatePlate(origin=portStart, u=[w,0,0], v=[0,h,0])\n"
 
                             genScript += "# add created plate into gmsh model\n"
-                            genScript += f"mesherObj.addGmshObjectUsingDimtags('{obj.Label}', [(2, k) for k in tags], priority={priorityIndex}, type='surface')\n\n"
+                            genScript += f"mesherObj.addGmshObjectUsingDimtags('{childName}', [(2, k) for k in tags], priority={priorityIndex}, type='surface')\n\n"
                         else:
                             #
                             #   Port object is not plane polygon therefore use STEP file to import it and later use its surface
@@ -682,10 +687,16 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                                 exportFileName = os.path.join(stepfileOutputDir, stepModelFileName)
 
                             self.cadHelpers.exportSTEP([obj], exportFileName)
-                            print("Material object exported as STEP into: " + stepModelFileName)
+                            print("Port object exported as STEP into: " + stepModelFileName)
+
+                        #
+                        #   Create port definition
+                        #
+                        internalPortName = currSetting.name + " - " + obj.Label
+                        self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
 
                         genScript += f"mesherObj.addPort("
-                        genScript += f"objectName='{obj.Label}', "
+                        genScript += f"name='{internalPortName}', "
                         genScript += f"direction='{currSetting.direction}', "
                         genScript += f"R={str(currSetting.R)}*{str(currSetting.getRUnits())}, "
                         genScript += f"excitation={str(currSetting.excitationAmplitude)}, "
@@ -693,9 +704,9 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                         genScript += f"index={genScriptPortCount}"
                         genScript += f")\n"
 
-                        internalPortName = currSetting.name + " - " + obj.Label
-                        self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
-                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount}\n'
+                        genScript += f"mesherObj.addObjectToPort('{internalPortName}', '{obj.Label}')\n"
+
+                        genScript += f'portNamesAndNumbersList["{internalPortName}"] = {genScriptPortCount}\n'
                         genScriptPortCount += 1
 
                     #
@@ -705,6 +716,79 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     else:
                         genScript += '# Unknown port type. Nothing was generated.\n'
                         genScript += 'raise BaseException("Unknown port type. Nothing was generated.")\n'
+
+            genScript += "\n"
+
+        return genScript
+
+    def getLumpedPartDefinitionsScriptLines(self, items, outputDir):
+        genScript = ""
+        if not items:
+            return genScript
+
+        refUnit = self.getUnitLengthFromUI_m()  # Coordinates need to be given in drawing units
+        sf = self.getFreeCADUnitLength_m() / refUnit  # scaling factor for FreeCAD units to drawing units
+
+        genScript += "#######################################################################################################################################\n"
+        genScript += "# LUMPED PART\n"
+        genScript += "#######################################################################################################################################\n"
+
+        for [item, currentSetting] in items:
+            genScript += "# LUMPED PARTS " + currentSetting.getName() + "\n"
+
+            # traverse through all children item for this particular lumped part settings
+            objs = self.cadHelpers.getObjects()
+            for k in range(item.childCount()):
+                childName = item.child(k).text(0)
+                print("#LUMPED PART " + currentSetting.getType())
+
+                lumpedPartParams = f"'{currentSetting.getName()}'"
+                if ('r' in currentSetting.getType().lower()):
+                    lumpedPartParams += f", Rs={currentSetting.getR()}"
+                if ('l' in currentSetting.getType().lower()):
+                    lumpedPartParams += f", Ls={currentSetting.getL()}"
+                if ('c' in currentSetting.getType().lower()):
+                    lumpedPartParams += f", Cs={currentSetting.getC()}"
+
+                genScript += f"mesherObj.addLumpedPart({lumpedPartParams})\n"
+
+                freecadObjects = [i for i in objs if (i.Label) == childName]
+                for obj in freecadObjects:
+                    # obj = FreeCAD Object class
+
+                    #
+                    #	getting item priority
+                    #
+                    priorityItemName = item.parent().text(0) + ", " + item.text(0) + ", " + childName
+                    priorityIndex = self.getItemPriority(priorityItemName)
+
+                    currDir, baseName = self.getCurrDir()
+                    stepModelFileName = childName + "_gen_model.step"
+
+                    #
+                    #   Export STEP file for LumpedPart
+                    #       - output directory path construction, if there is no parameter for output dir then output is in current freecad file dir
+                    #
+                    if (not outputDir is None):
+                        stepfileOutputDir = os.path.join(outputDir, 'stepfiles')
+                        try:
+                            os.makedirs(stepfileOutputDir)
+                        except:
+                            pass
+                        exportFileName = os.path.join(stepfileOutputDir, stepModelFileName)
+                    else:
+                        stepfileOutputDir = os.path.join(currDir, 'stepfiles')
+                        try:
+                            os.makedirs(stepfileOutputDir)
+                        except:
+                            pass
+                        exportFileName = os.path.join(stepfileOutputDir, stepModelFileName)
+
+                    self.cadHelpers.exportSTEP([obj], exportFileName)
+                    print("LumpedPart object exported as STEP into: " + stepModelFileName)
+
+                    genScript += f"mesherObj.addStepfile('{childName}', os.path.join(currDir, 'stepfiles', '{stepModelFileName}'), priority={priorityIndex})\n"
+                    genScript += f"mesherObj.addObjectToLumpedPart('{currentSetting.getName()}', '{childName}')\n"
 
             genScript += "\n"
 
@@ -880,10 +964,10 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
 Notes TODO 20Apr2026:
     + DONE -> FreeCAD addon not saving and loading palace simulation params tab - need to be added
     + creating mesh named group based on what is used, cannot use same elements in multiple groups this cause palace solver error that element in multiple attributes
-        - this makes question how to properly create named group for materials??? probably just 3D mesh for them since if material is defined
+        + this makes question how to properly create named group for materials??? probably just 3D mesh for them since if material is defined
           on 2D surface it is specified as boundary
-        - for boundary generate just 2D surface mesh
-        - whole strategy of import STEP files and define mesh on them should be rethinked and not to mesh everything just needed objects
+        + for boundary generate just 2D surface mesh
+        + whole strategy of import STEP files and define mesh on them should be re-think and not to mesh everything just needed objects
     + for Magnetostatic solver SuperLU crash with some error of matrix with zeros or whatever but AMS solver run OK
     + port priority is wrong, take it from FreeCAD widget!
     - forbit multiple assignment same object to multiple material
