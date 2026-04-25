@@ -361,6 +361,9 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     #using predefined library with materials
                     genScript += f"mesherObj.addMaterial('{currSetting.getName()}', conductivity=1e30)\n"
 
+                elif (currSetting.type == 'conducting sheet'):
+                    genScript += f"mesherObj.addConductivity('{currSetting.getName()}', thickness={str(currSetting.constants['conductingSheetThicknessValue'])}*{str(currSetting.constants['conductingSheetThicknessUnits'])}, conductivity={str(currSetting.constants['conductingSheetConductivity'])}, permeability={str(currSetting.constants['conductingSheetPermeability'])})\n"
+
                 elif (currSetting.type == 'userdefined'):
 
                     materialArgumentsList = {}
@@ -409,7 +412,10 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     stepModelFileName = childName + "_gen_model.step"
 
                     genScript += f"mesherObj.addStepfile('{childName}', os.path.join(currDir, 'stepfiles', '{stepModelFileName}'), priority={objModelPriority})\n"
-                    genScript += f"mesherObj.addObjectToMaterial('{currSetting.getName()}', '{childName}')\n"
+                    if currSetting.type == 'conducting sheet':
+                        genScript += f"mesherObj.addObjectToConductivity('{currSetting.getName()}', '{childName}')\n"
+                    else:
+                        genScript += f"mesherObj.addObjectToMaterial('{currSetting.getName()}', '{childName}')\n"
 
                     #output directory path construction, if there is no parameter for output dir then output is in current freecad file dir
                     if (not outputDir is None):
@@ -825,7 +831,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     if currSetting.sweep["fmax"] - currSetting.sweep["fmin"] > 0:
                         genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = ({str(currSetting.sweep["fmax"])} - {str(currSetting.sweep["fmin"])}) * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9 / {str(currSetting.sweep["npoints"])}\n'
                     else:
-                        genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = 1e-9\n'
+                        genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = 0.1\n'
 
                     genScript += f'simulationConfig["Solver"]["Driven"]["SaveStep"] = 1\n'
                     genScript += f'simulationConfig["Solver"]["Driven"]["AdaptiveTol"] = 1e-3\n'
@@ -972,6 +978,10 @@ Notes TODO 20Apr2026:
     + port priority is wrong, take it from FreeCAD widget!
     - forbit multiple assignment same object to multiple material
     - forbit multiple assignment same object to multiple boundaries
+    - grid mesh size not working properly
+    - grid custom mesh in generated code
+    - add custom code snippet into lumped part, this will enable to add conductivity boundary into result code since lumped part is translated as surface
+        - or implement Material "conducting sheet" to generate palace simulationConfig["Boundaries"]["Conductivity"] = [{"Attributes": [...], "Conductivity": ..., "Permitivity": ..., "Thickness": ...}]    
     - ...
 '''
 

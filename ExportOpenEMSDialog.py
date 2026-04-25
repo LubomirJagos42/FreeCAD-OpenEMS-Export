@@ -543,6 +543,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.form.materialKappaNumberInput.setEnabled(True)
 				self.form.materialTanDeltaNumberInput.setEnabled(False)
 
+			self.form.materialConductingSheetPermeability.setEnabled(False)
+
 			self.form.lumpedPortDirectionCustomGroupBox.setEnabled(False)
 
 			self.form.simulationParamsTab_tabWidget.setCurrentIndex(0)
@@ -570,6 +572,19 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			probeTabIndex = self.form.openEMSTab.indexOf(self.form.probeSettingsTab)
 			self.form.openEMSTab.setTabText(probeTabIndex, "Probe Settings")
 			self.form.probeSettingsTab.setEnabled(True)
+
+			#
+			# Display lumped part settings tab, this is applicable tab just for openEMS and palace
+			#
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "Lumped Part", True)
+			lumpedPartTabIndex = self.form.openEMSTab.indexOf(self.form.lumpedPartSettingsTab)
+			self.form.openEMSTab.setTabText(lumpedPartTabIndex, "Lumped Part")
+			self.form.lumpedPartSettingsTab.setEnabled(True)
+			#
+			# Display boundary conditions in right tree widget, applicable for FEM EMerge only
+			#
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "LumpedPart", True)
+			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "LumpedPart", True)
 
 			# post-processing tab nf2ff tab set
 			self.form.nf2ffProcessingTab.setCurrentIndex(0)
@@ -600,6 +615,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			if (self.form.materialUserDefinedRadioButton.isChecked()):
 				self.form.materialKappaNumberInput.setEnabled(False)
 				self.form.materialTanDeltaNumberInput.setEnabled(True)
+
+			if tempSolverType == "emerge":
+				self.form.materialConductingSheetPermeability.setEnabled(False)
+			elif tempSolverType == "palace" and self.form.materialConductingSheetRadioButton.isChecked():
+				self.form.materialConductingSheetPermeability.setEnabled(True)
 
 			self.form.lumpedPortDirectionCustomGroupBox.setEnabled(True)
 
@@ -636,6 +656,37 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			probeTabIndex = self.form.openEMSTab.indexOf(self.form.probeSettingsTab)
 			self.form.openEMSTab.setTabText(probeTabIndex, "")
 			self.form.probeSettingsTab.setEnabled(False)
+
+			if tempSolverType == "emerge":
+
+				#
+				# Hide lumped part settings tab, not applicable for EMerge
+				#
+				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "Lumped Part", False)
+				lumpedPartTabIndex = self.form.openEMSTab.indexOf(self.form.lumpedPartSettingsTab)
+				self.form.openEMSTab.setTabText(lumpedPartTabIndex, "")
+				self.form.lumpedPartSettingsTab.setEnabled(False)
+
+				#
+				# Hide lumped part in right tree widget, not applicable for EMerge
+				#
+				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "LumpedPart", False)
+				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "LumpedPart", False)
+
+			elif tempSolverType == "palace":
+				#
+				# Display lumped part settings tab, this is applicable tab just for openEMS and palace
+				#
+				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "Lumped Part", True)
+				lumpedPartTabIndex = self.form.openEMSTab.indexOf(self.form.lumpedPartSettingsTab)
+				self.form.openEMSTab.setTabText(lumpedPartTabIndex, "Lumped Part")
+				self.form.lumpedPartSettingsTab.setEnabled(True)
+
+				#
+				# Display boundary conditions in right tree widget, applicable for openEMS, palace
+				#
+				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "LumpedPart", True)
+				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "LumpedPart", True)
 
 			# post-processing tab nf2ff tab set
 			self.form.nf2ffProcessingTab.setCurrentIndex(1)
@@ -1487,7 +1538,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			if (self.form.comboBox_solverType.currentText().lower().find("openems") > -1):
 				self.form.materialKappaNumberInput.setEnabled(True)
 				self.form.materialTanDeltaNumberInput.setEnabled(False)
-			if (self.form.comboBox_solverType.currentText().lower().find("emerge") > -1):
+			if (self.form.comboBox_solverType.currentText().lower().find("emerge") > -1 or self.form.comboBox_solverType.currentText().lower().find("palace") > -1):
 				self.form.materialKappaNumberInput.setEnabled(False)
 				self.form.materialTanDeltaNumberInput.setEnabled(True)
 		else:
@@ -1502,10 +1553,20 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.materialConductingSheetThickness.setEnabled(True)
 			self.form.materialConductingSheetUnits.setEnabled(True)
 			self.form.materialConductingSheetConductivity.setEnabled(True)
+
+			#
+			#	conducting sheet permeability parameter is just for palace solver
+			#
+			if self.form.comboBox_solverType.currentText().lower().find("palace") > -1:
+				self.form.materialConductingSheetPermeability.setEnabled(True)
+			else:
+				self.form.materialConductingSheetPermeability.setEnabled(False)
+
 		else:
 			self.form.materialConductingSheetThickness.setEnabled(False)
 			self.form.materialConductingSheetUnits.setEnabled(False)
 			self.form.materialConductingSheetConductivity.setEnabled(False)
+			self.form.materialConductingSheetPermeability.setEnabled(False)
 
 	def applyObjectAssignmentFilter(self):
 		print("Filter left column")
@@ -1623,18 +1684,32 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				isObjAlreadyInCategory = False
 				itemWithSameName = self.form.objectAssignmentRightTreeWidget.findItems(leftItem.text(0), QtCore.Qt.MatchFixedString | QtCore.Qt.MatchFlag.MatchRecursive)
 				for item in itemWithSameName:
-					#there must be check if item has parent, if pareent is None it means it's category name and categories ALWAYS HAVE SUBCATEGORIES
+					#there must be check if item has parent, if parent is None it means it's category name and categories ALWAYS HAVE SUBCATEGORIES
 					#case scenario:
 					#	- item freecad obj is named excitation
 					#	- there is excitation category
-					#	- in itemWithSameName Excitation category is inclucded so next condition filter it away
+					#	- in itemWithSameName Excitation category is included so next condition filter it away
 					#
 					if (item.parent() != None and item.parent() == rightItem):
 						print(f"Found parent {item.parent().text(0)} item {item.text(0)}")
 						isObjAlreadyInCategory = True
 
+				#
+				#	Check if object already exists in same category
+				#		- same object can't be assigned twice in same material group
+				#
 				if (isObjAlreadyInCategory):
 					self.guiHelpers.displayMessage(f"Object {leftItem.text(0)} already exists in category {rightItem.text(0)}")
+					continue
+
+				#
+				#	Based on solver check if object is already assigned in other groups which can cause duplicity and therefore error.
+				#		- for palace lumped part, boundaries, ports and material conducting sheets are all using boundary condition inside solver therefore
+				#		  object can be only in one of these categories at same time
+				#
+				conflictingGroupList = self.checkTreeWidgetForDuplicityBasedOnSolverTypeOnAddingItem(leftItem.text(0), rightItem.parent().text(0), rightItem.text(0))
+				if len(conflictingGroupList) > 0:
+					self.guiHelpers.displayMessage(f"Object {leftItem.text(0)} already exists in some conflicting categories:\n{conflictingGroupList}")
 					continue
 
 				#
@@ -1786,6 +1861,178 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			iterator += 1
 		return isDuplicityName
 
+	def searchObjectNameInAllCategoriesGroups(self, objectName: str, searchCategoriesList: list[str]) -> list[tuple[str, str]]:
+		"""
+		Search for object name occuerence in specified categories.
+		:param objectName:
+		:return: list of tuples (categoryName, groupName)
+		"""
+		occurenceList:list[tuple[str, str]] = []
+
+		# CHECK FOR DUPLICATES OF object in category where object is added
+		itemWithSameName = self.form.objectAssignmentRightTreeWidget.findItems(objectName, QtCore.Qt.MatchFixedString | QtCore.Qt.MatchFlag.MatchRecursive)
+		for item in itemWithSameName:
+			if (item.parent() != None and item.parent().parent().text(0) in searchCategoriesList):
+				occurenceList.append((item.parent().parent().text(0), item.parent().text(0)))
+
+		return occurenceList
+
+	def checkConflictingMaterialDuplicity(self, sourceCategoryName: str, sourceGroupName: str, targetCategoryName: str, targetGroupName: str):
+		"""
+		Check whether groups are in conflict, this is for Material, since "conducting sheet" is using boundary condition and other materials are
+		not using boundary condition, they are defined on mesh in volume.
+		:param sourceCategoryName:
+		:param sourceGroupName:
+		:param targetCategoryName:
+		:param targetGroupName:
+		:return:
+		"""
+
+		if self.getSolverType().lower().find("emerge") > -1 or self.getSolverType().lower().find("palace") > -1:
+			if sourceCategoryName == "Material":
+				simulationCategoryGroup = self.guiHelpers.getMaterialGroupObjectAssignmentTreeItem(sourceGroupName)
+				conflictingMaterialGroupSettings = simulationCategoryGroup.data(0, QtCore.Qt.UserRole)
+
+				if targetCategoryName == "Material":
+					simulationCategoryGroup = self.guiHelpers.getMaterialGroupObjectAssignmentTreeItem(targetGroupName)
+					targetMaterialGroupSettings = simulationCategoryGroup.data(0, QtCore.Qt.UserRole)
+
+					#
+					#	This case adding object to material when conflicting object is already in material group but object which
+					#	is going to be added or existing object is conducting sheet and other will be normal 3D volume, this is
+					#	not conflict as material defined on volume is not using boundary condition.
+					#
+					conductingSheetMaterialGroupCount = 0
+					conductingSheetMaterialGroupCount += int(targetMaterialGroupSettings.type == "conducting sheet")
+					conductingSheetMaterialGroupCount += int(conflictingMaterialGroupSettings.type == "conducting sheet")
+					if conductingSheetMaterialGroupCount == 1:
+						return True
+				else:
+					#
+					#	I duplicate material object is not type of conducting sheet it means it's not error as normal material is defined
+					#	on volume and is not using boundary conditions.
+					#
+					if conflictingMaterialGroupSettings.type != "conducting sheet":
+						return True
+			else:
+				#
+				#	Object is going to be moved to material group. If target material group is not using boundary conditions
+				#	in solver then there is no conflict.
+				#
+				if targetCategoryName == "Material":
+					simulationCategoryGroup = self.guiHelpers.getMaterialGroupObjectAssignmentTreeItem(targetGroupName)
+					targetMaterialGroupSettings = simulationCategoryGroup.data(0, QtCore.Qt.UserRole)
+					if targetMaterialGroupSettings.type != "conducting sheet":
+						return True
+
+		return False
+
+	def checkTreeWidgetForDuplicityBasedOnSolverTypeOnAddingItem(self, objectName: str, targetCategoryName: str, targetGroupName: str) -> list[tuple[str, str]]:
+		"""
+		Check if object is already assigned to some category and if added to category will cause error due duplicity. For FEM solvers (EMerge, Palace)
+		more categories are generated as boundaries and boundary can have just one definition i.e. same object cannot be used for port and boundary condition
+		category.
+		:return:
+		"""
+		conflictingGroupList: list[tuple[str, str]] = []
+
+		if self.getSolverType().lower().find("openems") > -1:
+			# No check for conflicting categories for openEMS as for this there is priority system and object with higher priority
+			# defines final result which properties are assigned to nodes after meshing.
+			pass
+
+		elif self.getSolverType().lower().find("palace") > -1:
+			noDuplicateCategoriesList = ["LumpedPart", "Port", "BoundaryCondition", "Material"]
+			conflictingGroupList = self.searchObjectNameInAllCategoriesGroups(objectName, noDuplicateCategoriesList)
+
+		elif self.getSolverType().lower().find("emerge") > -1:
+			noDuplicateCategoriesList = ["Port", "BoundaryCondition", "Material"]
+			conflictingGroupList = self.searchObjectNameInAllCategoriesGroups(objectName, noDuplicateCategoriesList)
+
+		#
+		#	If object found in Material it's special case since material can contains object for 3D mesh, just conducting sheet
+		#	is using palace boundary definition. In EMerge conducting sheet is also defined as boundary condition.
+		#
+		#	Normal material object don't interfere with boundary conditions.
+		#
+		removeConflictingGroupList = []
+		if self.getSolverType().lower().find("emerge") > -1 or self.getSolverType().lower().find("palace") > -1:
+			for conflictingGroup in conflictingGroupList:
+				if self.checkConflictingMaterialDuplicity(conflictingGroup[0], conflictingGroup[1], targetCategoryName, targetGroupName):
+					removeConflictingGroupList.append(conflictingGroup)
+
+			#
+			#	Remove groups from confliting groups marked to be removed.
+			#
+			for groupToRemove in removeConflictingGroupList:
+				conflictingGroupList.remove(groupToRemove)
+
+		return conflictingGroupList
+
+	def checkTreeWidgetForConflictingObjects(self) -> list[tuple[tuple[str, str, str], tuple[str, str, str]]]:
+		conflictingObjectList:list[tuple[tuple[str, str, str], tuple[str, str, str]]] = []
+		conflictingCategoriesList = []
+
+		if self.getSolverType().lower().find("emerge") > -1 or self.getSolverType().lower().find("palace") > -1:
+			if self.getSolverType().lower().find("palace") > -1:
+				conflictingCategoriesList = ["LumpedPart", "Material", "Port", "BoundaryCondition"]
+			elif self.getSolverType().lower().find("emerge") > -1:
+				conflictingCategoriesList = ["Material", "Port", "BoundaryCondition"]
+
+			#
+			#	This does basic check if object is used in multiples categories which are using solver boundary condition definitions.
+			#	Multiple boundary condition definition for same object is not allowed, one object cannot represent PEC and Absorbing
+			#	boundary condition at same time.
+			#
+			allObjectList = self.guiHelpers.getAllItemsFromAssignmentTree(excludeCategoriesList=["Grid"])
+			for objectInfo in allObjectList:
+				objectNameToFind = objectInfo[2]
+				objectOccurenciesList = self.searchObjectNameInAllCategoriesGroups(objectNameToFind, searchCategoriesList=conflictingCategoriesList)
+				for objectOccurenceInfo in objectOccurenciesList:
+					differenciesCount = 0
+					differenciesCount += int(objectInfo[0] != objectOccurenceInfo[0])
+					differenciesCount += int(objectInfo[1] != objectOccurenceInfo[1])
+					if differenciesCount > 0:
+						conflictingObjectList.append((
+							(objectInfo[0], objectInfo[1], objectNameToFind),
+							(objectOccurenceInfo[0], objectOccurenceInfo[1], objectNameToFind)
+						))
+
+			# take every even item getting unique conflicting item list
+			conflictingObjectList = conflictingObjectList[::2]
+
+			#
+			#	Evaluate if Material object are really problem, since only "conducting sheet" is using boundary condition and this
+			#	must be checked.
+			#
+			removeConflictingGroupList = []
+			for conflictingObjectPair in conflictingObjectList:
+				sourceCategoryName = conflictingObjectPair[0][0]
+				sourceGroupName = conflictingObjectPair[0][1]
+				targetCategoryName = conflictingObjectPair[1][0]
+				targetGroupName = conflictingObjectPair[1][1]
+
+				removeConflictingPairFromList = False
+				if sourceCategoryName == "Material":
+					removeConflictingPairFromList = removeConflictingPairFromList or self.checkConflictingMaterialDuplicity(sourceCategoryName, sourceGroupName, targetCategoryName, targetGroupName)
+				if targetCategoryName == "Material":
+					removeConflictingPairFromList = removeConflictingPairFromList or self.checkConflictingMaterialDuplicity(targetCategoryName, targetGroupName, sourceCategoryName, sourceGroupName)
+
+				if removeConflictingPairFromList:
+					removeConflictingGroupList.append(conflictingObjectPair)
+
+			#
+			#	Remove groups from conflicting groups marked to be removed.
+			#
+			for groupToRemove in removeConflictingGroupList:
+				conflictingObjectList.remove(groupToRemove)
+
+			pass
+		elif self.getSolverType().lower().find("openems") > -1:
+			pass
+
+		return conflictingObjectList
+
 	def getSolverType(self):
 		solverType = self.form.comboBox_solverType.currentText()
 		return solverType
@@ -1915,13 +2162,25 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.saveToFileSettingsButtonClicked()
 
 		#
-		#	WARNING: Check material categories for Face objects which casue error in metal generate for openEMS for FreeCAD
+		#	WARNING: Check material categories for Face objects which cause error in metal generate for openEMS for FreeCAD
 		#
 		faceObjectsWarning = self.checkMaterialForFaceObjects()
 		if len(faceObjectsWarning) > 0:
 			self.guiHelpers.displayMessage(faceObjectsWarning, forceModal=True)
 
-		#write result .m file into subfolder named after .ini file next to simulation settings .ini file
+		#
+		#	Check object assignment for conflicting object assignments.
+		#		- this is mostly for FEM solvers (EMerge, Palace) because more categories are using boundary conditions in solver
+		#		  and multiple different boundaries for same object are not allowed
+		#
+		conflictingObjectList = self.checkTreeWidgetForConflictingObjects()
+		if len(conflictingObjectList) > 0:
+			conflictingObjectListStr = ""
+			for conflictingObjectPair in conflictingObjectList:
+				conflictingObjectListStr += f"{conflictingObjectPair[0]} &lt;---&gt; {conflictingObjectPair[1]}\n"
+			self.guiHelpers.displayMessage(f"<font color='red'><b>There are multiple conflicting object between each other, please check:</b></font><br />\n{conflictingObjectListStr}", forceModal=True)
+
+		#	Write result .m file into subfolder named after .ini file next to simulation settings .ini file
 		print(f"----> start saving file into {self.simulationOutputDir}")
 
 		self.scriptGenerator.generateSimulationScript(self.simulationOutputDir)
@@ -2362,6 +2621,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			conductingSheetThicknessValue = self.form.materialConductingSheetThickness.value()
 			conductingSheetThicknessUnits = self.form.materialConductingSheetUnits.currentText()
 			conductingSheetConductivity = self.form.materialConductingSheetConductivity.value()
+			conductingSheetPermeability = self.form.materialConductingSheetPermeability.value()
 		except:
 			conductingSheetThicknessValue = 40.0
 			conductingSheetThicknessUnits = "um"
@@ -2379,6 +2639,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		materialItem.constants['conductingSheetThicknessValue'] = conductingSheetThicknessValue
 		materialItem.constants['conductingSheetThicknessUnits'] = conductingSheetThicknessUnits
 		materialItem.constants['conductingSheetConductivity'] = conductingSheetConductivity
+		materialItem.constants['conductingSheetPermeability'] = conductingSheetPermeability
 
 		if (self.form.materialMetalRadioButton.isChecked() == 1):
 			materialItem.type = "metal"
@@ -3638,6 +3899,15 @@ class ExportOpenEMSDialog(QtCore.QObject):
 						self.form.materialConductingSheetUnits.setCurrentIndex(0)
 
 				self.form.materialConductingSheetConductivity.setValue(float(currSetting.constants['conductingSheetConductivity']))
+
+				#
+				#	This feature is just for palace solver, due backward compatibility it's not in old files, so just silent error here
+				#
+				try:
+					self.form.materialConductingSheetPermeability.setValue(float(currSetting.constants['conductingSheetPermeability']))
+				except:
+					pass
+
 			except Exception as e:
 				print(f"materialTreeWidgetItemChanged() ERROR: {e}")
 

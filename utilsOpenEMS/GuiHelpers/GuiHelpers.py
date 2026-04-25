@@ -264,8 +264,35 @@ class GuiHelpers:
 
         return gridGroupItem
 
+    def getMaterialGroupObjectAssignmentTreeItem(self, materialName):
+        gridGroupWidgetItems = self.form.objectAssignmentRightTreeWidget.findItems(
+            materialName,
+            QtCore.Qt.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive
+        )
+        materialGroupItem = None
+        for item in gridGroupWidgetItems:
+            if (item.parent().text(0) == "Material"):
+                materialGroupItem = item
+
+        return materialGroupItem
+
     def setVisibleTreeWidgetItem(self, treeWidgetRef, search_text, isVisible):
         for i in range(treeWidgetRef.topLevelItemCount()):
             item = treeWidgetRef.topLevelItem(i)
             if search_text.lower() in item.text(0).lower():
                 item.setHidden(not isVisible)
+
+    def getAllItemsFromAssignmentTree(self, excludeCategoriesList: list[str] = []) -> list[tuple[str, str, str]]:
+        allItemList:list[tuple[str, str, str]] = []
+
+        for k in range(self.form.objectAssignmentRightTreeWidget.topLevelItemCount()):
+            categoryItem = self.form.objectAssignmentRightTreeWidget.topLevelItem(k)
+            if categoryItem.text(0) in excludeCategoriesList:
+                continue
+            for m in range(categoryItem.childCount()):
+                groupItem = categoryItem.child(m)
+                for n in range(groupItem.childCount()):
+                    objectItem = groupItem.child(n)
+                    allItemList.append((categoryItem.text(0), groupItem.text(0), objectItem.text(0)))
+
+        return allItemList

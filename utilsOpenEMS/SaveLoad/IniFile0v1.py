@@ -102,10 +102,12 @@ class IniFile0v1:
                     settings.setValue("conductingSheetThicknessValue", materialList[k].constants['conductingSheetThicknessValue'])
                     settings.setValue("conductingSheetThicknessUnits", materialList[k].constants['conductingSheetThicknessUnits'])
                     settings.setValue("conductingSheetConductivity", materialList[k].constants['conductingSheetConductivity'])
+                    settings.setValue("conductingSheetPermeability", materialList[k].constants['conductingSheetPermeability'])
                 except Exception as e:
                     settings.setValue("conductingSheetThicknessValue", 40.00)
                     settings.setValue("conductingSheetThicknessUnits", "um")
                     settings.setValue("conductingSheetConductivity", 50e6)
+                    settings.setValue("conductingSheetPermeability", 1.0)
                     print(f"IniFile.py > write(), ERROR, set default values for conductingSheetThicknessValue, conductingSheetThicknessUnits\n{e}")
 
             settings.endGroup()
@@ -804,6 +806,7 @@ class IniFile0v1:
                     categorySettings.constants['conductingSheetThicknessValue'] = settings.value('conductingSheetThicknessValue')
                     categorySettings.constants['conductingSheetThicknessUnits'] = settings.value('conductingSheetThicknessUnits')
                     categorySettings.constants['conductingSheetConductivity'] = settings.value('conductingSheetConductivity')
+                    categorySettings.constants['conductingSheetPermeability'] = settings.value('conductingSheetPermeability')
                 except:
                     print(f"There was error during loading conductive sheet material params for '{itemName}'")
                     pass
