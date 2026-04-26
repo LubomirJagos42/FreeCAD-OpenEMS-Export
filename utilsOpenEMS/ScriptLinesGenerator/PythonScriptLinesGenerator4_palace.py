@@ -593,6 +593,11 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "#gmsh.option.setNumber(\"Mesh.MeshSizeMin\", 0.1)  # Absolute minimum\n"
         genScript += "#gmsh.option.setNumber(\"Mesh.MeshSizeMax\", 10.0)  # Absolute maximum\n"
         genScript += "\n"
+        genScript += "# Disable gmsh automatic sizing - enable when needed\n"
+        genScript += 'gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", 0)\n'
+        genScript += '#gmsh.option.setNumber("Mesh.MeshSizeFromPoints", 0)\n'
+        genScript += '#gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 0)\n'
+        genScript += "\n"
 
         return genScript
 
