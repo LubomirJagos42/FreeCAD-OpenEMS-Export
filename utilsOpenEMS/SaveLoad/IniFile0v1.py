@@ -81,7 +81,9 @@ class IniFile0v1:
         settings.setValue("version", "0.1")
         settings.endGroup()
 
+        #
         # SAVE MATERIAL SETTINGS
+        #
         materialList = self.cadHelpers.getAllTreeWidgetItems(self.form.materialSettingsTreeView)
         for k in range(len(materialList)):
             print("Save new MATERIAL constants into file: ")
@@ -112,8 +114,9 @@ class IniFile0v1:
 
             settings.endGroup()
 
+        #
         # SAVE GRID SETTINGS
-
+        #
         gridList = self.cadHelpers.getAllTreeWidgetItems(self.form.gridSettingsTreeView)
         for k in range(len(gridList)):
             print("Save new GRID constants into file: " + gridList[k].getName())
@@ -157,8 +160,9 @@ class IniFile0v1:
 
             settings.endGroup()
 
+        #
         # SAVE EXCITATION
-
+        #
         excitationList = self.cadHelpers.getAllTreeWidgetItems(self.form.excitationSettingsTreeView)
         for k in range(len(excitationList)):
             print("Save new EXCITATION constants into file: " + excitationList[k].getName())

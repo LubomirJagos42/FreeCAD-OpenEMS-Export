@@ -63,6 +63,7 @@ class GridSettingsItem(SettingsItem):
             'femMaxBoundarySize': 1.0,
             'femMaxFaceSize': 1.0,
             'femMaxDomainSize': 1.0,
+            'femMaxUserDefined': "",
             'femSurfaceMeshSizeSizeMin': 0.1,
             'femSurfaceMeshSizeSizeMax': 10.0,
             'femSurfaceMeshSizeDistanceMin': 0.0,

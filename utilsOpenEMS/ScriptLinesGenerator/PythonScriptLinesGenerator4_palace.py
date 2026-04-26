@@ -582,9 +582,8 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                 except:
                     pass
 
-                #
-                #   TODO: Add user defined mesh, code block will be placed into code
-                #
+                if gridSettingsInst.femMesh['femUseMaxUserDefined'] == True:
+                    genScript += gridSettingsInst.femMesh['femMaxUserDefined']+"\n"
 
         genScript += "\n"
         genScript += "# Set background field automatically using internal field list created during mesh size definition\n"

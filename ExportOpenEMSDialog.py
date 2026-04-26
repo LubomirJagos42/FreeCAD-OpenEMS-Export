@@ -530,6 +530,20 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 	def updateUiBasedOnSolverType(self):
 		solverTypeStr = self.form.comboBox_solverType.currentText()
+
+		#
+		#	First update simulation output directory
+		#
+		if self.simulationOutputDir:
+			self.simulationOutputDir = re.sub(
+				r'_[^_]+_simulation$',
+				f'_{self.getSolverType()}_simulation',
+				self.simulationOutputDir
+			)
+
+		#
+		#	Update UI
+		#
 		if (solverTypeStr.lower() == "openems"):
 			self.form.generateOpenEMSScriptButton.setText("Generate OpenEMS Files")
 			self.form.radioButton_octaveType.setEnabled(True)
@@ -743,9 +757,6 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		#property label was changes, object was renamed in freecad
 		if prop == 'Label':
-			# The label (displayed name) of an object has changed.
-			# (TODO) Update all mentions in the ObjectAssigments panel.
-
 			#
 			#	Rename items in right column where objects are assigned to categories
 			#
@@ -771,7 +782,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				itemToRename.setText(0, newLabel)
 
 			#
-			#	TinitLeftCOlumnToLevelItems refill internalObjectNameLabelList, so when working in bulk this reinit must be supressed till last item
+			#	initLeftColumnToLevelItems refill internalObjectNameLabelList, so when working in bulk this reinit must be supressed till last item
 			#
 			if enableReInitLeftColumn:
 				filterStr = self.form.objectAssignmentFilterLeft.text()
@@ -1936,6 +1947,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		"""
 		conflictingGroupList: list[tuple[str, str]] = []
 
+		#
+		#	No check for conflicts for Grid category
+		#
+		if targetCategoryName == "Grid":
+			return []
+
 		if self.getSolverType().lower().find("openems") > -1:
 			# No check for conflicting categories for openEMS as for this there is priority system and object with higher priority
 			# defines final result which properties are assigned to nodes after meshing.
@@ -2032,6 +2049,40 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			pass
 
 		return conflictingObjectList
+
+	def checkTreeWidgetForConflictingObjects_simplified(self) -> list[tuple[tuple[str, str, str], tuple[str, str, str]]]:
+		solver = self.getSolverType().lower()
+
+		conflictingCategoriesList = (
+			["LumpedPart", "Material", "Port", "BoundaryCondition"] if "palace" in solver else
+			["Material", "Port", "BoundaryCondition"] if "emerge" in solver else
+			None
+		)
+
+		if not conflictingCategoriesList:
+			return []
+
+		allObjectList = self.guiHelpers.getAllItemsFromAssignmentTree(excludeCategoriesList=["Grid"])
+
+		# Collect conflicting pairs (take every 2nd to deduplicate mirrored pairs)
+		conflictingObjectList = [
+			((objectInfo[0], objectInfo[1], objectInfo[2]), (occ[0], occ[1], objectInfo[2]))
+			for objectInfo in allObjectList
+			for occ in
+			self.searchObjectNameInAllCategoriesGroups(objectInfo[2], searchCategoriesList=conflictingCategoriesList)
+			if objectInfo[0] != occ[0] or objectInfo[1] != occ[1]
+		][::2]
+
+		# Remove pairs where Material conflict is not a real boundary condition conflict
+		return [
+			pair for pair in conflictingObjectList
+			if not (
+					(pair[0][0] == "Material" and self.checkConflictingMaterialDuplicity(pair[0][0], pair[0][1],
+																						 pair[1][0], pair[1][1])) or
+					(pair[1][0] == "Material" and self.checkConflictingMaterialDuplicity(pair[1][0], pair[1][1],
+																						 pair[0][0], pair[0][1]))
+			)
+		]
 
 	def getSolverType(self):
 		solverType = self.form.comboBox_solverType.currentText()
@@ -2404,6 +2455,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			gridItem.femMesh['femUseSurfaceMeshSize'] = self.form.femGridSurfaceMeshSizeCheckbox.isChecked()
 
 			gridItem.femMesh['femUseMaxUserDefined'] = self.form.femGridUserDefinedCheckbox.isChecked()
+			gridItem.femMesh['femMaxUserDefined'] = self.form.userDefinedGridLinesTextInput.toPlainText()
 
 		return gridItem
 		
@@ -4021,7 +4073,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				except:
 					pass
 
-				self.form.femGridUserDefinedCheckbox.setChecked(currSetting.femMesh['femUseMaxUserDefined'])
+				try:
+					self.form.femGridUserDefinedCheckbox.setChecked(currSetting.femMesh['femUseMaxUserDefined'])
+					self.form.userDefinedGridLinesTextInput.setPlainText(currSetting.femMesh['femMaxUserDefined'])
+				except:
+					pass
 			except:
 				pass
 
