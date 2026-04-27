@@ -1189,10 +1189,11 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     genScript += f"\t\t\tsimulationObj.mesher.set_face_size(geometryObj, {gridSettingsInst.femMesh['femMaxFaceSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
                 if gridSettingsInst.femMesh['femUseMaxDomainSize'] == True:
                     genScript += f"\t\t\tsimulationObj.mesher.set_domain_size(geometryObj, {gridSettingsInst.femMesh['femMaxDomainSize']} * {gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
+                if gridSettingsInst.femMesh['femUseSurfaceMeshSize'] == True:
+                    genScript += f"\t\t\t#TODO: {FreeCADObjectName} - femUseSurfaceMeshSize not implemented yet!\n"
 
-                #
-                #   TODO: Add user defined mesh, code block will be placed into code
-                #
+                if gridSettingsInst.femMesh['femUseMaxUserDefined'] == True:
+                    genScript += gridSettingsInst.femMesh['femMaxUserDefined']+"\n"
 
                 genScript += f"\n"
 
@@ -1689,6 +1690,9 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "#######################################################################################################################################\n"
         genScript += "# RUN and save results\n"
         genScript += "#######################################################################################################################################\n"
+
+        if self.form.simParamsDisableRAMCheck_emerge.isChecked():
+            genScript += "simulationObj.settings.check_ram = False\n"
 
         if self.form.generateJustPreviewCheckbox.isChecked():
             genScript += "#simulationResult = simulationObj.mw.run_sweep()\n"

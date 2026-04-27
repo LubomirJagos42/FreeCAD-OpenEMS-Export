@@ -15,7 +15,7 @@ from utilsOpenEMS.SettingsItem.ProbeSettingsItem import ProbeSettingsItem
 from utilsOpenEMS.SettingsItem.ExcitationSettingsItem import ExcitationSettingsItem
 from utilsOpenEMS.SettingsItem.LumpedPartSettingsItem import LumpedPartSettingsItem
 from utilsOpenEMS.SettingsItem.MaterialSettingsItem import MaterialSettingsItem
-from utilsOpenEMS.SettingsItem.SimulationSettingsItem import SimulationSettingsItem
+from utilsOpenEMS.SettingsItem.SimulationSettingsItem import SimulationSettingsItem, SimulationPalaceSettingsItem
 from utilsOpenEMS.SettingsItem.BoundaryConditionSettingsItem import BoundaryConditionSettingsItem
 from utilsOpenEMS.SettingsItem.GridSettingsItem import GridSettingsItem
 from utilsOpenEMS.SettingsItem.FreeCADSettingsItem import FreeCADSettingsItem
@@ -81,7 +81,9 @@ class IniFile0v1:
         settings.setValue("version", "0.1")
         settings.endGroup()
 
+        #
         # SAVE MATERIAL SETTINGS
+        #
         materialList = self.cadHelpers.getAllTreeWidgetItems(self.form.materialSettingsTreeView)
         for k in range(len(materialList)):
             print("Save new MATERIAL constants into file: ")
@@ -102,16 +104,19 @@ class IniFile0v1:
                     settings.setValue("conductingSheetThicknessValue", materialList[k].constants['conductingSheetThicknessValue'])
                     settings.setValue("conductingSheetThicknessUnits", materialList[k].constants['conductingSheetThicknessUnits'])
                     settings.setValue("conductingSheetConductivity", materialList[k].constants['conductingSheetConductivity'])
+                    settings.setValue("conductingSheetPermeability", materialList[k].constants['conductingSheetPermeability'])
                 except Exception as e:
                     settings.setValue("conductingSheetThicknessValue", 40.00)
                     settings.setValue("conductingSheetThicknessUnits", "um")
                     settings.setValue("conductingSheetConductivity", 50e6)
+                    settings.setValue("conductingSheetPermeability", 1.0)
                     print(f"IniFile.py > write(), ERROR, set default values for conductingSheetThicknessValue, conductingSheetThicknessUnits\n{e}")
 
             settings.endGroup()
 
+        #
         # SAVE GRID SETTINGS
-
+        #
         gridList = self.cadHelpers.getAllTreeWidgetItems(self.form.gridSettingsTreeView)
         for k in range(len(gridList)):
             print("Save new GRID constants into file: " + gridList[k].getName())
@@ -155,8 +160,9 @@ class IniFile0v1:
 
             settings.endGroup()
 
+        #
         # SAVE EXCITATION
-
+        #
         excitationList = self.cadHelpers.getAllTreeWidgetItems(self.form.excitationSettingsTreeView)
         for k in range(len(excitationList)):
             print("Save new EXCITATION constants into file: " + excitationList[k].getName())
@@ -355,11 +361,33 @@ class IniFile0v1:
         #write all settings from "Simulation Params" tab from EMerge tab
         simulationSettings.params['base_length_unit_m_emerge'] = self.form.simParamsDeltaUnitList_emerge.currentText()
         simulationSettings.params['solverEngine_emerge'] = self.form.simParamsSolverEngine_emerge.currentText()
-
+        simulationSettings.params['disableRAMCheck_emerge'] = self.form.simParamsDisableRAMCheck_emerge.isChecked()
 
         simulationSettings.params['outputScriptType'] = 'octave'
         if self.form.radioButton_pythonType.isChecked():
             simulationSettings.params['outputScriptType'] = 'python'
+
+        #
+        #   Save simulation params for Palace tab
+        #
+        simulationPalaceSettings = SimulationPalaceSettingsItem("Palace_Simulation_Settings_1")
+        simulationPalaceSettings.palaceParams["problemType"] = self.form.simParamsSimulationTypeList_palace.currentText()
+        simulationPalaceSettings.palaceParams["problemVerbose"] = self.form.simParamsVerbose_palace.value()
+        simulationPalaceSettings.palaceParams["problemOutput"] = self.form.simParamsOutputDirectory_palace.text()
+        simulationPalaceSettings.palaceParams["modelMeshName"] = self.form.simParamsModelMeshName_palace.text()
+        simulationPalaceSettings.palaceParams["modelMeshBaseUnits"] = self.form.simParamsModelMeshBaseUnits_palace.currentText()
+        simulationPalaceSettings.palaceParams["linearSolverType"] = self.form.simParamsLinearSolverType_palace.currentText()
+        simulationPalaceSettings.palaceParams["linearSolverKSPType"] = self.form.simParamsLinearSolverKSPType_palace.currentText()
+        simulationPalaceSettings.palaceParams["linearSolverTolerance"] = self.form.simParamsLinearSolverTolerance_palace.value()
+        simulationPalaceSettings.palaceParams["linearSolverMaxIterationCount"] = self.form.simParamsLinearSolverMaximumIterationCount_palace.value()
+        simulationPalaceSettings.palaceParams["solverOrder"] = self.form.simParamsLinearSolverOrder_palace.value()
+        simulationPalaceSettings.palaceParams["solverDevice"] = self.form.simParamsSolverDevice_palace.currentText()
+        simulationPalaceSettings.palaceParams['useNf2ff'] = self.form.simParamsUseNf2ff_palace.isChecked()
+        simulationPalaceSettings.palaceParams["nf2ffBoundaryConditionName"] = self.form.portNf2ffPalaceObjectList.currentText()
+        simulationPalaceSettings.palaceParams["nf2ffFreqMHz"] = self.form.boundaryNf2ffPalaceFreq.value()
+        simulationPalaceSettings.palaceParams["nf2ffTheta"] = self.form.boundaryNf2ffPalaceTheta.value()
+        simulationPalaceSettings.palaceParams["nf2ffPhi"] = self.form.boundaryNf2ffPalacePhi.value()
+        simulationPalaceSettings.palaceParams["nf2ffNSample"] = self.form.boundaryNf2ffPalaceNSample.value()
 
         #
         #   Write parameters frp, above into JSON
@@ -367,6 +395,7 @@ class IniFile0v1:
         settings.beginGroup("SIMULATION-" + simulationSettings.name)
         settings.setValue("name", simulationSettings.name)
         settings.setValue("params", json.dumps(simulationSettings.params))
+        settings.setValue("paramsPalace", json.dumps(simulationPalaceSettings.palaceParams))
         settings.endGroup()
 
         #
@@ -781,6 +810,7 @@ class IniFile0v1:
                     categorySettings.constants['conductingSheetThicknessValue'] = settings.value('conductingSheetThicknessValue')
                     categorySettings.constants['conductingSheetThicknessUnits'] = settings.value('conductingSheetThicknessUnits')
                     categorySettings.constants['conductingSheetConductivity'] = settings.value('conductingSheetConductivity')
+                    categorySettings.constants['conductingSheetPermeability'] = settings.value('conductingSheetPermeability')
                 except:
                     print(f"There was error during loading conductive sheet material params for '{itemName}'")
                     pass
@@ -793,6 +823,16 @@ class IniFile0v1:
                 simulationSettings.name = itemName
                 simulationSettings.type = settings.value('type')
                 simulationSettings.params = json.loads(settings.value('params'))
+
+                #
+                #   Backward compatibility - try/except load params for palace simulation settings tab
+                #
+                simulationPalaceSettings = SimulationPalaceSettingsItem()
+                try:
+                    simulationPalaceSettings.palaceParams = json.loads(settings.value('paramsPalace'))
+                except:
+                    pass
+
                 settings.endGroup()
                 print(f'loading SIMULATION PARAMS: {(simulationSettings.params)}')
 
@@ -821,6 +861,7 @@ class IniFile0v1:
                 try:
                     self.form.simParamsDeltaUnitList_emerge.setCurrentText(simulationSettings.params['base_length_unit_m_emerge'])
                     self.form.simParamsSolverEngine_emerge.setCurrentText(simulationSettings.params['solverEngine_emerge'])
+                    self.form.simParamsDisableRAMCheck_emerge.setChecked(simulationSettings.params['disableRAMCheck_emerge'])
                 except:
                     pass
 
@@ -855,6 +896,31 @@ class IniFile0v1:
                 #
                 try:
                     self.form.simParamsOverSampling.setValue(simulationSettings.params['OverSampling'])
+                except:
+                    pass
+
+                #
+                #   try catch block here due backward compatibility, loading simulation settings for palace solver tab
+                #
+                try:
+                    self.guiHelpers.setComboboxItem(self.form.simParamsSimulationTypeList_palace, simulationPalaceSettings.palaceParams["problemType"])
+                    self.form.simParamsVerbose_palace.setValue(simulationPalaceSettings.palaceParams["problemVerbose"])
+                    self.form.simParamsOutputDirectory_palace.setText(simulationPalaceSettings.palaceParams["problemOutput"])
+                    self.form.simParamsModelMeshName_palace.setText(simulationPalaceSettings.palaceParams["modelMeshName"])
+                    self.guiHelpers.setComboboxItem(self.form.simParamsModelMeshBaseUnits_palace, simulationPalaceSettings.palaceParams["modelMeshBaseUnits"])
+                    self.guiHelpers.setComboboxItem(self.form.simParamsLinearSolverType_palace, simulationPalaceSettings.palaceParams["linearSolverType"])
+                    self.guiHelpers.setComboboxItem(self.form.simParamsLinearSolverKSPType_palace, simulationPalaceSettings.palaceParams["linearSolverKSPType"])
+                    self.form.simParamsLinearSolverTolerance_palace.setValue(simulationPalaceSettings.palaceParams["linearSolverTolerance"])
+                    self.form.simParamsLinearSolverMaximumIterationCount_palace.setValue(simulationPalaceSettings.palaceParams["linearSolverMaxIterationCount"])
+                    self.form.simParamsLinearSolverOrder_palace.setValue(simulationPalaceSettings.palaceParams["solverOrder"])
+                    self.guiHelpers.setComboboxItem(self.form.simParamsSolverDevice_palace, simulationPalaceSettings.palaceParams["solverDevice"])
+
+                    self.form.simParamsUseNf2ff_palace.setChecked(simulationPalaceSettings.palaceParams['useNf2ff'])
+                    self.guiHelpers.setComboboxItem(self.form.portNf2ffPalaceObjectList, simulationPalaceSettings.palaceParams["nf2ffBoundaryConditionName"])
+                    self.form.boundaryNf2ffPalaceFreq.setValue(simulationPalaceSettings.palaceParams["nf2ffFreqMHz"])
+                    self.form.boundaryNf2ffPalaceTheta.setValue(simulationPalaceSettings.palaceParams["nf2ffTheta"])
+                    self.form.boundaryNf2ffPalacePhi.setValue(simulationPalaceSettings.palaceParams["nf2ffPhi"])
+                    self.form.boundaryNf2ffPalaceNSample.setValue(simulationPalaceSettings.palaceParams["nf2ffNSample"])
                 except:
                     pass
 
