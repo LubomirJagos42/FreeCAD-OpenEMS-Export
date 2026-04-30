@@ -2438,6 +2438,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			gridItem.femMesh['femMaxSizeUnits'] = self.form.femGridMaxSizeUnits.currentText()
 
 			gridItem.femMesh['femMaxElementSize'] = self.form.femGridMaxElementSizeValue.value()
+			gridItem.femMesh['femMaxElementDistance'] = self.form.femGridMaxElementSizeDistanceValue.value()
 			gridItem.femMesh['femMaxBoundarySize'] = self.form.femGridMaxBoundarySizeValue.value()
 			gridItem.femMesh['femMaxFaceSize'] = self.form.femGridMaxFaceSizeValue.value()
 			gridItem.femMesh['femMaxDomainSize'] = self.form.femGridMaxDomainSizeValue.value()
@@ -4053,6 +4054,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 					self.form.femGridMaxBoundarySizeValue.setValue(currSetting.femMesh['femMaxBoundarySize'])
 					self.form.femGridMaxFaceSizeValue.setValue(currSetting.femMesh['femMaxFaceSize'])
 					self.form.femGridMaxDomainSizeValue.setValue(currSetting.femMesh['femMaxDomainSize'])
+
+					self.form.femGridMaxElementSizeDistanceValue.setValue(currSetting.femMesh['femMaxElementDistance'])
 				except:
 					pass
 

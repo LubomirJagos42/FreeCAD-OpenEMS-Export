@@ -567,7 +567,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     continue
 
                 if gridSettingsInst.femMesh['femUseMaxElementSize'] == True:
-                    genScript += f"mesherObj.setSize(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femMaxElementSize']})\n"
+                    genScript += f"mesherObj.setSize(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femMaxElementSize']}, distance={gridSettingsInst.femMesh['femMaxElementDistance']})\n"
                 if gridSettingsInst.femMesh['femUseMaxBoundarySize'] == True:
                     genScript += f"mesherObj.setSizeBoundary(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femMaxBoundarySize']})\n"
                 if gridSettingsInst.femMesh['femUseMaxFaceSize'] == True:
