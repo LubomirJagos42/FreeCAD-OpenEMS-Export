@@ -9935,8 +9935,10 @@ electrostatic use CG</string>
            <item>
             <widget class="QLabel" name="label_96">
              <property name="text">
-              <string>    Lubomir Jagos
-        https://github.com/LubomirJagos/FreeCAD-OpenEMS-Export</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Lubomir Jagos&lt;br/&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;a href=&quot;https://github.com/LubomirJagos42/FreeCAD-OpenEMS-Export&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#005393;&quot;&gt;https://github.com/LubomirJagos42/FreeCAD-OpenEMS-Export&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="openExternalLinks">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -9956,26 +9958,12 @@ electrostatic use CG</string>
            <item>
             <widget class="QLabel" name="label_99">
              <property name="text">
-              <string>    MisterHW
-        https://github.com/MisterHW</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;MisterHW&lt;br/&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;a href=&quot;https://github.com/MisterHW&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#005393;&quot;&gt;https://github.com/MisterHW&lt;/span&gt;&lt;/a&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="openExternalLinks">
+              <bool>true</bool>
              </property>
             </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_23">
-             <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Policy::Preferred</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_55">
