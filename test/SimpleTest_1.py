@@ -62,10 +62,4 @@ if __name__ == '__main__':
     assert "top part modified" == materialCategoryItem.child(0).child(0).text(0)    #check it was renamed in GUI
     obj.Label = "top part"
 
-
-
-
-
-
-
-
+    appWindow.form.close()
