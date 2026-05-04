@@ -5,6 +5,7 @@ import os
 import sys
 import inspect
 
+# Add parent dir to system path to instantiate FreeCAD simulation creator gui
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
@@ -53,7 +54,7 @@ class TestMaterialCategory(MacroTestBase):
 
     def test_material_checkDefaultMaterial(self):
         materialCategoryItem = self.getCategoryItem("Material")
-        assert "PEC" == materialCategoryItem.child(0).text(0)
+        self.assertEqual(materialCategoryItem.child(0).text(0), "PEC")
 
     def test_material_addNew(self):
         materialCategoryItem = self.getCategoryItem("Material")
@@ -62,16 +63,19 @@ class TestMaterialCategory(MacroTestBase):
         materialCategoryItem.setExpanded(True)
         self.assertEqual(materialCategoryItem.childCount(), 1)
 
+        #add first material
         self.appWindow.form.materialSettingsNameInput.setText("auto material 1")
         self.appWindow.form.materialMetalRadioButton.toggle()
         self.appWindow.form.materialSettingsAddButton.clicked.emit()
         self.assertEqual(materialCategoryItem.childCount(), 2)
 
+        #add second material
         self.appWindow.form.materialSettingsNameInput.setText("auto material 2")
         self.appWindow.form.materialMetalRadioButton.toggle()
         self.appWindow.form.materialSettingsAddButton.clicked.emit()
         self.assertEqual(materialCategoryItem.childCount(), 3)
 
+        #add third material
         self.appWindow.form.materialSettingsNameInput.setText("auto material 3")
         self.appWindow.form.materialMetalRadioButton.toggle()
         self.appWindow.form.materialSettingsAddButton.clicked.emit()

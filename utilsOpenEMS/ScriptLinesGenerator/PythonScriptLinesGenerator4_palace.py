@@ -709,7 +709,8 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                         genScript += f"name='{internalPortName}', "
                         genScript += f"direction='{currSetting.direction}', "
                         genScript += f"R={str(currSetting.R)}*{str(currSetting.getRUnits())}, "
-                        genScript += f"excitation={str(currSetting.excitationAmplitude)}, "
+                        if currSetting.isActive:
+                            genScript += f"excitation={str(currSetting.excitationAmplitude)}, "
                         genScript += f"type='lumped', "
                         genScript += f"index={genScriptPortCount}"
                         genScript += f")\n"
@@ -741,6 +742,8 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
 
         genScript += "#######################################################################################################################################\n"
         genScript += "# LUMPED PART\n"
+        genScript += "#   - for palace solver lumped part impedance is sheet impedance using units Ohm/square, Henry/square, Farad/square\n"
+        genScript += "#   - it's unitless, relative to square, ie. R=Rs*L/W, if L=W then R=Rs \n"
         genScript += "#######################################################################################################################################\n"
 
         for [item, currentSetting] in items:
@@ -922,6 +925,91 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
             fileName = f"{outputDir}/{nameBase}_draw_S{sourcePortNumber}{sourcePortNumber}.py"
         else:
             fileName = f"{currDir}/{nameBase}_draw_S{sourcePortNumber}{sourcePortNumber}.py"
+
+        f = open(fileName, "w", encoding='utf-8')
+        f.write(genScript)
+        f.close()
+        print('Draw result from simulation file written into: ' + fileName)
+        self.guiHelpers.displayMessage('Draw result from simulation file written into: ' + fileName, forceModal=False)
+
+    def drawS21ButtonClicked(self, outputDir=None, sourcePortName="", targetPortName=""):
+        genScript = ""
+
+        itemsByClassName = self.getItemsByClassName()
+        items = itemsByClassName.get("PortSettingsItem", None)
+
+        genScriptPortCount = 1
+        portNamesAndNumbersList = {}
+        for [item, currSetting] in items:
+            for k in range(item.childCount()):
+                childName = item.child(k).text(0)
+                portName = f"{currSetting.name} - {childName}"
+
+                # PORT openEMS GENERATION INTO VARIABLE
+                if (currSetting.getType() == 'lumped'):
+                    portNamesAndNumbersList[portName] = genScriptPortCount
+                    genScriptPortCount += 1
+
+        sourcePortName = self.form.drawS11Port.currentText()
+        sourcePortNumber = portNamesAndNumbersList[sourcePortName]
+        targetPortName = self.form.drawS21Target.currentText()
+        targetPortNumber = portNamesAndNumbersList[targetPortName]
+
+        graphSParamName = f"S{targetPortNumber}{sourcePortNumber}"
+
+        genScript += f"## Palace simulation - {graphSParamName}\n"
+        genScript += f"#\ttransfer from '{sourcePortName}' -> '{targetPortName}'\n"
+        genScript += "#\n"
+        genScript += "#\n"
+        genScript += "import matplotlib.pyplot as plt\n"
+        genScript += "import pandas as pd\n"
+        genScript += "\n"
+
+        #
+        #   Get port names and their numbers from GUI
+        #
+        genScript += "###############################################################################\n"
+        genScript += "# PORT NAME AND THEIR NUMBERS LIST\n"
+        genScript += "###############################################################################\n"
+        genScript += "portNamesAndNumbersList = {}\n"
+        for portName, portNumber in portNamesAndNumbersList.items():
+            genScript += f'portNamesAndNumbersList["{portName}"] = {portNumber}\n'
+        genScript += "\n"
+
+        genScript += "###############################################################################\n"
+        genScript += "# PLOT S DATA\n"
+        genScript += "###############################################################################\n"
+        genScript += f"sourcePortName = '{sourcePortName}'\n"
+        genScript += f"targetPortName = '{targetPortName}'\n"
+        genScript += "sourcePortNumber = portNamesAndNumbersList[sourcePortName]\n"
+        genScript += "targetPortNumber = portNamesAndNumbersList[targetPortName]\n"
+        genScript += "\n"
+        genScript += "\n"
+        genScript += "# Load the file without header (columns will be numbered 0, 1, 2...)\n"
+        genScript += f'df = pd.read_csv("{self.form.simParamsOutputDirectory_palace.text()}/port-S.csv", comment="#", skiprows=1, header=None)\n'
+        genScript += "\n"
+        genScript += f"# Plot: column 0 = Frequency, column 1 = {graphSParamName}\n"
+        genScript += f'plt.plot(df.iloc[:, 0], df.iloc[:, {(targetPortNumber-1)*2+1}], marker="o", label="|{graphSParamName}| (dB)")\n'
+        genScript += "\n"
+        genScript += 'plt.xlabel("Frequency (GHz)")\n'
+        genScript += f'plt.ylabel("{graphSParamName} (dB)")\n'
+        genScript += f'plt.title("{graphSParamName} vs Frequency")\n'
+        genScript += 'plt.grid(True)\n'
+        genScript += 'plt.legend()\n'
+        genScript += 'plt.tight_layout()\n'
+        genScript += 'plt.show()\n'
+        genScript += '\n'
+
+        #
+        # WRITE OpenEMS Script file into current dir
+        #
+        currDir, nameBase = self.getCurrDir()
+
+        self.createOuputDir(outputDir)
+        if (not outputDir is None):
+            fileName = f"{outputDir}/{nameBase}_draw_{graphSParamName}.py"
+        else:
+            fileName = f"{currDir}/{nameBase}_draw_{graphSParamName}.py"
 
         f = open(fileName, "w", encoding='utf-8')
         f.write(genScript)
