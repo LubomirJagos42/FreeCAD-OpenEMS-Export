@@ -3134,6 +3134,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.form.lumpedPortDirectionCustomY.value(),
 				self.form.lumpedPortDirectionCustomZ.value()
 			]
+			portItem.excitationAmplitude = self.form.lumpedPortExcitationAmplitude.value()
 
 		if (self.form.microstripPortRadioButton.isChecked()):
 			portItem.type = "microstrip"
