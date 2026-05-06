@@ -1913,6 +1913,28 @@ VALUES OF MESH.X,Y,Z WHEN USED</string>
                  </layout>
                 </item>
                 <item>
+                 <widget class="QPushButton" name="MaterialConstantsCatalogButton">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>160</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                  <property name="baseSize">
+                   <size>
+                    <width>160</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Material Constants Catalog</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <spacer name="verticalSpacer_11">
                   <property name="orientation">
                    <enum>Qt::Orientation::Vertical</enum>
