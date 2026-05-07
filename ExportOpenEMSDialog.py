@@ -18,7 +18,8 @@ APP_CONTEXT = "None"
 try:
 	import FreeCAD
 	#import WebGui	#this plugin was removed in 0.20 and later, it's used to display help
-	import KiCADImporterToolDialog	#import for KiCAD Import Tool
+	import KiCADImporterToolDialog			#import for KiCAD Import Tool
+	import MaterialConstantsCatalogDialog	#import for Material Constants Catalog
 	APP_CONTEXT = "FreeCAD"
 except Exception as e:
 	print(f"Error test if addon opened in FreeCAD")
@@ -103,6 +104,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.KiCADImportTool.close()
 				del self.KiCADImportTool
 				print("Kicad Import Tool closed")
+
+			#if material constants catalog is opened close it
+			if hasattr(self, "MaterialConstantsCatalog"):
+				self.MaterialConstantsCatalog.close()
+				del self.MaterialConstantsCatalog
+				print("Material Constants Catalog closed")
 
 		elif self.cadInterfaceType == "Blender":
 			print(f"Thread killed.")
@@ -455,6 +462,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#
 		self.form.KiCADImportButton.clicked.connect(self.KiCADImportButtonClicked)
 
+		#
+		#	Material Constants Catalog
+		#
+		self.form.MaterialConstantsCatalogButton.clicked.connect(self.MaterialConstantsCatalogButtonClicked)
+
 		self.cadInterfaceType = APP_CONTEXT
 		print("Creating document handlers")
 		if APP_CONTEXT == "FreeCAD":
@@ -725,6 +737,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.KiCADImportTool = KiCADImporterToolDialog.KiCADImporterToolDialog()
 
 		self.KiCADImportTool.show()
+
+	def MaterialConstantsCatalogButtonClicked(self):
+		# if Material Constants Catalog is not created create new one
+		if not hasattr(self, "MaterialConstantsCatalog") or self.MaterialConstantsCatalog is None:
+			self.MaterialConstantsCatalog = MaterialConstantsCatalogDialog.MaterialConstantsCatalogDialog(self.form)
+
+		self.MaterialConstantsCatalog.show()
 
 	def openFreeCADWebGuiHelp(self):
 		"""
@@ -2438,6 +2457,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			gridItem.femMesh['femMaxSizeUnits'] = self.form.femGridMaxSizeUnits.currentText()
 
 			gridItem.femMesh['femMaxElementSize'] = self.form.femGridMaxElementSizeValue.value()
+			gridItem.femMesh['femMaxElementDistance'] = self.form.femGridMaxElementSizeDistanceValue.value()
 			gridItem.femMesh['femMaxBoundarySize'] = self.form.femGridMaxBoundarySizeValue.value()
 			gridItem.femMesh['femMaxFaceSize'] = self.form.femGridMaxFaceSizeValue.value()
 			gridItem.femMesh['femMaxDomainSize'] = self.form.femGridMaxDomainSizeValue.value()
@@ -3114,6 +3134,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.form.lumpedPortDirectionCustomY.value(),
 				self.form.lumpedPortDirectionCustomZ.value()
 			]
+			portItem.excitationAmplitude = self.form.lumpedPortExcitationAmplitude.value()
 
 		if (self.form.microstripPortRadioButton.isChecked()):
 			portItem.type = "microstrip"
@@ -4053,6 +4074,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 					self.form.femGridMaxBoundarySizeValue.setValue(currSetting.femMesh['femMaxBoundarySize'])
 					self.form.femGridMaxFaceSizeValue.setValue(currSetting.femMesh['femMaxFaceSize'])
 					self.form.femGridMaxDomainSizeValue.setValue(currSetting.femMesh['femMaxDomainSize'])
+
+					self.form.femGridMaxElementSizeDistanceValue.setValue(currSetting.femMesh['femMaxElementDistance'])
 				except:
 					pass
 
