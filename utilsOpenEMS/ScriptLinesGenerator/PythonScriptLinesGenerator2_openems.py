@@ -1447,8 +1447,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                     pass
                 elif (currSetting.getType() == 'step'):
                     if not definitionsOnly:
-                        # genScript += "FDTD.SetStepExcite(FDTD);\n"
-                        genScript += "# STEP EXCITATION USING PYTHON SCRIPT NOT IMPLEMENTED IN GUI YET\n"
+                        genScript += 'FDTD.SetStepExcite(1)\n'
                     pass
                 pass
 

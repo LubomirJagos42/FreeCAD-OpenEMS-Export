@@ -2595,7 +2595,14 @@ Custom option using fparser lib, possible using user-defined equation:
                      </widget>
                     </item>
                     <item row="1" column="2">
-                     <widget class="QDoubleSpinBox" name="sweepExcitationFmax"/>
+                     <widget class="QDoubleSpinBox" name="sweepExcitationFmax">
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
+                      <property name="maximum">
+                       <double>10000000000.000000000000000</double>
+                      </property>
+                     </widget>
                     </item>
                     <item row="0" column="2">
                      <widget class="QLabel" name="label_117">
@@ -2616,6 +2623,9 @@ Custom option using fparser lib, possible using user-defined equation:
                     </item>
                     <item row="1" column="1">
                      <widget class="QDoubleSpinBox" name="sweepExcitationFmin">
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
                       <property name="maximum">
                        <double>1000000000000.000000000000000</double>
                       </property>
