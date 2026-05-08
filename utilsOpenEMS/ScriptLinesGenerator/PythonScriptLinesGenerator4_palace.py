@@ -371,7 +371,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                         materialArgumentsList["er"] = currSetting.constants['epsilon']
                     if str(currSetting.constants['mue']) != "0":
                         materialArgumentsList["ur"] = currSetting.constants['mue']
-                    if ("tand" in currSetting.constants) and type(currSetting.constants['tand']) is float:
+                    if str(currSetting.constants['tand']) != "0":
                         materialArgumentsList["tand"] = currSetting.constants['tand']
                     if str(currSetting.constants['sigma']) != "0":
                         materialArgumentsList["conductivity"] = currSetting.constants['sigma']
