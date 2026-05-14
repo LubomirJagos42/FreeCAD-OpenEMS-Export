@@ -989,48 +989,107 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
 
         graphSParamName = f"S{targetPortNumber}{sourcePortNumber}"
 
-        genScript += f"## Palace simulation - {graphSParamName}\n"
-        genScript += f"#\ttransfer from '{sourcePortName}' -> '{targetPortName}'\n"
-        genScript += "#\n"
-        genScript += "#\n"
-        genScript += "import matplotlib.pyplot as plt\n"
-        genScript += "import pandas as pd\n"
-        genScript += "\n"
+        #
+        # This is for S21 for Driven problem when S-params are stored in file port-S.csv
+        #
+        if self.form.simParamsSimulationTypeList_palace.currentText().lower() == "driven":
+            genScript += f"## Palace simulation - {graphSParamName}\n"
+            genScript += f"#\ttransfer from '{sourcePortName}' -> '{targetPortName}'\n"
+            genScript += "#\n"
+            genScript += "#\n"
+            genScript += "import matplotlib.pyplot as plt\n"
+            genScript += "import pandas as pd\n"
+            genScript += "\n"
+
+            #
+            #   Get port names and their numbers from GUI
+            #
+            genScript += "###############################################################################\n"
+            genScript += "# PORT NAME AND THEIR NUMBERS LIST\n"
+            genScript += "###############################################################################\n"
+            genScript += "portNamesAndNumbersList = {}\n"
+            for portName, portNumber in portNamesAndNumbersList.items():
+                genScript += f'portNamesAndNumbersList["{portName}"] = {portNumber}\n'
+            genScript += "\n"
+
+            genScript += "###############################################################################\n"
+            genScript += "# PLOT S DATA\n"
+            genScript += "###############################################################################\n"
+            genScript += f"sourcePortName = '{sourcePortName}'\n"
+            genScript += f"targetPortName = '{targetPortName}'\n"
+            genScript += "sourcePortNumber = portNamesAndNumbersList[sourcePortName]\n"
+            genScript += "targetPortNumber = portNamesAndNumbersList[targetPortName]\n"
+            genScript += "\n"
+            genScript += "\n"
+            genScript += "# Load the file without header (columns will be numbered 0, 1, 2...)\n"
+            genScript += f'df = pd.read_csv("{self.form.simParamsOutputDirectory_palace.text()}/port-S.csv", comment="#", skiprows=1, header=None)\n'
+            genScript += "\n"
+            genScript += f"# Plot: column 0 = Frequency, column 1 = {graphSParamName}\n"
+            genScript += f'plt.plot(df.iloc[:, 0], df.iloc[:, {(targetPortNumber-1)*2+1}], marker="o", label="|{graphSParamName}| (dB)")\n'
+            genScript += "\n"
+            genScript += 'plt.xlabel("Frequency (GHz)")\n'
+            genScript += f'plt.ylabel("{graphSParamName} (dB)")\n'
+            genScript += f'plt.title("{graphSParamName} vs Frequency")\n'
+            genScript += 'plt.grid(True)\n'
+            genScript += 'plt.legend()\n'
+            genScript += 'plt.tight_layout()\n'
+            genScript += 'plt.show()\n'
+            genScript += '\n'
 
         #
-        #   Get port names and their numbers from GUI
+        # This is for S21 for Driven problem when there is file port-V.csv and S-params must be calculated from voltage values on ports
         #
-        genScript += "###############################################################################\n"
-        genScript += "# PORT NAME AND THEIR NUMBERS LIST\n"
-        genScript += "###############################################################################\n"
-        genScript += "portNamesAndNumbersList = {}\n"
-        for portName, portNumber in portNamesAndNumbersList.items():
-            genScript += f'portNamesAndNumbersList["{portName}"] = {portNumber}\n'
-        genScript += "\n"
+        if self.form.simParamsSimulationTypeList_palace.currentText().lower() == "transient":
+            genScript += "import numpy as np\n"
+            genScript += "import math\n"
+            genScript += "\n"
 
-        genScript += "###############################################################################\n"
-        genScript += "# PLOT S DATA\n"
-        genScript += "###############################################################################\n"
-        genScript += f"sourcePortName = '{sourcePortName}'\n"
-        genScript += f"targetPortName = '{targetPortName}'\n"
-        genScript += "sourcePortNumber = portNamesAndNumbersList[sourcePortName]\n"
-        genScript += "targetPortNumber = portNamesAndNumbersList[targetPortName]\n"
-        genScript += "\n"
-        genScript += "\n"
-        genScript += "# Load the file without header (columns will be numbered 0, 1, 2...)\n"
-        genScript += f'df = pd.read_csv("{self.form.simParamsOutputDirectory_palace.text()}/port-S.csv", comment="#", skiprows=1, header=None)\n'
-        genScript += "\n"
-        genScript += f"# Plot: column 0 = Frequency, column 1 = {graphSParamName}\n"
-        genScript += f'plt.plot(df.iloc[:, 0], df.iloc[:, {(targetPortNumber-1)*2+1}], marker="o", label="|{graphSParamName}| (dB)")\n'
-        genScript += "\n"
-        genScript += 'plt.xlabel("Frequency (GHz)")\n'
-        genScript += f'plt.ylabel("{graphSParamName} (dB)")\n'
-        genScript += f'plt.title("{graphSParamName} vs Frequency")\n'
-        genScript += 'plt.grid(True)\n'
-        genScript += 'plt.legend()\n'
-        genScript += 'plt.tight_layout()\n'
-        genScript += 'plt.show()\n'
-        genScript += '\n'
+            #
+            #   Get port names and their numbers from GUI
+            #
+            genScript += "###############################################################################\n"
+            genScript += "# PORT NAME AND THEIR NUMBERS LIST\n"
+            genScript += "###############################################################################\n"
+            genScript += "portNamesAndNumbersList = {}\n"
+            for portName, portNumber in portNamesAndNumbersList.items():
+                genScript += f'portNamesAndNumbersList["{portName}"] = {portNumber}\n'
+            genScript += "\n"
+
+            genScript += f"sourcePortName = '{sourcePortName}'\n"
+            genScript += f"targetPortName = '{targetPortName}'\n"
+            genScript += "sourcePortNumber = portNamesAndNumbersList[sourcePortName]\n"
+            genScript += "targetPortNumber = portNamesAndNumbersList[targetPortName]\n"
+            genScript += "\n"
+
+            genScript += "# After simulation, Palace outputs port-V.csv with time, V(t), I(t)\n"
+            genScript += "#\n"
+            genScript += "data = np.loadtxt('sim_result_transient/port-V.csv', delimiter=',', skiprows=1)\n"
+            genScript += "t = data[:, 0]  # time in ns\n"
+            genScript += f"V_in = np.sqrt(data[:, sourcePortNumber*2]**2 + data[:, sourcePortNumber*2+1]**2)\n"
+            genScript += f"V_out = np.sqrt(data[:, targetPortNumber*2]**2 + data[:, targetPortNumber*2+1]**2)\n"
+            genScript += "\n"
+            genScript += "dt = t[1] - t[0]\n"
+            genScript += "freq = np.fft.rfftfreq(len(t), d=dt * 1e-9)  # Hz\n"
+            genScript += "\n"
+            genScript += "V_in_f = np.fft.rfft(V_in)\n"
+            genScript += "V_out_f = np.fft.rfft(V_out)\n"
+            genScript += "\n"
+            genScript += "S21 = 20 * np.log10(np.abs(V_out_f / V_in_f))\n"
+            genScript += "\n"
+            genScript += "import matplotlib.pyplot as plt\n"
+            genScript += "mask = (freq >= 20e6) & (freq <= 40e6)\n"
+            genScript += "plt.plot(freq[mask] / 1e6, S21[mask])\n"
+            genScript += "plt.xlabel('Frequency (MHz)')\n"
+            genScript += f"plt.ylabel('{graphSParamName} (dB)')\n"
+            genScript += "plt.grid(True)\n"
+            genScript += "plt.show()\n"
+            genScript += "\n"
+            genScript += "plt.subplot(1, 2, 1)\n"
+            genScript += "plt.plot(V_in)\n"
+            genScript += "plt.subplot(1, 2, 2)\n"
+            genScript += "plt.plot(V_out)\n"
+            genScript += "plt.show()\n"
+            genScript += "\n"
 
         #
         # WRITE OpenEMS Script file into current dir

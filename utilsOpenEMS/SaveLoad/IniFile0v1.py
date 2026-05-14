@@ -925,7 +925,7 @@ class IniFile0v1:
                     self.form.boundaryNf2ffPalacePhi.setValue(simulationPalaceSettings.palaceParams["nf2ffPhi"])
                     self.form.boundaryNf2ffPalaceNSample.setValue(simulationPalaceSettings.palaceParams["nf2ffNSample"])
 
-                    self.guiHelpers.setComboboxItem(self.form.simParamsSolverDevice_palace, simulationPalaceSettings.palaceParams["saveStep"])
+                    self.form.simParamsSaveStep_palace.setValue(simulationPalaceSettings.palaceParams["saveStep"])
                 except:
                     pass
 
