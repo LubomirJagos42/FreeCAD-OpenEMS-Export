@@ -279,9 +279,11 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                 genScript += 'simulationConfig["Boundaries"]["Postprocessing"] = {}\n'
                 genScript += f'simulationConfig["Boundaries"]["Postprocessing"]["FarField"] = {{"Attributes": [mesherObj.getGmshGroupId("{boundaryConditionName}_2D")], "NSample": {NSample}, "ThetaPhis": [[{theta}, {phi}]]}}\n'
                 genScript += '\n'
+        elif simulationProblemType.lower() == "transient":
+            genScript += self.getExcitationScriptLines(definitionsOnly=False)
 
         else:
-            genScript += f"#ERROR - simulation type '{simulationProblemType}' IS UNKNOWN!!!\n"
+            genScript += f"#INFO: No additional settings generated for simulation type '{simulationProblemType}'\n"
             genScript += "\n"
 
         currDir, nameBase = self.getCurrDir()
@@ -836,16 +838,46 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
                     genScript += f'simulationConfig["Solver"]["Driven"]["MaxFreq"] = {str(currSetting.sweep["fmax"])} * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
 
                     if currSetting.sweep["fmax"] - currSetting.sweep["fmin"] > 0:
-                        genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = ({str(currSetting.sweep["fmax"])} - {str(currSetting.sweep["fmin"])}) * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9 / {str(currSetting.sweep["npoints"])}\n'
+                        genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = (simulationConfig["Solver"]["Driven"]["MaxFreq"] - simulationConfig["Solver"]["Driven"]["MinFreq"]) / {str(currSetting.sweep["npoints"])}\n'
                     else:
                         genScript += f'simulationConfig["Solver"]["Driven"]["FreqStep"] = 0.1\n'
 
-                    genScript += f'simulationConfig["Solver"]["Driven"]["SaveStep"] = 1\n'
+                    genScript += f'simulationConfig["Solver"]["Driven"]["SaveStep"] = {self.form.simParamsSaveStep_palace.value()}\n'
                     genScript += f'simulationConfig["Solver"]["Driven"]["AdaptiveTol"] = 1e-3\n'
 
                     if self.form.simParamsUseNf2ff_palace.isChecked():
                         genScript += f'simulationConfig["Solver"]["Driven"]["Samples"] = []\n'
                         genScript += f'simulationConfig["Solver"]["Driven"]["Samples"].append({{"Type": "Point", "Freq": [{self.form.boundaryNf2ffPalaceFreq.value()/1e3}], "SaveStep": 1}})\n'
+
+                elif (currSetting.getType() == 'fem_gaussian'):
+                    genScript += "import math\n"
+                    genScript += "\n"
+                    genScript += f'f_center = {str(currSetting.femGaussian["f0"])} * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
+                    genScript += f'f_min = {str(currSetting.femGaussian["f0"] - currSetting.femGaussian["fc"])} * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
+                    genScript += f'f_max = {str(currSetting.femGaussian["f0"] + currSetting.femGaussian["fc"])} * {str(currSetting.getUnitsAsNumber(currSetting.units))} / 1e9\n'
+                    genScript += f'BW = f_max - f_min\n'
+                    genScript += f'\n'
+                    genScript += f'# Gaussian width in time domain\n'
+                    genScript += f'# width ≈ 1 / (π * f_max) gives -20dB at f_max\n'
+                    genScript += f'width_ns = 1.0 / (math.pi * BW) * 1e9\n'
+                    genScript += f'\n'
+                    genScript += f'# Simulation must run long enough for the pulse to decay\n'
+                    genScript += f'# and for filter ringdown - at least 10 periods at lowest frequency\n'
+                    genScript += f'T_min = 1.0 / f_min * 1e9\n'
+                    genScript += f'MaxTime = 10 * T_min\n'
+                    genScript += f'\n'
+                    genScript += f'# Time step must satisfy Nyquist at highest frequency\n'
+                    genScript += f'# dt < 1 / (2 * f_max)\n'
+                    genScript += f'TimeStep = 1.0 / (2 * f_max) * 1e9 / {str(currSetting.femGaussian["timeOversampling"])}  # time oversampling\n'
+                    genScript += f'\n'
+                    genScript += f'simulationConfig["Solver"]["Transient"] = {{}}\n'
+                    genScript += f'simulationConfig["Solver"]["Transient"]["Type"] = "GeneralizedAlpha"\n'
+                    genScript += f'simulationConfig["Solver"]["Transient"]["Excitation"] = "ModulatedGaussian"  # Gaussian centered at f_center, no DC\n'
+                    genScript += f'simulationConfig["Solver"]["Transient"]["ExcitationFreq"] = f_center / 1e9\n'
+                    genScript += f'simulationConfig["Solver"]["Transient"]["ExcitationWidth"] = width_ns\n'
+                    genScript += f'simulationConfig["Solver"]["Transient"]["MaxTime"] = MaxTime\n'
+                    genScript += f'simulationConfig["Solver"]["Transient"]["TimeStep"] = TimeStep\n'
+                    genScript += f'simulationConfig["Solver"]["Transient"]["SaveStep"] = {self.form.simParamsSaveStep_palace.value()}\n'
 
                 else:
                     genScript += f"# ERROR: Excitation type \"{currSetting.getType()}\" not implemented in script generator!\n"

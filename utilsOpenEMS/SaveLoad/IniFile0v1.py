@@ -173,6 +173,7 @@ class IniFile0v1:
             settings.setValue("gaussian", json.dumps(excitationList[k].gaussian))
             settings.setValue("custom", json.dumps(excitationList[k].custom))
             settings.setValue("sweep", json.dumps(excitationList[k].sweep))
+            settings.setValue("fem_gaussian", json.dumps(excitationList[k].femGaussian))
             settings.setValue("units", excitationList[k].units)
             settings.endGroup()
 
@@ -382,6 +383,7 @@ class IniFile0v1:
         simulationPalaceSettings.palaceParams["linearSolverMaxIterationCount"] = self.form.simParamsLinearSolverMaximumIterationCount_palace.value()
         simulationPalaceSettings.palaceParams["solverOrder"] = self.form.simParamsLinearSolverOrder_palace.value()
         simulationPalaceSettings.palaceParams["solverDevice"] = self.form.simParamsSolverDevice_palace.currentText()
+        simulationPalaceSettings.palaceParams["saveStep"] = self.form.simParamsSaveStep_palace.value()
         simulationPalaceSettings.palaceParams['useNf2ff'] = self.form.simParamsUseNf2ff_palace.isChecked()
         simulationPalaceSettings.palaceParams["nf2ffBoundaryConditionName"] = self.form.portNf2ffPalaceObjectList.currentText()
         simulationPalaceSettings.palaceParams["nf2ffFreqMHz"] = self.form.boundaryNf2ffPalaceFreq.value()
@@ -590,6 +592,7 @@ class IniFile0v1:
                 #
                 try:
                     categorySettings.sweep = json.loads(settings.value('sweep'))
+                    categorySettings.femGaussian = json.loads(settings.value('fem_gaussian'))
                 except:
                     pass
 
@@ -921,6 +924,8 @@ class IniFile0v1:
                     self.form.boundaryNf2ffPalaceTheta.setValue(simulationPalaceSettings.palaceParams["nf2ffTheta"])
                     self.form.boundaryNf2ffPalacePhi.setValue(simulationPalaceSettings.palaceParams["nf2ffPhi"])
                     self.form.boundaryNf2ffPalaceNSample.setValue(simulationPalaceSettings.palaceParams["nf2ffNSample"])
+
+                    self.guiHelpers.setComboboxItem(self.form.simParamsSolverDevice_palace, simulationPalaceSettings.palaceParams["saveStep"])
                 except:
                     pass
 
