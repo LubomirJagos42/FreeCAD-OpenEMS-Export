@@ -2838,7 +2838,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#		but if it has different params by random than it can be removed.
 		#
 		if (materialSettings.name.upper() == "PEC" and materialSettings.type == "metal"):
-			self.guiHelpers.displayMessage("Maaterial PEC which is metal cannot be removed.")
+			self.guiHelpers.displayMessage("Material PEC which is metal cannot be removed.")
 			return
 
 		materialGroupWidgetItems = self.form.objectAssignmentRightTreeWidget.findItems(

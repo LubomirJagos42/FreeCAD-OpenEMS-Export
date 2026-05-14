@@ -959,7 +959,6 @@ class OctaveScriptLinesGenerator2(CommonScriptLinesGenerator):
                 print(f"#LUMPED PART {currentSetting.getType()} - {currentSetting.getName()}")
 
                 freecadObjects = [i for i in objs if (i.Label) == childName]
-                lumpedPartChildIndex = 1
                 for obj in freecadObjects:
                     # obj = FreeCAD Object class
 
@@ -1011,14 +1010,12 @@ class OctaveScriptLinesGenerator2(CommonScriptLinesGenerator):
                     #   inductors add to their name index like:
                     #       22nH, 22nH (2), ...
                     #
-                    if lumpedPartChildIndex > 1:
-                        lumpedPartName += f" ({lumpedPartChildIndex})"
+                    if k > 0:
+                        lumpedPartName += f" ({k+1})"
 
                     # WARNING: Caps param has hardwired value 1, will be generated small metal caps to connect part with circuit !!!
                     genScript += f"[CSX] = AddLumpedElement(CSX, '{lumpedPartName}', {lumpedPartParams});\n"
                     genScript += f"[CSX] = AddBox(CSX, '{lumpedPartName}', {priorityIndex}, lumpedPartStart, lumpedPartStop);\n"
-
-                    lumpedPartChildIndex += 1
 
             genScript += "\n"
 
