@@ -85,6 +85,7 @@ class MaterialConstantsCatalogDialog(QtCore.QObject):
 		self.form.table.setSortingEnabled(True)
 		self.form.table.setSelectionBehavior(QtGui.QTableView.SelectRows)
 		self.form.table.horizontalHeader().setStretchLastSection(True)
+		self.form.table.setEditTriggers(QtGui.QAbstractItemView.EditTrigger.NoEditTriggers)
 
 		# Connect search
 		self.form.search_bar.textChanged.connect(
@@ -115,6 +116,7 @@ class MaterialConstantsCatalogDialog(QtCore.QObject):
 
 	def show(self):
 		self.form.show()
+		self.form.search_bar.setText("")	#clear search bar
 		self.form.raise_()
 
 	def close(self):
@@ -160,7 +162,7 @@ class MaterialConstantsCatalogDialog(QtCore.QObject):
 			self.parentForm.materialTanDeltaNumberInput.setValue(float(loss_tangent))
 
 			# Close catalog dialog after selection
-			#self.close()
+			self.close()
 
 ####################################################################################################################################################################
 # End of PANEL definition

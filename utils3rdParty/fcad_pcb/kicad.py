@@ -506,7 +506,7 @@ class KicadFcad:
 
         # set -1 to disable via in pads, 0 to enable as normal, >0 to use as
         # a ratio to via radius for creating a square to simplify via
-        self.via_bound = 0
+        self.via_bound = 1
 
         # whether to skip via hole if there is via_bound
         self.via_skip_hole = None

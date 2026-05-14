@@ -12,7 +12,6 @@ import traceback
 
 import webbrowser		#webbrowser is used to open help page and so
 
-
 APP_CONTEXT = "None"
 
 try:
@@ -88,6 +87,8 @@ from utilsOpenEMS.GlobalFunctions.GlobalFunctions import _bool, _r
 # Main GUI panel class
 #
 class ExportOpenEMSDialog(QtCore.QObject):
+
+	_constantWindowTitle: str = "OpenEMS Simulation Creator"
 
 	def finished(self):
 		"""
@@ -368,6 +369,10 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.boundaryConditionSettingsTreeView.currentItemChanged.connect(self.boundaryConditionTreeWidgetItemChanged)
 
 		#
+		# EXCITATION tab settings event handlers
+		#
+
+		#
 		# PORT tab settings events handlers
 		#
 		self.form.lumpedPortRadioButton.toggled.connect(self.portSettingsTypeChoosed)
@@ -622,6 +627,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			#
 			[radio.setEnabled(True) for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
 
+			#
+			# EXCITATION TAB - excitation subtab enable/disable
+			#
+			self.form.excitationSettingsTab_tabWidget_emerge.setEnabled(False)
+			self.form.excitationSettingsTab_tabWidget_openems.setEnabled(True)
+			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(0)
+
 		elif (solverTypeStr.lower() in ["emerge", "palace"]):
 			tempSolverType = solverTypeStr.lower()
 
@@ -649,10 +661,16 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 			self.form.lumpedPortDirectionCustomGroupBox.setEnabled(True)
 
+			#
+			# EXCITATION TAB - excitation subtab enable/disable
+			#
 			self.form.excitationSettingsTab_tabWidget_emerge.setEnabled(True)
 			self.form.excitationSettingsTab_tabWidget_openems.setEnabled(False)
 			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(1)
 
+			#
+			# SIMULATION TAB
+			#
 			self.form.simulationParamsTab_tabWidget_openEMSTab.setEnabled(False)
 			self.form.simulationParamsTab_tabWidget_emergeTab.setEnabled(tempSolverType == "emerge")
 			self.form.simulationParamsTab_tabWidget_palaceTab.setEnabled(tempSolverType == "palace")
@@ -699,6 +717,17 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "LumpedPart", False)
 				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "LumpedPart", False)
 
+				#
+				# Excitation tab, disable gaussian impulse, that is available just in palace
+				#
+				self.form.femSinusodialExcitationRadioButton.click()
+
+				self.form.femGaussianExcitationRadioButton.setEnabled(False)
+				self.form.femGaussianExcitationF0.setEnabled(False)
+				self.form.femGaussianExcitationFc.setEnabled(False)
+				self.form.femGaussianExcitationTimeOversampling.setEnabled(False)
+
+
 			elif tempSolverType == "palace":
 				#
 				# Display lumped part settings tab, this is applicable tab just for openEMS and palace
@@ -713,6 +742,14 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				#
 				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "LumpedPart", True)
 				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "LumpedPart", True)
+
+				#
+				# Excitation tab, enable gaussian impulse, that is available just in palace
+				#
+				self.form.femGaussianExcitationRadioButton.setEnabled(True)
+				self.form.femGaussianExcitationF0.setEnabled(True)
+				self.form.femGaussianExcitationFc.setEnabled(True)
+				self.form.femGaussianExcitationTimeOversampling.setEnabled(True)
 
 			# post-processing tab nf2ff tab set
 			self.form.nf2ffProcessingTab.setCurrentIndex(1)
@@ -1893,7 +1930,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 	def searchObjectNameInAllCategoriesGroups(self, objectName: str, searchCategoriesList: list[str]) -> list[tuple[str, str]]:
 		"""
-		Search for object name occuerence in specified categories.
+		Search for object name occurrence in specified categories.
 		:param objectName:
 		:return: list of tuples (categoryName, groupName)
 		"""
@@ -1902,7 +1939,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		# CHECK FOR DUPLICATES OF object in category where object is added
 		itemWithSameName = self.form.objectAssignmentRightTreeWidget.findItems(objectName, QtCore.Qt.MatchFixedString | QtCore.Qt.MatchFlag.MatchRecursive)
 		for item in itemWithSameName:
-			if (item.parent() != None and item.parent().parent().text(0) in searchCategoriesList):
+			if (item.parent() != None and item.parent().parent() != None and item.parent().parent().text(0) in searchCategoriesList):
 				occurenceList.append((item.parent().parent().text(0), item.parent().text(0)))
 
 		return occurenceList
@@ -2153,6 +2190,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#
 		self.updateUiBasedOnSolverType()
 
+		#
+		# Update window title with loaded filename
+		#
+		self.form.setWindowTitle(self._constantWindowTitle + " - " + programbase)
+
 	#
 	#	Change current scripts type generator based on radiobutton from UI
 	#		if no type by accident is choosed, octave script generator is used
@@ -2250,7 +2292,49 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				conflictingObjectListStr += f"{conflictingObjectPair[0]} &lt;---&gt; {conflictingObjectPair[1]}\n"
 			self.guiHelpers.displayMessage(f"<font color='red'><b>There are multiple conflicting object between each other, please check:</b></font><br />\n{conflictingObjectListStr}", forceModal=True)
 
+		#
+		#	Check SIMULATION PARAM tab
+		#		- this is now just for palace solver as there are some combination of problem type and solver not working together
+		#
+		if self.form.comboBox_solverType.currentText().lower().find("palace") != -1:
+			errorMsg:str = ""
+			wasErrorDetected: bool = False
+
+			problemType = self.form.simParamsSimulationTypeList_palace.currentText()
+			solverType = self.form.simParamsLinearSolverType_palace.currentText()
+			solverKSPType = self.form.simParamsLinearSolverKSPType_palace.currentText()
+
+			if problemType == "Driven":
+				if solverType != "SuperLU":
+					wasErrorDetected = True
+					errorMsg += f"For Driven problem type <font color='red'>use <b>SuperLU</b> solver type</font><br />\n"
+
+				# KSP solver type is probably not important to check
+				# if solverKSPType != "GMRES":
+				# 	wasErrorDetected = True
+				# 	errorMsg += f"For Driven problem type <font color='red'>use <b>GMRES</b> solver KSP type</font><br />\n"
+
+			if  problemType == "Transient":
+				if solverType != "AMS":
+					wasErrorDetected = True
+					errorMsg += f"For Transient problem type <font color='red'>use <b>AMS</b> solver type</font><br />\n"
+
+			if wasErrorDetected:
+				self.guiHelpers.displayMessage(errorMsg, forceModal=True)
+
+		#check excitation type for emerge
+		if self.form.comboBox_solverType.currentText().lower().find("emerge") != -1:
+			excitationCategory = self.form.objectAssignmentRightTreeWidget.findItems("Excitation", QtCore.Qt.MatchFixedString)
+			if len(excitationCategory) >= 0:
+				if (excitationCategory[0].childCount() > 0):
+					item = excitationCategory[0].child(0)
+					excitationSetting = item.data(0, QtCore.Qt.UserRole)  # At index 0 is Default Excitation.
+					if excitationSetting.getType() != "sweep":
+						self.guiHelpers.displayMessage("<font color='red'><b>Excitation type error</b>, EMerge support just sinusodial sweep excitation type!</font>")
+
+		#
 		#	Write result .m file into subfolder named after .ini file next to simulation settings .ini file
+		#
 		print(f"----> start saving file into {self.simulationOutputDir}")
 
 		self.scriptGenerator.generateSimulationScript(self.simulationOutputDir)
@@ -3043,15 +3127,23 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			excitationItem.custom['f0'] = self.form.customExcitationF0NumberInput.value()
 
 		#
-		#	EMerge
+		#	EMerge + Palace
+		#		- emerge knows just frequency sweep
+		#		- palace knows both frequency sweep and transient analysis
 		#
-		if (self.getSolverType().lower() in ["emerge", "palace"]):
+		if (self.form.femSinusodialExcitationRadioButton.isChecked()):
 			excitationItem.type = 'sweep'
 			excitationItem.sweep = {}
 			excitationItem.sweep['fmin'] = self.form.sweepExcitationFmin.value()
 			excitationItem.sweep['fmax'] = self.form.sweepExcitationFmax.value()
 			excitationItem.sweep['npoints'] = self.form.sweepExcitationNPoints.value()
 			excitationItem.sweep['resolution'] = self.form.sweepExcitationResolution.value()
+		if (self.form.femGaussianExcitationRadioButton.isChecked()):
+			excitationItem.type = 'fem_gaussian'
+			excitationItem.femGaussian = {}
+			excitationItem.femGaussian['f0'] = self.form.femGaussianExcitationF0.value()
+			excitationItem.femGaussian['fc'] = self.form.femGaussianExcitationFc.value()
+			excitationItem.femGaussian['timeOversampling'] = self.form.femGaussianExcitationTimeOversampling.value()
 
 		return excitationItem
 
@@ -4140,18 +4232,18 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		currSetting = self.form.excitationSettingsTreeView.currentItem().data(0, QtCore.Qt.UserRole)
 		self.form.excitationSettingsNameInput.setText(currSetting.name)
 		if (currSetting.type == "sinusodial"):
-			self.form.sinusodialExcitationRadioButton.click()
+			self.form.sinusodialExcitationRadioButton.setChecked(True)
 			self.form.sinusodialExcitationF0NumberInput.setValue(currSetting.sinusodial['f0'])
 		elif (currSetting.type == "gaussian"):
-			self.form.gaussianExcitationRadioButton.click()
+			self.form.gaussianExcitationRadioButton.setChecked(True)
 			self.form.gaussianExcitationF0NumberInput.setValue(currSetting.gaussian['f0'])
 			self.form.gaussianExcitationFcNumberInput.setValue(currSetting.gaussian['fc'])
 		elif (currSetting.type == "dirac"):
-			self.form.diracExcitationRadioButton.click()
+			self.form.diracExcitationRadioButton.setChecked(True)
 		elif (currSetting.type == "step"):
-			self.form.stepExcitationRadioButton.click()
+			self.form.stepExcitationRadioButton.setChecked(True)
 		elif (currSetting.type == "custom"):
-			self.form.customExcitationRadioButton.click()
+			self.form.customExcitationRadioButton.setChecked(True)
 			self.form.customExcitationTextInput.setText(currSetting.custom['functionStr'])
 			self.form.customExcitationF0NumberInput.setValue(currSetting.custom['f0'])
 			
@@ -4160,10 +4252,22 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.form.excitationUnitsNumberInput.setCurrentIndex(index)
 			pass
 		elif (currSetting.type == "sweep"):
+			# self.form.femSinusodialExcitationRadioButton.click()	#can be disabled since it's just for fem solvers
+			self.form.femSinusodialExcitationRadioButton.setChecked(True)
+
 			self.form.sweepExcitationFmin.setValue(currSetting.sweep['fmin'])
 			self.form.sweepExcitationFmax.setValue(currSetting.sweep['fmax'])
 			self.form.sweepExcitationNPoints.setValue(currSetting.sweep['npoints'])
 			self.form.sweepExcitationResolution.setValue(currSetting.sweep['resolution'])
+
+			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(1)
+		elif (currSetting.type == "fem_gaussian"):
+			# self.form.femGaussianExcitationRadioButton.click()	#can be disabled since it's just for fem solvers
+			self.form.femGaussianExcitationRadioButton.setChecked(True)
+
+			self.form.femGaussianExcitationF0.setValue(currSetting.femGaussian['f0'])
+			self.form.femGaussianExcitationFc.setValue(currSetting.femGaussian['fc'])
+			self.form.femGaussianExcitationTimeOversampling.setValue(currSetting.femGaussian['timeOversampling'])
 
 			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(1)
 		else:

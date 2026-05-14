@@ -7,7 +7,7 @@ from .SettingsItem import SettingsItem
 #
 
 class ExcitationSettingsItem(SettingsItem):
-	def __init__(self, name="", type="", sinusodial=None, gaussian=None, custom=None, units = "Hz", sweep=None):
+	def __init__(self, name="", type="", sinusodial=None, gaussian=None, custom=None, units = "Hz", sweep=None, femGaussian=None):
 		SettingsItem.__init__(self)
 		self.name = name
 		self.type = type
@@ -15,6 +15,7 @@ class ExcitationSettingsItem(SettingsItem):
 		self.gaussian = {'f0': 0, 'fc': 0} if gaussian is None else gaussian
 		self.custom = {'functionStr': '0', 'f0': 0} if custom is None else custom
 		self.sweep = {'fmin': 0.0, 'fmax': 0.0, 'npoints': 1, 'resolution': 0.1} if sweep is None else sweep
+		self.femGaussian = {'f0': 0, 'fc': 0, 'timeOversampling': 1} if femGaussian is None else femGaussian
 		self.units = units
 		return
 

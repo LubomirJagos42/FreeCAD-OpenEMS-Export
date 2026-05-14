@@ -709,7 +709,7 @@ class PythonScriptLinesGenerator(OctaveScriptLinesGenerator):
                     genScript += "f0 = " + str(currSetting.sinusodial['f0']) + "*" + str(
                         currSetting.getUnitsAsNumber(currSetting.units)) + "\n"
                     if not definitionsOnly:
-                        genScript += "FDTD.SetSinusExcite(fc);\n"
+                        genScript += "FDTD.SetSinusExcite(f0);\n"
                     genScript += "max_res = C0 / f0 / 20\n"
                     self.maxGridResolution_m = 3e8 / (
                                 currSetting.sinusodial['f0'] * currSetting.getUnitsAsNumber(currSetting.units) * 20)
@@ -735,6 +735,15 @@ class PythonScriptLinesGenerator(OctaveScriptLinesGenerator):
                             'f0', str(f0)) + "' )\n"
                     genScript += "max_res = 0\n"
                     self.maxGridResolution_m = 0
+                    pass
+                elif (currSetting.getType() == 'dirac'):
+                    if not definitionsOnly:
+                        # genScript += "FDTD.SetDiracExcite(FDTD);\n"
+                        genScript += "# DIRAC EXCITATION USING PYTHON SCRIPT NOT IMPLEMENTED IN GUI YET\n"
+                    pass
+                elif (currSetting.getType() == 'step'):
+                    if not definitionsOnly:
+                        genScript += 'FDTD.SetStepExcite(1)\n'
                     pass
                 pass
 
