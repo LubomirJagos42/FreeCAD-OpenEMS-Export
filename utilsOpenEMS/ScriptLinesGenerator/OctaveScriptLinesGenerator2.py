@@ -302,7 +302,7 @@ class OctaveScriptLinesGenerator2(CommonScriptLinesGenerator):
         return genScript
 
     def getCartesianOrCylindricalScriptLinesFromStartStop(self, bbCoords, startPointName=None, stopPointName=None):
-        genScript = "";
+        genScript = ""
         refUnit = self.getUnitLengthFromUI_m()  # Coordinates need to be given in drawing units
         sf = self.getFreeCADUnitLength_m() / refUnit  # scaling factor for FreeCAD units to drawing units
 
