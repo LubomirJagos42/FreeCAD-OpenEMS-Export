@@ -671,11 +671,11 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
 
                     lumpedPartParams = []
                     if ('r' in currentSetting.getType().lower()):
-                        lumpedPartParams.append(f"R={currentSetting.getR()}")
+                        lumpedPartParams.append(f"R={currentSetting.getR(unitsAsText=True)}")
                     if ('l' in currentSetting.getType().lower()):
-                        lumpedPartParams.append(f"L={currentSetting.getL()}")
+                        lumpedPartParams.append(f"L={currentSetting.getL(unitsAsText=True)}")
                     if ('c' in currentSetting.getType().lower()):
-                        lumpedPartParams.append(f"C={currentSetting.getC()}")
+                        lumpedPartParams.append(f"C={currentSetting.getC(unitsAsText=True)}")
 
                     impedanceFunctionParamStr = ""
                     if (currentSetting.getCombinationType() == 'series'):
@@ -806,16 +806,16 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     continue
 
                 if gridSettingsInst.femMesh['femUseMaxElementSize'] == True:
-                    genScript += f"helperFunctionsObj.setObjSize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femMaxBoundarySize']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
+                    genScript += f"helperFunctionsObj.setObjSize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femMaxElementSize']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
                 if gridSettingsInst.femMesh['femUseMaxBoundarySize'] == True:
                     genScript += f"helperFunctionsObj.setObjBoundarySize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femMaxBoundarySize']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
                 if gridSettingsInst.femMesh['femUseMaxFaceSize'] == True:
-                    genScript += f"helperFunctionsObj.setObjFaceSize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femMaxBoundarySize']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
+                    genScript += f"helperFunctionsObj.setObjFaceSize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femMaxFaceSize']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
                 if gridSettingsInst.femMesh['femUseMaxDomainSize'] == True:
-                    genScript += f"helperFunctionsObj.setObjVolumeSize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femMaxBoundarySize']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
+                    genScript += f"helperFunctionsObj.setObjVolumeSize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femMaxDomainSize']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
                 if gridSettingsInst.femMesh['femUseSurfaceMeshSize'] == True:
                     genScript += f"\t\t\t#TODO: {FreeCADObjectName} - femUseSurfaceMeshSize not implemented yet!\n"
-                    genScript += f"helperFunctionsObj.setObjBoundarySize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femMaxBoundarySize']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
+                    genScript += f"helperFunctionsObj.setObjBoundarySize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femSurfaceMeshSizeSizeMin']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
 
                 if gridSettingsInst.femMesh['femUseMaxUserDefined'] == True:
                     genScript += gridSettingsInst.femMesh['femMaxUserDefined']+"\n"
