@@ -608,10 +608,6 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
 
                         portExcitationAmplitude = str(currSetting.excitationAmplitude)
 
-                        internalPortName = currSetting.name + " - " + obj.Label
-                        self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
-                        genScriptPortCount += 1
-
                         PORT_NAME = childName
                         if bbCoords.XLength == 0 or bbCoords.YLength == 0 or bbCoords.ZLength == 0:
 
@@ -621,21 +617,26 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                             if bbCoords.XLength == 0:
                                 portWidth = "h"
                                 portHeight = "th"
-                                portGeometryObject = f"em.geo.Plate(name='{internalPortName}', origin=portStart, u=[0,h,0], v=[0,0,th])"
+                                portGeometryObject = f"em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=[0,h,0], v=[0,0,th])"
                             elif bbCoords.YLength == 0:
                                 portWidth = "w"
                                 portHeight = "th"
-                                portGeometryObject = f"em.geo.Plate(name='{internalPortName}', origin=portStart, u=[w,0,0], v=[0,0,th])"
+                                portGeometryObject = f"em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=[w,0,0], v=[0,0,th])"
                             elif bbCoords.ZLength == 0:
                                 portWidth = "w"
                                 portHeight = "h"
-                                portGeometryObject = f"em.geo.Plate(name='{internalPortName}', origin=portStart, u=[w,0,0], v=[0,h,0])"
+                                portGeometryObject = f"em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=[w,0,0], v=[0,h,0])"
                         else:
-                            portGeometryObject = f"em.geo.Box(name='{internalPortName}', width=w, height=h, depth=th, position=tuple(portStart))"
+                            portGeometryObject = f"em.geo.Box(name='{PORT_NAME}', width=w, height=h, depth=th, position=tuple(portStart))"
 
-                        self.portBoundaryConditionScriptLinesBuffer.append(f"helperFunctionsObj.setPortAsLumpedPort('{internalPortName}')\n")
+                        self.portBoundaryConditionScriptLinesBuffer.append(f"helperFunctionsObj.setPortAsLumpedPort('{PORT_NAME}')\n")
                         genScript += f'#portName: "{obj.Label}" -> portNumber: {genScriptPortCount}\n'
-                        genScript += f"helperFunctionsObj.addPort('{internalPortName}', portStart, {portWidth}, {portHeight}, {portR}, {portDirection}, {portExcitationAmplitude}, {portGeometryObject})\n"
+                        genScript += f"helperFunctionsObj.addPort('{PORT_NAME}', portStart, {portWidth}, {portHeight}, {portR}, {portDirection}, {portExcitationAmplitude}, {portGeometryObject})\n"
+
+                        # internalPortName = currSetting.name + " - " + obj.Label
+                        internalPortName = PORT_NAME
+                        self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
+                        genScriptPortCount += 1
 
                     else:
                         genScript += '# Unknown port type. Nothing was generated.\n'
@@ -1304,14 +1305,15 @@ simulationObj.display.show()
         for [item, currSetting] in items:
             for k in range(item.childCount()):
                 childName = item.child(k).text(0)
-                portName = f"{currSetting.name} - {childName}"
+                # portName = f"{currSetting.name} - {childName}"
+                portName = childName
 
                 # PORT openEMS GENERATION INTO VARIABLE
                 if (currSetting.getType() == 'lumped'):
                     portNamesAndNumbersList[portName] = genScriptPortCount
                     genScriptPortCount += 1
 
-        sourcePortName = self.form.drawS11Port.currentText()
+        sourcePortName:str = self.form.drawS11Port.currentText().split(' - ')[1]
         sourcePortNumber = portNamesAndNumbersList[sourcePortName]
 
         genScript += f"## EMerge simulation - S{sourcePortNumber}{sourcePortNumber}\n"
@@ -1379,17 +1381,18 @@ simulationObj.display.show()
         for [item, currSetting] in items:
             for k in range(item.childCount()):
                 childName = item.child(k).text(0)
-                portName = f"{currSetting.name} - {childName}"
+                # portName = f"{currSetting.name} - {childName}"
+                portName = childName
 
                 # PORT openEMS GENERATION INTO VARIABLE
                 if (currSetting.getType() == 'lumped'):
                     portNamesAndNumbersList[portName] = genScriptPortCount
                     genScriptPortCount += 1
 
+        sourcePortName = self.form.drawS21Source.currentText().split(' - ')[1]
+        targetPortName = self.form.drawS21Target.currentText().split(' - ')[1]
         sourcePortNumber = portNamesAndNumbersList[sourcePortName]
         targetPortNumber = portNamesAndNumbersList[targetPortName]
-        sourcePortName = self.form.drawS21Source.currentText()
-        targetPortName = self.form.drawS21Target.currentText()
 
         #
         #   Generate script plotting S21 from source port to output port
@@ -1432,7 +1435,7 @@ simulationObj.display.show()
         genScript += "sourcePortNumber = portNamesAndNumbersList[sourcePortName]\n"
         genScript += "targetPortNumber = portNamesAndNumbersList[targetPortName]\n"
         genScript += "\n"
-        genScript += "helperFunctionsObj.plotSParamUsingPortNumbers(sourcePortNumber, targetPortNumber)\n"
+        genScript += "helperFunctionsObj.plotSParamUsingPortNumbers(sourcePortNumber, targetPortNumber, plotS11=True)\n"
         genScript += "\n"
 
         #
