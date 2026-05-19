@@ -814,7 +814,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                 if gridSettingsInst.femMesh['femUseMaxDomainSize'] == True:
                     genScript += f"helperFunctionsObj.setObjVolumeSize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femMaxDomainSize']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
                 if gridSettingsInst.femMesh['femUseSurfaceMeshSize'] == True:
-                    genScript += f"\t\t\t#TODO: {FreeCADObjectName} - femUseSurfaceMeshSize not implemented yet!\n"
+                    genScript += f"#TODO: {FreeCADObjectName} - femUseSurfaceMeshSize not implemented yet!\n"
                     genScript += f"helperFunctionsObj.setObjBoundarySize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femSurfaceMeshSizeSizeMin']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
 
                 if gridSettingsInst.femMesh['femUseMaxUserDefined'] == True:
