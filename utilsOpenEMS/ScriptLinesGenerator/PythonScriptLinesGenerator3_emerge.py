@@ -151,7 +151,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     colorStr = ""
                     colorTuple = freeCadObj.ViewObject.DiffuseColor[0]
                     colorStr += "#" + format(int(255 * colorTuple[0]), '02x') + format(int(255 * colorTuple[1]), '02x') + format(int(255 * colorTuple[2]), '02x')
-                    genScript += f"helperFunctionsObj.setMaterialColor('{currSetting.getName()}', color='{colorStr}', opacity={1.0 - freeCadObj.ViewObject.Transparency})\n"
+                    genScript += f"helperFunctionsObj.setMaterialColor('{currSetting.getName()}', color='{colorStr}', opacity={1.0 - freeCadObj.ViewObject.Transparency/100.0})\n"
                     genScript += f"\n"
 
                     #
@@ -577,8 +577,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     if (currSetting.getType() == 'lumped'):
                         genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
-                        genScript += "portStart = [k*0.001 for k in portStart]\n"
-                        genScript += "portStop = [k*0.001 for k in portStop]\n"
+                        genScript += "portStart = [k*fc_unit for k in portStart]  #dimension scaled by freecad unit to meters\n"
+                        genScript += "portStop = [k*fc_unit for k in portStop]  #dimension scaled by freecad unit to meters\n"
                         genScript += f"w = abs(portStart[0] - portStop[0])\n"
                         genScript += f"h = abs(portStart[1] - portStop[1])\n"
                         genScript += f"th = abs(portStart[2] - portStop[2])\n"
@@ -803,8 +803,14 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
 
                 ### Produce script output.
 
-                if (not "Shape" in dir(fcObject)):
-                    continue
+                #
+                #   This should make sure that just real objects have set mesh size
+                #       21May2026 - seems not working properly with PCB imported from KiCAD as some real objects don't have Shape and
+                #                   therefore no mesh size line is generated, so commented for now!
+                #
+                # if (not "Shape" in dir(fcObject)):
+                #     print(f"\tFailed to find Shape in object {FreeCADObjectName}")
+                #     continue
 
                 if gridSettingsInst.femMesh['femUseMaxElementSize'] == True:
                     genScript += f"helperFunctionsObj.setObjSize(name='{FreeCADObjectName}', size={gridSettingsInst.femMesh['femMaxElementSize']}*{gridSettingsInst.femMesh['femMaxSizeUnits']})\n"
@@ -1042,7 +1048,6 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "#\n"
         # genScript += "simulationObj.commit_geometry()\n"
         genScript += "simulationObj.generate_mesh()\n"
-        genScript += "\n"
         genScript += "\n"
 
         genScript += "#\n"
@@ -1350,6 +1355,17 @@ simulationObj.display.show()
         genScript += f"sourcePortName = '{sourcePortName}'\n"
         genScript += "sourcePortNumber = portNamesAndNumbersList[sourcePortName]\n"
         genScript += "\n"
+
+        if self.form.simParamsGenerateTouchstoneFile_emerge.isChecked():
+            genScript += "# Generate touchstone file available since EMerge 2.5.5\n"
+            genScript += f'simulationResult.scalar.grid.export_touchstone("{simulationName}.s2p", Z0ref=50, format="RI", funit="GHz")\n'
+            genScript += "\n"
+        if self.form.simParamsGenerateTouchstoneFileDense_emerge.isChecked():
+            genScript += "# Generate touchstone file available since EMerge 2.5.5, frequency axis have more interpolated points\n"
+            genScript += f"dense_frequencies = simulationResult.scalar.grid.dense_f({self.form.simParamsGenerateTouchstoneFileDenseNPoints_emerge.value()})\n"
+            genScript += f'simulationResult.scalar.grid.export_touchstone("{simulationName}_dense.s2p", Z0ref=50, format="RI", funit="GHz", dense_freq=dense_frequencies)\n'
+            genScript += "\n"
+
         genScript += "helperFunctionsObj.plotSParamUsingPortNumbers(sourcePortNumber, sourcePortNumber)\n"
         genScript += "\n"
 
@@ -1435,6 +1451,17 @@ simulationObj.display.show()
         genScript += "sourcePortNumber = portNamesAndNumbersList[sourcePortName]\n"
         genScript += "targetPortNumber = portNamesAndNumbersList[targetPortName]\n"
         genScript += "\n"
+
+        if self.form.simParamsGenerateTouchstoneFile_emerge.isChecked():
+            genScript += "# Generate touchstone file available since EMerge 2.5.5\n"
+            genScript += f'simulationResult.scalar.grid.export_touchstone("{simulationName}.s2p", Z0ref=50, format="RI", funit="GHz")\n'
+            genScript += "\n"
+        if self.form.simParamsGenerateTouchstoneFileDense_emerge.isChecked():
+            genScript += "# Generate touchstone file available since EMerge 2.5.5, frequency axis have more interpolated points\n"
+            genScript += f"dense_frequencies = simulationResult.scalar.grid.dense_f({self.form.simParamsGenerateTouchstoneFileDenseNPoints_emerge.value()})\n"
+            genScript += f'simulationResult.scalar.grid.export_touchstone("{simulationName}_dense.s2p", Z0ref=50, format="RI", funit="GHz", dense_freq=dense_frequencies)\n'
+            genScript += "\n"
+
         genScript += "helperFunctionsObj.plotSParamUsingPortNumbers(sourcePortNumber, targetPortNumber, plotS11=True)\n"
         genScript += "\n"
 

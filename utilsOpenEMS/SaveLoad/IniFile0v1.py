@@ -363,6 +363,9 @@ class IniFile0v1:
         simulationSettings.params['base_length_unit_m_emerge'] = self.form.simParamsDeltaUnitList_emerge.currentText()
         simulationSettings.params['solverEngine_emerge'] = self.form.simParamsSolverEngine_emerge.currentText()
         simulationSettings.params['disableRAMCheck_emerge'] = self.form.simParamsDisableRAMCheck_emerge.isChecked()
+        simulationSettings.params['generateTouchstoneFile_emerge'] = self.form.simParamsGenerateTouchstoneFile_emerge.isChecked()
+        simulationSettings.params['generateTouchstoneFileDense_emerge'] = self.form.simParamsGenerateTouchstoneFileDense_emerge.isChecked()
+        simulationSettings.params['generateTouchstoneFileDenseNPoints_emerge'] = self.form.simParamsGenerateTouchstoneFileDenseNPoints_emerge.value()
 
         simulationSettings.params['outputScriptType'] = 'octave'
         if self.form.radioButton_pythonType.isChecked():
@@ -865,6 +868,9 @@ class IniFile0v1:
                     self.form.simParamsDeltaUnitList_emerge.setCurrentText(simulationSettings.params['base_length_unit_m_emerge'])
                     self.form.simParamsSolverEngine_emerge.setCurrentText(simulationSettings.params['solverEngine_emerge'])
                     self.form.simParamsDisableRAMCheck_emerge.setChecked(simulationSettings.params['disableRAMCheck_emerge'])
+                    self.form.simParamsGenerateTouchstoneFile_emerge.setChecked(simulationSettings.params['generateTouchstoneFile_emerge'])
+                    self.form.simParamsGenerateTouchstoneFileDense_emerge.setChecked(simulationSettings.params['generateTouchstoneFileDense_emerge'])
+                    self.form.simParamsGenerateTouchstoneFileDenseNPoints_emerge.setValue(simulationSettings.params['generateTouchstoneFileDenseNPoints_emerge'])
                 except:
                     pass
 
