@@ -704,20 +704,6 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			if tempSolverType == "emerge":
 
 				#
-				# Hide lumped part settings tab, not applicable for EMerge
-				#
-				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "Lumped Part", False)
-				lumpedPartTabIndex = self.form.openEMSTab.indexOf(self.form.lumpedPartSettingsTab)
-				self.form.openEMSTab.setTabText(lumpedPartTabIndex, "")
-				self.form.lumpedPartSettingsTab.setEnabled(False)
-
-				#
-				# Hide lumped part in right tree widget, not applicable for EMerge
-				#
-				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "LumpedPart", False)
-				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "LumpedPart", False)
-
-				#
 				# Excitation tab, disable gaussian impulse, that is available just in palace
 				#
 				self.form.femSinusodialExcitationRadioButton.click()
@@ -727,21 +713,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.form.femGaussianExcitationFc.setEnabled(False)
 				self.form.femGaussianExcitationTimeOversampling.setEnabled(False)
 
-
 			elif tempSolverType == "palace":
-				#
-				# Display lumped part settings tab, this is applicable tab just for openEMS and palace
-				#
-				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "Lumped Part", True)
-				lumpedPartTabIndex = self.form.openEMSTab.indexOf(self.form.lumpedPartSettingsTab)
-				self.form.openEMSTab.setTabText(lumpedPartTabIndex, "Lumped Part")
-				self.form.lumpedPartSettingsTab.setEnabled(True)
-
-				#
-				# Display boundary conditions in right tree widget, applicable for openEMS, palace
-				#
-				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "LumpedPart", True)
-				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "LumpedPart", True)
 
 				#
 				# Excitation tab, enable gaussian impulse, that is available just in palace
@@ -2838,7 +2810,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#		but if it has different params by random than it can be removed.
 		#
 		if (materialSettings.name.upper() == "PEC" and materialSettings.type == "metal"):
-			self.guiHelpers.displayMessage("Maaterial PEC which is metal cannot be removed.")
+			self.guiHelpers.displayMessage("Material PEC which is metal cannot be removed.")
 			return
 
 		materialGroupWidgetItems = self.form.objectAssignmentRightTreeWidget.findItems(

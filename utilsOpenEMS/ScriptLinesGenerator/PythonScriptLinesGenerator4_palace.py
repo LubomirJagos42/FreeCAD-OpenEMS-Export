@@ -108,7 +108,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "\n"
 
         genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None), outputDir)
-        genScript += self.getBoundaryConditionObjectImportScriptLines(itemsByClassName.get("BoundaryConditionSettingsItem", None), outputDir)
+        genScript += self.getObjectUsedInSomeCategoryStepImportScriptLines(itemsByClassName.get("BoundaryConditionSettingsItem", None), outputDir)
 
         genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None), outputDir)
         #
@@ -444,7 +444,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
 
         return genScript
 
-    def getBoundaryConditionObjectImportScriptLines(self, items, outputDir=None, generateObjects=True):
+    def getObjectUsedInSomeCategoryStepImportScriptLines(self, items, outputDir=None, generateObjects=True):
         genScript = ""
 
         genScript += "# Imported objects used as boundary conditions\n"
