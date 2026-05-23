@@ -63,6 +63,9 @@ class KiCADImporterToolDialog(QtCore.QObject):
 		self.form.buttonOpenFile.clicked.connect(self.buttonOpenFileClicked)
 		self.form.buttonImportPcb.clicked.connect(self.buttonImportPcbClicked)
 
+		self.form.buttonImportPartModels.clicked.connect(self.buttonImportPartModelsClicked)
+		self.form.buttonCreateLumpedElementsCategories.clicked.connect(self.buttonCreateLumpedElementsCategoriesClicked)
+
 		print(f"----> init finished")
 
 	def show(self):
@@ -83,6 +86,36 @@ class KiCADImporterToolDialog(QtCore.QObject):
 
 		pcb = kicad.KicadFcad(filename)
 		pcb.make(combo=combo, fuseCoppers=fuseCoppers)
+
+	def load_kicad_board(self, pcb_file, insertIntoCurrentDocument=True):
+		import FreeCAD
+		import FreeCADGui
+
+		# 1. Add the StepUp module directory to sys.path
+		user_mod_dir = os.path.join(FreeCAD.getUserAppDataDir(), "Mod", "kicadStepUpMod")
+		if user_mod_dir not in sys.path:
+			sys.path.append(user_mod_dir)
+
+		# 2. Import the backend tool module instead of using the GUI command
+		import kicadStepUptools as ksu
+
+		# 4. Call the function directly with your path argument
+		if os.path.exists(pcb_file):
+			# This executes the exact same sequence as clicking the button,
+			# but skips the popup file chooser dialog.
+			ksu.onLoadBoard(pcb_file, insert=insertIntoCurrentDocument)
+
+			FreeCAD.ActiveDocument.recompute()
+			print("Board loaded silently!")
+		else:
+			print(f"Error: File not found at {pcb_file}")
+
+	def buttonImportPartModelsClicked(self):
+		target_pcb = self.form.inputFileLineEdit.text()
+		self.load_kicad_board(target_pcb)
+
+	def buttonCreateLumpedElementsCategoriesClicked(self):
+		self.guiHelpers.displayMessage("Not implemented yet!")
 
 ####################################################################################################################################################################
 # End of PANEL definition

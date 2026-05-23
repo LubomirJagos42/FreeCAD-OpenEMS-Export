@@ -565,8 +565,14 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
 
                 ### Produce script output.
 
-                if (not "Shape" in dir(fcObject)):
-                    continue
+                #
+                #   This should make sure that just real objects have set mesh size
+                #       21May2026 - seems not working properly with PCB imported from KiCAD as some real objects don't have Shape and
+                #                   therefore no mesh size line is generated, so commented for now!
+                #
+                # if (not "Shape" in dir(fcObject)):
+                #     print(f"\tFailed to find Shape in object {FreeCADObjectName}")
+                #     continue
 
                 if gridSettingsInst.femMesh['femUseMaxElementSize'] == True:
                     genScript += f"mesherObj.setSize(\"{FreeCADObjectName}\", {gridSettingsInst.femMesh['femMaxElementSize']}, distance={gridSettingsInst.femMesh['femMaxElementDistance']})\n"
