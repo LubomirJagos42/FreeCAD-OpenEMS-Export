@@ -743,7 +743,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 	def KiCADImportButtonClicked(self):
 		# if KiCAD import tool is not created create new one
 		if not hasattr(self, "KiCADImportTool"):
-			self.KiCADImportTool = KiCADImporterToolDialog.KiCADImporterToolDialog()
+			self.KiCADImportTool = KiCADImporterToolDialog.KiCADImporterToolDialog(parentForm=self.form)
 
 		self.KiCADImportTool.show()
 

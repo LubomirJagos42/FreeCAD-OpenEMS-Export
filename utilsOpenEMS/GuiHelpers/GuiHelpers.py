@@ -296,3 +296,14 @@ class GuiHelpers:
                     allItemList.append((categoryItem.text(0), groupItem.text(0), objectItem.text(0)))
 
         return allItemList
+
+    def getAllLumpedElementCategories(self):
+        categoryItemList = []
+
+        iterator = QtWidgets.QTreeWidgetItemIterator(self.form.lumpedPartTreeView, QtWidgets.QTreeWidgetItemIterator.All)
+        while iterator.value():
+            item = iterator.value()
+            categoryItemList.append(item.text(0))
+            iterator += 1
+
+        return categoryItemList

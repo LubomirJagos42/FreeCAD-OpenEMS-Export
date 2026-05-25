@@ -1,5 +1,6 @@
 from PySide import QtGui, QtCore, QtWidgets
 from PySide.QtCore import Slot
+from PySide.QtCore import QSortFilterProxyModel, Qt
 import os, sys
 import re
 
@@ -32,11 +33,13 @@ path_to_ui = os.path.join(APP_DIR, "ui", "dialog_KiCAD_Importer.ui")
 #
 class KiCADImporterToolDialog(QtCore.QObject):
 
-	def __init__(self):
+	def __init__(self, parentForm=None):
 		QtCore.QObject.__init__(self)
 
 		self.APP_DIR = APP_DIR
 		self.cadInterfaceType = APP_CONTEXT
+
+		self.parentForm = parentForm
 
 		#
 		# LOCAL OPENEMS OBJECT
@@ -54,7 +57,7 @@ class KiCADImporterToolDialog(QtCore.QObject):
 		#
 		# GUI helpers function like display message box and so
 		#
-		self.guiHelpers = GuiHelpers(self.form, statusBar = self.form.statusBar, APP_DIR=APP_DIR)
+		self.guiHelpers = GuiHelpers(self.parentForm, statusBar = self.form.statusBar, APP_DIR=APP_DIR)
 		self.guiSignals = GuiSignals()
 
 		#
@@ -65,6 +68,28 @@ class KiCADImporterToolDialog(QtCore.QObject):
 
 		self.form.buttonImportPartModels.clicked.connect(self.buttonImportPartModelsClicked)
 		self.form.buttonCreateLumpedElementsCategories.clicked.connect(self.buttonCreateLumpedElementsCategoriesClicked)
+		self.form.buttonDetectLumpedParts.clicked.connect(self.buttonDetectLumpedPartsClicked)
+		self.form.partPositionSetButton.clicked.connect(self.partPositionSetButtonClicked)
+		self.form.buttonAssignLumpedElementsCategories.clicked.connect(self.buttonAssignLumpedElementsCategoriesClicked)
+
+		#
+		#	Settings for table view
+		#
+		self.model = QtGui.QStandardItemModel()
+		self.model.setHorizontalHeaderLabels(["part name", "part value"])
+
+		# Proxy for filtering
+		self.proxy = QtCore.QSortFilterProxyModel()
+		self.proxy.setSourceModel(self.model)
+		self.proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
+		self.proxy.setFilterKeyColumn(0)  # filter by material name
+
+		# View
+		self.form.table.setModel(self.proxy)
+		self.form.table.setSortingEnabled(True)
+		self.form.table.setSelectionBehavior(QtGui.QTableView.SelectRows)
+		self.form.table.horizontalHeader().setStretchLastSection(True)
+		self.form.table.setEditTriggers(QtGui.QAbstractItemView.EditTrigger.NoEditTriggers)
 
 		print(f"----> init finished")
 
@@ -115,7 +140,183 @@ class KiCADImporterToolDialog(QtCore.QObject):
 		self.load_kicad_board(target_pcb)
 
 	def buttonCreateLumpedElementsCategoriesClicked(self):
-		self.guiHelpers.displayMessage("Not implemented yet!")
+		print("--> buttonCreateLumpedElementsCategoriesClicked(...)")
+
+		partValuesList = []
+		column_index = 1  # 0 is Col 1, 1 is Col 2
+
+		# Loop through every row
+		for row in range(self.model.rowCount()):
+			index = self.model.index(row, column_index)
+
+			# Check if the cell is not empty/None
+			if index is not None:
+				partValuesList.append(self.model.data(index, Qt.DisplayRole))
+			else:
+				partValuesList.append("")  # Or None, depending on your needs
+
+		filteredGeoObjectList = []
+		for geoObj in self.cadHelpers.getObjects():
+			if re.match("[RLC]{1}[0-9]+", geoObj.Label):
+				print(f"----> {geoObj.Label}")
+				filteredGeoObjectList.append(geoObj)
+
+		for partValue in partValuesList:
+			lumpedElementCategories = self.guiHelpers.getAllLumpedElementCategories()
+			print("--> all lumped elements categories")
+			print(lumpedElementCategories)
+			if not partValue in lumpedElementCategories:
+				self.parentForm.lumpedPartREnable.setChecked(False)
+				self.parentForm.lumpedPartLEnable.setChecked(False)
+				self.parentForm.lumpedPartCEnable.setChecked(False)
+
+				self.parentForm.lumpedPartSettingsNameInput.setText(partValue)
+
+				print(f"----> analyze part value {partValue}")
+				match = re.match(r"^([0-9]+\.?[0-9]+)?([a-zA-Z]*)$", str(partValue))
+				num_part, unit_part = match.groups()
+
+				if partValue.endswith("Ohm"):
+					self.parentForm.lumpedPartREnable.setChecked(True)
+					self.parentForm.lumpedPartRInput.setValue(float(num_part))
+					self.guiHelpers.setComboboxItem(self.parentForm.lumpedPartRUnits, unit_part)
+
+				if partValue.endswith("H"):
+					self.parentForm.lumpedPartLEnable.setChecked(True)
+					self.parentForm.lumpedPartLInput.setValue(float(num_part))
+					self.guiHelpers.setComboboxItem(self.parentForm.lumpedPartLUnits, unit_part)
+
+				if partValue.endswith("F"):
+					self.parentForm.lumpedPartCEnable.setChecked(True)
+					self.parentForm.lumpedPartCInput.setValue(float(num_part))
+					self.guiHelpers.setComboboxItem(self.parentForm.lumpedPartCUnits, unit_part)
+
+				self.parentForm.lumpedPartSettingsAddButton.click()
+
+	def buttonDetectLumpedPartsClicked(self):
+		import FreeCAD
+
+		user_mod_dir = os.path.join(FreeCAD.getUserAppDataDir(), "Mod", "kicadStepUpMod", "fcad_parser")
+		if user_mod_dir not in sys.path:
+			sys.path.append(user_mod_dir)
+
+		from kicad_pcb import KicadPCB
+		target_pcb = self.form.inputFileLineEdit.text()
+		pcbObj = KicadPCB.load(target_pcb)
+
+		lumpedElementList = {}
+		for footprint in pcbObj.footprint:
+			partName = footprint.property[0][1].strip('"')
+			partValue = footprint.property[1][1].strip('"')
+			print(f"--> {partName}:{partValue}")
+
+			partUnits = ""
+			if re.match("R[0-9]+", partName):
+				partUnits = "Ohm"
+				lumpedElementList[partName] = partValue + partUnits
+			if re.match("L[0-9]+", partName):
+				partUnits = "H"
+				lumpedElementList[partName] = partValue + partUnits
+			if re.match("C[0-9]+", partName):
+				partUnits = "F"
+				lumpedElementList[partName] = partValue + partUnits
+
+		self.model.removeRows(0, self.model.rowCount())
+		for name, value in lumpedElementList.items():
+			self.model.appendRow([QtGui.QStandardItem(name), QtGui.QStandardItem(value)])
+
+		print(lumpedElementList)
+
+	def partPositionSetButtonClicked(self):
+		# 1. Get the selection model and the data model
+		selection_model = self.form.table.selectionModel()
+		model = self.form.table.model()
+
+		# 2. Get all selected cell indexes
+		selected_indexes = selection_model.selectedIndexes()
+
+		# 3. Extract unique row numbers (to avoid duplicating if multiple cells in the same row are selected)
+		selected_rows = sorted(list(set(idx.row() for idx in selected_indexes)))
+
+		# 4. Loop through the selected rows and grab Column 0 and Column 1
+		selectedImportedLumpedParts = []
+		for row in selected_rows:
+			# Get index for Column 0 and Column 1
+			col0_index = model.index(row, 0)
+			col1_index = model.index(row, 1)
+
+			# Extract the actual text/data
+			partName = model.data(col0_index, Qt.DisplayRole)
+			partValue = model.data(col1_index, Qt.DisplayRole)
+
+			selectedImportedLumpedParts.append(partName)
+
+		print("----> selected kicad parts:")
+		print(selectedImportedLumpedParts)
+
+		for obj in self.cadHelpers.getObjects():
+			for partName in selectedImportedLumpedParts:
+				if obj.Label == partName or obj.Label.startswith(partName+"_"):
+					if self.form.partPositionAxis.currentText() == "x":
+						obj.Placement.Base.x = self.form.partPosition.value()
+					if self.form.partPositionAxis.currentText() == "y":
+						obj.Placement.Base.y = self.form.partPosition.value()
+					if self.form.partPositionAxis.currentText() == "z":
+						obj.Placement.Base.z = self.form.partPosition.value()
+
+	def buttonAssignLumpedElementsCategoriesClicked(self):
+		# 1. Get the selection model and the data model
+		selection_model = self.form.table.selectionModel()
+		model = self.form.table.model()
+
+		# 2. Get all selected cell indexes
+		selected_indexes = selection_model.selectedIndexes()
+
+		# 3. Extract unique row numbers (to avoid duplicating if multiple cells in the same row are selected)
+		selected_rows = sorted(list(set(idx.row() for idx in selected_indexes)))
+
+		# 4. Loop through the selected rows and grab Column 0 and Column 1
+		selectedImportedLumpedParts = {}
+		for row in selected_rows:
+			# Get index for Column 0 and Column 1
+			col0_index = model.index(row, 0)
+			col1_index = model.index(row, 1)
+
+			# Extract the actual text/data
+			partName = model.data(col0_index, Qt.DisplayRole)
+			partValue = model.data(col1_index, Qt.DisplayRole)
+
+			if not partValue in selectedImportedLumpedParts.keys():
+				selectedImportedLumpedParts[partValue] = []
+			selectedImportedLumpedParts[partValue].append(partName)
+		print("----> selected kicad parts:")
+		print(selectedImportedLumpedParts)
+		self.parentForm.objectAssignmentFilterLeft.setText("")
+		self.parentForm.objectAssignmentFilterLeft.returnPressed.emit()
+
+		for k in range(self.parentForm.objectAssignmentRightTreeWidget.topLevelItemCount()):
+			categoryItem = self.parentForm.objectAssignmentRightTreeWidget.topLevelItem(k)
+			categoryName = categoryItem.text(0)
+			print(f"--> looking for lumped part category: {categoryName}")
+			if categoryName == "LumpedPart":
+				print("--> expanding lumped part category")
+				categoryItem.setExpanded(True)
+
+				for j in range(categoryItem.childCount()):
+					groupItem = categoryItem.child(j)
+					groupName = groupItem.text(0)
+
+					if groupName in selectedImportedLumpedParts.keys():
+						print(f"--> assign lumped part: {groupName}")
+						for partName in selectedImportedLumpedParts[groupName]:
+							for n in range(self.parentForm.objectAssignmentLeftTreeWidget.topLevelItemCount()):
+								objectItem = self.parentForm.objectAssignmentLeftTreeWidget.topLevelItem(n)
+								objectName = objectItem.text(0)
+								if objectName.startswith(partName+"_") or objectName == partName:
+									print(f"--> assign lumped part: {objectName} to {groupName}")
+									self.parentForm.objectAssignmentLeftTreeWidget.setCurrentItem(objectItem)
+									self.parentForm.objectAssignmentRightTreeWidget.setCurrentItem(groupItem)
+									self.parentForm.moveRightButton.click()
 
 ####################################################################################################################################################################
 # End of PANEL definition
