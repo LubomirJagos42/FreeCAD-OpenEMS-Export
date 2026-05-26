@@ -14,6 +14,7 @@ class PortSettingsItem(SettingsItem):
                  coaxialConductorMaterial = "", coaxialMaterial = "", coaxialPropagation = "", coaxialInnerRadiusValue = 0, coaxialInnerRadiusUnits = "", coaxialShellThicknessValue = 0, coaxialShellThicknessUnits = "", coaxialFeedpointShiftValue = 0, coaxialFeedpointShiftUnits = "", coaxialMeasPlaneShiftValue = 0, coaxialMeasPlaneShiftUnits = "",
                  coplanarMaterial = "", coplanarPropagation = "", coplanarGapValue = 0, coplanarGapUnits = "", coplanarFeedpointShiftValue = 0, coplanarFeedpointShiftUnits = "", coplanarMeasPlaneShiftValue = 0, coplanarMeasPlaneShiftUnits = "",
                  striplineMaterial = "", striplinePropagation = "", striplineHeightValue = 0, striplineHeightUnits = "", striplineFeedpointShiftValue = 0, striplineFeedpointShiftUnits = "", striplineMeasPlaneShiftValue = 0, striplineMeasPlaneShiftUnits = "",
+                 modalModeType = "TE", modalMixedMaterials = False, modalImpedanceDefinition = "PV",
                  ):
         self.name = name
         self.type = type
@@ -65,6 +66,10 @@ class PortSettingsItem(SettingsItem):
         self.striplineFeedpointShiftUnits = striplineFeedpointShiftUnits
         self.striplineMeasPlaneShiftValue = striplineMeasPlaneShiftValue
         self.striplineMeasPlaneShiftUnits = striplineMeasPlaneShiftUnits
+
+        self.modalModeType = modalModeType
+        self.modalMixedMaterials = modalMixedMaterials
+        self.modalImpedanceDefinition = modalImpedanceDefinition
 
         return
 

@@ -295,6 +295,14 @@ class IniFile0v1:
                 except Exception as e:
                     print(f"{__file__} > write() curve ERROR: {e}")
 
+            elif (portList[k].type == "modal"):
+                try:
+                    settings.setValue("modeType", portList[k].modalModeType)
+                    settings.setValue("mixedMaterials", portList[k].modalMixedMaterials)
+                    settings.setValue("impedanceDefinition", portList[k].modalImpedanceDefinition)
+                except Exception as e:
+                    print(f"{__file__} > write() modal ERROR: {e}")
+
             settings.endGroup()
 
         #
@@ -756,6 +764,14 @@ class IniFile0v1:
                         categorySettings.isActive = _bool(settings.value('isActive'))
                     except Exception as e:
                         print(f"There was error during reading curve port settings: {e}")
+
+                elif (categorySettings.type == "modal"):
+                    try:
+                        categorySettings.modalModeType = settings.value('modeType')
+                        categorySettings.modalMixedMaterials = settings.value('mixedMaterials')
+                        categorySettings.modalImpedanceDefinition = settings.value('impedanceDefinition')
+                    except Exception as e:
+                        print(f"There was error during reading modal port settings: {e}")
 
                 settings.endGroup()
 

@@ -101,7 +101,18 @@ class KiCADImporterToolDialog(QtCore.QObject):
 		self.form.close()
 
 	def buttonOpenFileClicked(self):
-		filename, filter = QtWidgets.QFileDialog.getOpenFileName(parent=self.form, caption='Open KiCAD PCB file', dir=self.APP_DIR)
+		# 1. Get the current text from the line edit
+		current_path = self.form.inputFileLineEdit.text().strip()
+
+		# 2. Determine the starting directory
+		if current_path and os.path.exists(current_path):
+			# If a valid file path exists, extract its directory
+			start_dir = os.path.dirname(current_path)
+		else:
+			# Fallback to your application default directory
+			start_dir = os.path.dirname(self.cadHelpers.getCurrDocumentFileName())
+
+		filename, filter = QtWidgets.QFileDialog.getOpenFileName(parent=self.form, caption='Open KiCAD PCB file', dir=start_dir)
 		self.form.inputFileLineEdit.setText(filename)
 
 	def buttonImportPcbClicked(self):
@@ -113,8 +124,12 @@ class KiCADImporterToolDialog(QtCore.QObject):
 		pcb.make(combo=combo, fuseCoppers=fuseCoppers)
 
 	def load_kicad_board(self, pcb_file, insertIntoCurrentDocument=True):
-		import FreeCAD
-		import FreeCADGui
+		try:
+			import FreeCAD
+			import FreeCADGui
+		except:
+			self.guiHelpers.displayMessage("<font color='#FF0000'><b>Error during import FreeCAD module, check if this addon is running from FreeCAD.</b></font>")
+			return
 
 		# 1. Add the StepUp module directory to sys.path
 		user_mod_dir = os.path.join(FreeCAD.getUserAppDataDir(), "Mod", "kicadStepUpMod")
@@ -122,7 +137,11 @@ class KiCADImporterToolDialog(QtCore.QObject):
 			sys.path.append(user_mod_dir)
 
 		# 2. Import the backend tool module instead of using the GUI command
-		import kicadStepUptools as ksu
+		try:
+			import kicadStepUptools as ksu
+		except:
+			self.guiHelpers.displayMessage("<font color='#FF0000'><b>Error during import KiCADStepUp module, check if it is installed.</b></font>")
+			return
 
 		# 4. Call the function directly with your path argument
 		if os.path.exists(pcb_file):
@@ -194,13 +213,22 @@ class KiCADImporterToolDialog(QtCore.QObject):
 				self.parentForm.lumpedPartSettingsAddButton.click()
 
 	def buttonDetectLumpedPartsClicked(self):
-		import FreeCAD
+		try:
+			import FreeCAD
+		except:
+			self.guiHelpers.displayMessage("<font color='#FF0000'><b>Error during import FreeCAD module, check if this addon is running from FreeCAD.</b></font>")
+			return
 
-		user_mod_dir = os.path.join(FreeCAD.getUserAppDataDir(), "Mod", "kicadStepUpMod", "fcad_parser")
-		if user_mod_dir not in sys.path:
-			sys.path.append(user_mod_dir)
+		try:
+			user_mod_dir = os.path.join(FreeCAD.getUserAppDataDir(), "Mod", "kicadStepUpMod", "fcad_parser")
+			if user_mod_dir not in sys.path:
+				sys.path.append(user_mod_dir)
 
-		from kicad_pcb import KicadPCB
+			from kicad_pcb import KicadPCB
+		except:
+			self.guiHelpers.displayMessage("<font color='#FF0000'><b>Error during import KiCADStepUp module, check if it is installed.</b></font>")
+			return
+
 		target_pcb = self.form.inputFileLineEdit.text()
 		pcbObj = KicadPCB.load(target_pcb)
 

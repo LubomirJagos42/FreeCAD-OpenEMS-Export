@@ -627,14 +627,135 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                                 portHeight = "h"
                                 portGeometryObject = f"em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=[w,0,0], v=[0,h,0])"
                         else:
-                            portGeometryObject = f"em.geo.Box(name='{PORT_NAME}', width=w, height=h, depth=th, position=tuple(portStart))"
+                            #
+                            #   General method calculate u,v vectors using start stop poiint and normal of face using freecad normal vector
+                            #
+                            objNormalVector = obj.Shape.normalAt(0.5, 0.5)  #returns face normal vector in center of mass (in the middle of face)
+                            genScript += f"portNormalVector = [{objNormalVector.x}, {objNormalVector.y}, {objNormalVector.z}]\n"
+                            genScript += f"portStart, portWidth, portHeight = helperFunctionsObj.create_emerge_plane_data(portStart, portStop, portNormalVector)\n"
+
+                            portWidth = "portWidth"
+                            portHeight = "portHeight"
+                            portGeometryObject = f"em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=portWidth, v=portHeight)"
 
                         self.portBoundaryConditionScriptLinesBuffer.append(f"helperFunctionsObj.setPortAsLumpedPort('{PORT_NAME}')\n")
                         genScript += f'#portName: "{obj.Label}" -> portNumber: {genScriptPortCount}\n'
-                        genScript += f"helperFunctionsObj.addPort('{PORT_NAME}', portStart, {portWidth}, {portHeight}, {portR}, {portDirection}, {portExcitationAmplitude}, {portGeometryObject})\n"
+                        genScript += f"helperFunctionsObj.addLumpedPort(name='{PORT_NAME}', portStart=portStart, width={portWidth}, height={portHeight}, R={portR}, direction={portDirection}, power={portExcitationAmplitude}, geometryObject={portGeometryObject})\n"
 
                         # internalPortName = currSetting.name + " - " + obj.Label
                         internalPortName = PORT_NAME
+                        self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
+                        genScriptPortCount += 1
+
+                    elif (currSetting.getType() == 'modal'):
+                        PORT_NAME = childName
+
+                        portExcitationAmplitude = str(currSetting.excitationAmplitude)
+                        portModeType = currSetting.modalModeType
+                        portMixedMaterials = currSetting.modalMixedMaterials
+                        portImpedanceDefinition = currSetting.modalImpedanceDefinition
+
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
+                        genScript += "portStart = [k*fc_unit for k in portStart]  #dimension scaled by freecad unit to meters\n"
+                        genScript += "portStop = [k*fc_unit for k in portStop]  #dimension scaled by freecad unit to meters\n"
+
+                        objNormalVector = obj.Shape.normalAt(0.5, 0.5)
+                        genScript += f"portNormalVector = [{objNormalVector.x}, {objNormalVector.y}, {objNormalVector.z}]\n"
+                        genScript += f"portStart, portWidth, portHeight = helperFunctionsObj.create_emerge_plane_data(portStart, portStop, portNormalVector)\n"
+
+                        portGeometryObject = f"em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=portWidth, v=portHeight)"
+
+                        self.portBoundaryConditionScriptLinesBuffer.append(f"helperFunctionsObj.setPortAsModalPort('{PORT_NAME}')\n")
+                        genScript += f'#portName: "{obj.Label}" -> portNumber: {genScriptPortCount}\n'
+                        genScript += f"helperFunctionsObj.addModalPort(name='{PORT_NAME}', mode='{portModeType}', mixedMaterials={portMixedMaterials}, impedanceDefinition='{portImpedanceDefinition}', power={portExcitationAmplitude}, geometryObject={portGeometryObject})\n"
+
+                        internalPortName = PORT_NAME    #this is freecad object label since they are unique (must be set in freecad settings itself)
+                        self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
+                        genScriptPortCount += 1
+
+                    elif (currSetting.getType() == 'rectangular waveguide'):
+                        PORT_NAME = childName
+
+                        portModeName = currSetting.modeName
+                        match = re.match('TE([0-9]{1})([0-9]{1})', portModeName)
+                        portModeNumber1, portModeNumber2 = match.groups()
+                        portModeType = str(tuple(portModeNumber1, portModeNumber2))
+
+                        portPermittivity = 1.0
+                        portExcitationAmplitude = str(currSetting.excitationAmplitude)
+
+                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, waveguideWidth, waveguideHeight = currSetting.getRectangularWaveguideStartStopWidthHeight(bbCoords, sf)
+                        bbCoords.XMin = portStartX
+                        bbCoords.YMin = portStartY
+                        bbCoords.ZMin = portStartZ
+                        bbCoords.XMax = portStopX
+                        bbCoords.YMax = portStopY
+                        bbCoords.ZMax = portStopZ
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
+
+                        objNormalVector = obj.Shape.normalAt(0.5, 0.5)
+                        genScript += f"portNormalVector = [{objNormalVector.x}, {objNormalVector.y}, {objNormalVector.z}]\n"
+                        genScript += f"portStart, portWidth, portHeight = helperFunctionsObj.create_emerge_plane_data(portStart, portStop, portNormalVector)\n"
+
+                        portGeometryObject = f"em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=portWidth, v=portHeight)"
+
+                        self.portBoundaryConditionScriptLinesBuffer.append(f"helperFunctionsObj.setPortAsRectangularWaveguidePort('{PORT_NAME}')\n")
+                        genScript += f'#portName: "{obj.Label}" -> portNumber: {genScriptPortCount}\n'
+                        genScript += f"helperFunctionsObj.addRectangularWaveguidePort(name='{PORT_NAME}', mode='{portModeType}', er={portPermittivity}, power={portExcitationAmplitude}, geometryObject={portGeometryObject})\n"
+
+                        internalPortName = PORT_NAME    #this is freecad object label since they are unique (must be set in freecad settings itself)
+                        self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
+                        genScriptPortCount += 1
+
+                    elif (currSetting.getType() == 'coaxial'):
+                        PORT_NAME = childName
+
+                        portExcitationAmplitude = str(currSetting.excitationAmplitude)
+
+                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, coaxialRadius = currSetting.getCoaxialStartStopAndRadius(bbCoords, sf)
+
+                        #
+                        #   This is important, radius is calculated from bounding box coordinates from FreeCAD so must be multiplied by metric units used in FreeCAD.
+                        #   LuboJ ERROR: not sure if scaling done right
+                        #
+                        coaxialRadius = coaxialRadius * self.getFreeCADUnitLength_m() / self.getUnitLengthFromUI_m()
+
+                        #
+                        #   LuboJ ERROR: not sure if scaling done right
+                        #
+                        coaxialInnerRadius, coaxialShellThickness, coaxialFeedShift, coaxialMeasPlaneShift = currSetting.getCoaxialInnerRadiusShellThicknessFeedShiftMeasShift()
+                        coaxialInnerRadius = _r(coaxialInnerRadius / self.getUnitLengthFromUI_m())
+                        coaxialShellThickness = _r(coaxialShellThickness / self.getUnitLengthFromUI_m())
+                        coaxialFeedShift = _r(coaxialFeedShift / self.getUnitLengthFromUI_m())
+                        coaxialMeasPlaneShift = _r(coaxialMeasPlaneShift / self.getUnitLengthFromUI_m())
+
+                        #
+                        #   Port start and end need to be shifted into middle of feed plane, this is done inside function in port settings
+                        #
+                        bbCoords.XMin = portStartX
+                        bbCoords.YMin = portStartY
+                        bbCoords.ZMin = portStartZ
+                        bbCoords.XMax = portStopX
+                        bbCoords.YMax = portStopY
+                        bbCoords.ZMax = portStopZ
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
+
+                        genScript += 'r_i = ' + str(coaxialInnerRadius) + '\n'
+                        genScript += 'r_o = ' + str(coaxialRadius - coaxialShellThickness) + '\n'
+                        genScript += 'r_os = ' + str(coaxialRadius) + '\n'
+
+                        objNormalVector = obj.Shape.normalAt(0.5, 0.5)
+                        genScript += f"portNormalVector = [{objNormalVector.x}, {objNormalVector.y}, {objNormalVector.z}]\n"
+                        genScript += f"portStart, portWidth, portHeight = helperFunctionsObj.create_emerge_plane_data(portStart, portStop, portNormalVector)\n"
+                        genScript += f"er = helperFunctionsObj.getMaterial('{currSetting.materialName}').er.value\n"
+
+                        portGeometryObject = f"em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=portWidth, v=portHeight)"
+
+                        self.portBoundaryConditionScriptLinesBuffer.append(f"helperFunctionsObj.setPortAsCoaxPort('{PORT_NAME}')\n")
+                        genScript += f'#portName: "{obj.Label}" -> portNumber: {genScriptPortCount}\n'
+                        genScript += f"helperFunctionsObj.addCoaxPort(name'{PORT_NAME}', inner_radius=r_i, outer_radius=r_o, er=er, power={portExcitationAmplitude}, geometryObject={portGeometryObject})\n"
+
+                        internalPortName = PORT_NAME    #this is freecad object label since they are unique (must be set in freecad settings itself)
                         self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
                         genScriptPortCount += 1
 
@@ -1358,12 +1479,12 @@ simulationObj.display.show()
 
         if self.form.simParamsGenerateTouchstoneFile_emerge.isChecked():
             genScript += "# Generate touchstone file available since EMerge 2.5.5\n"
-            genScript += f'simulationResult.scalar.grid.export_touchstone("{simulationName}.s2p", Z0ref=50, format="RI", funit="GHz")\n'
+            genScript += f'simulationResult.scalar.grid.export_touchstone("{simulationName}.s1p", Z0ref=50, format="RI", funit="GHz")\n'
             genScript += "\n"
         if self.form.simParamsGenerateTouchstoneFileDense_emerge.isChecked():
             genScript += "# Generate touchstone file available since EMerge 2.5.5, frequency axis have more interpolated points\n"
             genScript += f"dense_frequencies = simulationResult.scalar.grid.dense_f({self.form.simParamsGenerateTouchstoneFileDenseNPoints_emerge.value()})\n"
-            genScript += f'simulationResult.scalar.grid.export_touchstone("{simulationName}_dense.s2p", Z0ref=50, format="RI", funit="GHz", dense_freq=dense_frequencies)\n'
+            genScript += f'simulationResult.scalar.grid.export_touchstone("{simulationName}_dense.s1p", Z0ref=50, format="RI", funit="GHz", dense_freq=dense_frequencies)\n'
             genScript += "\n"
 
         genScript += "helperFunctionsObj.plotSParamUsingPortNumbers(sourcePortNumber, sourcePortNumber)\n"
