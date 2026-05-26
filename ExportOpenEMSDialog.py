@@ -383,6 +383,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.coplanarPortRadioButton.toggled.connect(self.portSettingsTypeChoosed)
 		self.form.striplinePortRadioButton.toggled.connect(self.portSettingsTypeChoosed)
 		self.form.curvePortRadioButton.toggled.connect(self.portSettingsTypeChoosed)
+		self.form.modalPortRadioButton.toggled.connect(self.portSettingsTypeChoosed)
 
 		self.form.microstripPortDirection.activated.connect(self.microstripPortDirectionOnChange)
 		self.form.striplinePortDirection.activated.connect(self.striplinePortDirectionOnChange)
@@ -559,7 +560,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			)
 
 		#
-		#	Update UI
+		#	Update UI - openEMS only part
 		#
 		if (solverTypeStr.lower() == "openems"):
 			self.form.generateOpenEMSScriptButton.setText("Generate OpenEMS Files")
@@ -626,6 +627,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			#	PortSettings Tab - enable all port types for openEMS
 			#
 			[radio.setEnabled(True) for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
+			[radio.setEnabled(False) for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton) if radio.objectName() == "modalPortRadioButton"]
 
 			#
 			# EXCITATION TAB - excitation subtab enable/disable
@@ -635,6 +637,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(0)
 
 		elif (solverTypeStr.lower() in ["emerge", "palace"]):
+
+			#
+			#	EMerge + Palace COMMON PART
+			#
+
 			tempSolverType = solverTypeStr.lower()
 
 			if tempSolverType == "emerge":
@@ -731,9 +738,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			#
 			#	PortSettings Tab - enable port types for EMerge
 			#		- enable just lumped port as it's now only one implemented in code generator (Mar2026)
+			#		+ enabled UI for rectangular waveguide, coax port and added modal port for EMerge
 			#
 			[radio.setEnabled(radio.objectName() == "lumpedPortRadioButton") for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
 			[radio.click() for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton) if radio.objectName() == "lumpedPortRadioButton"]
+
+			if tempSolverType == "emerge":
+				[radio.setEnabled(radio.objectName() in ["lumpedPortRadioButton", "coaxialPortRadioButton", "rectangularWaveguidePortRadioButton", "modalPortRadioButton"]) for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
 
 		else:
 			pass
@@ -743,7 +754,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 	def KiCADImportButtonClicked(self):
 		# if KiCAD import tool is not created create new one
 		if not hasattr(self, "KiCADImportTool"):
-			self.KiCADImportTool = KiCADImporterToolDialog.KiCADImporterToolDialog()
+			self.KiCADImportTool = KiCADImporterToolDialog.KiCADImporterToolDialog(parentForm=self.form)
 
 		self.KiCADImportTool.show()
 
@@ -3297,6 +3308,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			portItem.isActive = self.form.curvePortActive.isChecked()
 			portItem.excitationAmplitude = self.form.curvePortExcitationAmplitude.value()
 
+		if (self.form.modalPortRadioButton.isChecked()):
+			portItem.type = "modal"
+			portItem.excitationAmplitude = self.form.modalPortExcitationAmplitude.value()
+			portItem.modalModeType = self.form.modalPortModeType.currentText()
+			portItem.modalMixedMaterials = self.form.modalPortMixedMaterials.isChecked()
+			portItem.modalImpedanceDefinition = self.form.modalPortImpedanceDefinition.currentText()
+
 		return portItem
 
 	def probeCheckCurrentSettings(self, currentSettings):
@@ -3398,6 +3416,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.coplanarPortSettingsGroup.setEnabled(False)
 		self.form.striplinePortSettingsGroup.setEnabled(False)
 		self.form.curvePortSettingsGroup.setEnabled(False)
+		self.form.modalPortSettingsGroup.setEnabled(False)
 
 		#for modes update here is some source on internet: https://arxiv.org/ftp/arxiv/papers/1201/1201.3202.pdf
 
@@ -3433,6 +3452,10 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		elif (self.form.curvePortRadioButton.isChecked()):
 			self.form.curvePortSettingsGroup.setEnabled(True)
 			self.guiHelpers.portSpecificSettingsTabSetActiveByName("Curve")
+
+		elif (self.form.modalPortRadioButton.isChecked()):
+			self.form.modalPortSettingsGroup.setEnabled(True)
+			self.guiHelpers.portSpecificSettingsTabSetActiveByName("Modal")
 
 		else:
 			self.guiHelpers.portSpecificSettingsTabSetActiveByName("")
@@ -4412,6 +4435,17 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.form.curvePortExcitationAmplitude.setValue(currSetting.excitationAmplitude)
 			except Exception as e:
 				self.guiHelpers.displayMessage(f"ERROR update curve port current settings: {e}", forceModal=False)
+
+		elif (currSetting.type.lower() == "modal"):
+			try:
+				self.form.modalPortRadioButton.click()
+
+				self.guiHelpers.setComboboxItem(self.form.modalPortModeType, currSetting.modalModeType)
+				self.form.modalPortExcitationAmplitude.setValue(currSetting.excitationAmplitude)
+				self.form.modalPortMixedMaterials.setChecked(currSetting.modalMixedMaterials)
+				self.guiHelpers.setComboboxItem(self.form.modalPortImpedanceDefinition, currSetting.modalImpedanceDefinition)
+			except Exception as e:
+				self.guiHelpers.displayMessage(f"ERROR update modal port current settings: {e}", forceModal=False)
 
 		else:
 			pass #no gui update
