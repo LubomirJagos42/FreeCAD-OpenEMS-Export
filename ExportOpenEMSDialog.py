@@ -636,6 +636,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.excitationSettingsTab_tabWidget_openems.setEnabled(True)
 			self.form.excitationSettingsTab_tabWidget.setCurrentIndex(0)
 
+			#
+			# Call method to update script generator for python or ocatve based on radio button
+			#
+			self.radioButtonOutputScriptsTypeClicked()
+
 		elif (solverTypeStr.lower() in ["emerge", "palace"]):
 
 			#
@@ -746,10 +751,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			if tempSolverType == "emerge":
 				[radio.setEnabled(radio.objectName() in ["lumpedPortRadioButton", "coaxialPortRadioButton", "rectangularWaveguidePortRadioButton", "modalPortRadioButton"]) for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
 
+			#
+			#	Use python script generator for emerge and palace as they accept only python scripts
+			#
+			self.scriptGenerator = self.pythonScriptGenerator
+
 		else:
 			pass
-
-		self.scriptGenerator = self.pythonScriptGenerator
 
 	def KiCADImportButtonClicked(self):
 		# if KiCAD import tool is not created create new one
@@ -3090,43 +3098,45 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#
 		#	OpenEMS
 		#
-		if (self.form.sinusodialExcitationRadioButton.isChecked()):
-			excitationItem.type = 'sinusodial'
-			excitationItem.sinusodial = {}
-			excitationItem.sinusodial['f0'] = self.form.sinusodialExcitationF0NumberInput.value()
-		if (self.form.gaussianExcitationRadioButton.isChecked()):
-			excitationItem.type = 'gaussian'
-			excitationItem.gaussian = {}
-			excitationItem.gaussian['fc'] = self.form.gaussianExcitationFcNumberInput.value()
-			excitationItem.gaussian['f0'] = self.form.gaussianExcitationF0NumberInput.value()
-		if (self.form.diracExcitationRadioButton.isChecked()):
-			excitationItem.type = 'dirac'
-		if (self.form.stepExcitationRadioButton.isChecked()):
-			excitationItem.type = 'step'
-		if (self.form.customExcitationRadioButton.isChecked()):
-			excitationItem.type = 'custom'
-			excitationItem.custom = {}
-			excitationItem.custom['functionStr'] = self.form.customExcitationTextInput.text()
-			excitationItem.custom['f0'] = self.form.customExcitationF0NumberInput.value()
+		if self.form.comboBox_solverType.currentText().lower().find("openems") > -1:
+			if (self.form.sinusodialExcitationRadioButton.isChecked()):
+				excitationItem.type = 'sinusodial'
+				excitationItem.sinusodial = {}
+				excitationItem.sinusodial['f0'] = self.form.sinusodialExcitationF0NumberInput.value()
+			if (self.form.gaussianExcitationRadioButton.isChecked()):
+				excitationItem.type = 'gaussian'
+				excitationItem.gaussian = {}
+				excitationItem.gaussian['fc'] = self.form.gaussianExcitationFcNumberInput.value()
+				excitationItem.gaussian['f0'] = self.form.gaussianExcitationF0NumberInput.value()
+			if (self.form.diracExcitationRadioButton.isChecked()):
+				excitationItem.type = 'dirac'
+			if (self.form.stepExcitationRadioButton.isChecked()):
+				excitationItem.type = 'step'
+			if (self.form.customExcitationRadioButton.isChecked()):
+				excitationItem.type = 'custom'
+				excitationItem.custom = {}
+				excitationItem.custom['functionStr'] = self.form.customExcitationTextInput.text()
+				excitationItem.custom['f0'] = self.form.customExcitationF0NumberInput.value()
 
 		#
 		#	EMerge + Palace
 		#		- emerge knows just frequency sweep
 		#		- palace knows both frequency sweep and transient analysis
 		#
-		if (self.form.femSinusodialExcitationRadioButton.isChecked()):
-			excitationItem.type = 'sweep'
-			excitationItem.sweep = {}
-			excitationItem.sweep['fmin'] = self.form.sweepExcitationFmin.value()
-			excitationItem.sweep['fmax'] = self.form.sweepExcitationFmax.value()
-			excitationItem.sweep['npoints'] = self.form.sweepExcitationNPoints.value()
-			excitationItem.sweep['resolution'] = self.form.sweepExcitationResolution.value()
-		if (self.form.femGaussianExcitationRadioButton.isChecked()):
-			excitationItem.type = 'fem_gaussian'
-			excitationItem.femGaussian = {}
-			excitationItem.femGaussian['f0'] = self.form.femGaussianExcitationF0.value()
-			excitationItem.femGaussian['fc'] = self.form.femGaussianExcitationFc.value()
-			excitationItem.femGaussian['timeOversampling'] = self.form.femGaussianExcitationTimeOversampling.value()
+		if self.form.comboBox_solverType.currentText().lower().find("emerge") > -1 or self.form.comboBox_solverType.currentText().lower().find("palace") > -1:
+			if (self.form.femSinusodialExcitationRadioButton.isChecked()):
+				excitationItem.type = 'sweep'
+				excitationItem.sweep = {}
+				excitationItem.sweep['fmin'] = self.form.sweepExcitationFmin.value()
+				excitationItem.sweep['fmax'] = self.form.sweepExcitationFmax.value()
+				excitationItem.sweep['npoints'] = self.form.sweepExcitationNPoints.value()
+				excitationItem.sweep['resolution'] = self.form.sweepExcitationResolution.value()
+			if (self.form.femGaussianExcitationRadioButton.isChecked()):
+				excitationItem.type = 'fem_gaussian'
+				excitationItem.femGaussian = {}
+				excitationItem.femGaussian['f0'] = self.form.femGaussianExcitationF0.value()
+				excitationItem.femGaussian['fc'] = self.form.femGaussianExcitationFc.value()
+				excitationItem.femGaussian['timeOversampling'] = self.form.femGaussianExcitationTimeOversampling.value()
 
 		return excitationItem
 

@@ -450,6 +450,10 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
         genScript += "# Imported objects used as boundary conditions\n"
         genScript += "#\n"
 
+        if items == None:
+            genScript += "# NO OBJECTS USED, NOTHING TO IMPORT\n"
+            return genScript
+
         # now export material children, if it's object export as STL, if it's curve export as curve
         for [item, currSetting] in items:
 
@@ -890,7 +894,7 @@ class PythonScriptLinesGenerator4_palace(PythonScriptLinesGenerator3_emerge):
 
                 genScript += "\n"
             else:
-                self.guiHelpers.displayMessage("Missing excitation, please define one.")
+                self.guiHelpers.displayMessage("<font color='#FF0000'><b>Missing excitation, please define one.</b></font>")
                 pass
             pass
         return genScript
