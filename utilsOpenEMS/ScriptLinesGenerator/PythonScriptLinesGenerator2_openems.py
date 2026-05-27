@@ -1453,7 +1453,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
 
                 genScript += "\n"
             else:
-                self.guiHelpers.displayMessage("Missing excitation, please define one.")
+                self.guiHelpers.displayMessage("<font color='#FF0000'><b>Missing excitation, please define one.</b></font>")
                 pass
             pass
         return genScript
