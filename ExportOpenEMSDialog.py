@@ -705,6 +705,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "Boundary Conditions")
 			self.form.boundaryConditionTab.setEnabled(True)		# enable main BoundaryConditions tab, just for FEM simulations
 
+			#change item to update items since tab was disabled
+			if self.form.boundaryConditionSettingsTreeView.topLevelItemCount() > 0:
+				first_item = self.form.boundaryConditionSettingsTreeView.topLevelItem(0)
+				self.form.boundaryConditionSettingsTreeView.currentItemChanged.emit(first_item, first_item)	#emit signal that item changed
+
 			#
 			# Hide probe settings tab, not applicable for EMerge
 			#
@@ -3828,7 +3833,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		if (currSetting.type == "custom"):
 			self.form.boundaryConditionTypeCustomRadio.click()
 			self.form.boundaryConditionTypeCustomTextInput.setText(currSetting.customType)
-		elif (currSetting.type == "surfaceImpedance"):
+		elif (currSetting.type.lower() == "surfaceimpedance"):
 			self.form.boundaryConditionTypeSurfaceImpedanceRadio.click()
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceMaterial, text=currSetting.surfaceImpedance["material"])
 			self.form.boundaryConditionTypeSurfaceImpedanceConductance.setValue(currSetting.surfaceImpedance["conductance"])
