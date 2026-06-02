@@ -7911,7 +7911,8 @@ RAM swap will be used if no enough RAM</string>
                <item row="4" column="1">
                 <widget class="QCheckBox" name="simParamsGenerateTouchstoneFileDense_emerge">
                  <property name="text">
-                  <string>generate touchstone file in S param plot scripts</string>
+                  <string>generate interpolated touchstone file
+in S param plot scripts</string>
                  </property>
                  <property name="checked">
                   <bool>false</bool>
@@ -8733,12 +8734,21 @@ Transient use AMS</string>
                 <string>Boundary Condition Type</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_26">
-                <item row="1" column="0">
-                 <widget class="QRadioButton" name="boundaryConditionTypeCustomRadio">
-                  <property name="text">
-                   <string>custom</string>
+                <item row="0" column="2">
+                 <spacer name="horizontalSpacer_52">
+                  <property name="orientation">
+                   <enum>Qt::Orientation::Horizontal</enum>
                   </property>
-                 </widget>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="boundaryConditionTypeCustomTextInput"/>
                 </item>
                 <item row="0" column="0">
                  <widget class="QRadioButton" name="boundaryConditionTypePredefinedRadio">
@@ -8793,32 +8803,22 @@ Transient use AMS</string>
                   </item>
                  </widget>
                 </item>
-                <item row="3" column="0">
-                 <widget class="QRadioButton" name="boundaryConditionTypeSurfaceImpedanceRadio">
+                <item row="1" column="0">
+                 <widget class="QRadioButton" name="boundaryConditionTypeCustomRadio">
                   <property name="text">
-                   <string>SurfaceImpedance
-(EMerge only)
-NOT IMPLEMENTED YET!!!</string>
+                   <string>custom</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
-                 <widget class="QLineEdit" name="boundaryConditionTypeCustomTextInput"/>
-                </item>
-                <item row="0" column="2">
-                 <spacer name="horizontalSpacer_52">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
+                <item row="4" column="0">
+                 <widget class="QRadioButton" name="boundaryConditionTypeSurfaceImpedanceRadio">
+                  <property name="text">
+                   <string>SurfaceImpedance
+(EMerge only)</string>
                   </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
+                 </widget>
                 </item>
-                <item row="2" column="0">
+                <item row="3" column="2">
                  <spacer name="verticalSpacer_49">
                   <property name="orientation">
                    <enum>Qt::Orientation::Vertical</enum>
@@ -8834,198 +8834,191 @@ NOT IMPLEMENTED YET!!!</string>
                   </property>
                  </spacer>
                 </item>
-                <item row="3" column="1">
-                 <layout class="QVBoxLayout" name="verticalLayout_56">
-                  <property name="leftMargin">
-                   <number>5</number>
+                <item row="4" column="1">
+                 <widget class="QGroupBox" name="groupBox_4">
+                  <property name="title">
+                   <string>SurfaceImpedance - EMerge settings</string>
                   </property>
-                  <property name="topMargin">
-                   <number>5</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>5</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>5</number>
-                  </property>
-                  <item>
-                   <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceMaterial">
-                    <property name="placeholderText">
-                     <string>...material...</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <layout class="QHBoxLayout" name="horizontalLayout_69">
-                    <property name="leftMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>5</number>
-                    </property>
-                    <item>
-                     <widget class="QLabel" name="label_187">
-                      <property name="text">
-                       <string>conductance</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceConductance">
-                      <property name="maximum">
-                       <double>1000000000000000.000000000000000</double>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
-                  <item>
-                   <layout class="QHBoxLayout" name="horizontalLayout_70">
-                    <property name="leftMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>5</number>
-                    </property>
-                    <item>
-                     <widget class="QLabel" name="label_188">
-                      <property name="text">
-                       <string>roughness</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceRoughness">
-                      <property name="decimals">
-                       <number>3</number>
-                      </property>
-                      <property name="maximum">
-                       <double>1000000000.000000000000000</double>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceRoughnessUnits">
-                      <property name="currentIndex">
-                       <number>4</number>
-                      </property>
-                      <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_57">
+                   <item>
+                    <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceMaterial">
+                     <property name="placeholderText">
+                      <string>...material...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_69">
+                     <property name="leftMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>5</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="label_187">
                        <property name="text">
-                        <string>m</string>
+                        <string>conductance</string>
                        </property>
-                      </item>
-                      <item>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceConductance">
+                       <property name="maximum">
+                        <double>1000000000000000.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_70">
+                     <property name="leftMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>5</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="label_188">
                        <property name="text">
-                        <string>cm</string>
+                        <string>roughness</string>
                        </property>
-                      </item>
-                      <item>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceRoughness">
+                       <property name="decimals">
+                        <number>3</number>
+                       </property>
+                       <property name="maximum">
+                        <double>1000000000.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceRoughnessUnits">
+                       <property name="currentIndex">
+                        <number>4</number>
+                       </property>
+                       <item>
+                        <property name="text">
+                         <string>m</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>cm</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>mm</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>um</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>nm</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>pm</string>
+                        </property>
+                       </item>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_71">
+                     <property name="leftMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>5</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>5</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="label_189">
                        <property name="text">
-                        <string>mm</string>
+                        <string>thickness</string>
                        </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>um</string>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceThickness">
+                       <property name="decimals">
+                        <number>3</number>
                        </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>nm</string>
+                       <property name="maximum">
+                        <double>1000000000.000000000000000</double>
                        </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>pm</string>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceThicknessUnits">
+                       <property name="currentIndex">
+                        <number>3</number>
                        </property>
-                      </item>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
-                  <item>
-                   <layout class="QHBoxLayout" name="horizontalLayout_71">
-                    <property name="leftMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>5</number>
-                    </property>
-                    <item>
-                     <widget class="QLabel" name="label_189">
-                      <property name="text">
-                       <string>thickness</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceThickness">
-                      <property name="decimals">
-                       <number>3</number>
-                      </property>
-                      <property name="maximum">
-                       <double>1000000000.000000000000000</double>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceThicknessUnits">
-                      <property name="currentIndex">
-                       <number>3</number>
-                      </property>
-                      <item>
-                       <property name="text">
-                        <string>m</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>cm</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>mm</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>um</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>nm</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>pm</string>
-                       </property>
-                      </item>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
-                 </layout>
+                       <item>
+                        <property name="text">
+                         <string>m</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>cm</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>mm</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>um</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>nm</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>pm</string>
+                        </property>
+                       </item>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
                 </item>
                </layout>
               </widget>

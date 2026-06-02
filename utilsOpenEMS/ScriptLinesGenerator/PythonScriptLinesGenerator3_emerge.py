@@ -873,7 +873,10 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
             for k in range(item.childCount()):
                 childName = item.child(k).text(0)
                 print("#BOUNDARY CONDITION TYPE: " + currentSetting.getType())
-                genScript += f"helperFunctionsObj.setBoundaryConditionToObject(name=\"{childName}\", type=\"{currentSetting.getType()}\")\n"
+                if currentSetting.getType() == 'surfaceImpedance':
+                    genScript += f"helperFunctionsObj.setSurfaceImpedanceBoundaryConditionToObject(name=\"{childName}\", surface_conductance={currentSetting.surfaceImpedance['conductance']}, surface_roughness={currentSetting.surfaceImpedance['roughness']}*{currentSetting.surfaceImpedance['roughnessUnits']}, thickness={currentSetting.surfaceImpedance['thickness']}*{currentSetting.surfaceImpedance['thicknessUnits']}, material=\"{currentSetting.surfaceImpedance['material']}\")\n"
+                else:
+                    genScript += f"helperFunctionsObj.setBoundaryConditionToObject(name=\"{childName}\", type=\"{currentSetting.getType()}\")\n"
 
         return genScript
 
@@ -1491,6 +1494,7 @@ simulationObj.display.show()
             genScript += f'simulationResult.scalar.grid.export_touchstone("{simulationName}_dense.s1p", Z0ref=50, format="RI", funit="GHz", dense_freq=dense_frequencies)\n'
             genScript += "\n"
 
+        genScript += f'helperFunctionsObj.exportCSV_SParam("{simulationName}_s11.csv", sourcePortNumber, sourcePortNumber)\n'
         genScript += "helperFunctionsObj.plotSParamUsingPortNumbers(sourcePortNumber, sourcePortNumber)\n"
         genScript += "\n"
 
@@ -1587,6 +1591,8 @@ simulationObj.display.show()
             genScript += f'simulationResult.scalar.grid.export_touchstone("{simulationName}_dense.s2p", Z0ref=50, format="RI", funit="GHz", dense_freq=dense_frequencies)\n'
             genScript += "\n"
 
+        genScript += f'helperFunctionsObj.exportCSV_SParam("{simulationName}_s11.csv", sourcePortNumber, sourcePortNumber)\n'
+        genScript += f'helperFunctionsObj.exportCSV_SParam("{simulationName}_s21.csv", sourcePortNumber, targetPortNumber)\n'
         genScript += "helperFunctionsObj.plotSParamUsingPortNumbers(sourcePortNumber, targetPortNumber, plotS11=True)\n"
         genScript += "\n"
 
