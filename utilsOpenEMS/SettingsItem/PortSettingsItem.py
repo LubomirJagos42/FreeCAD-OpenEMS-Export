@@ -1,5 +1,6 @@
-from .  SettingsItem import SettingsItem
+from .SettingsItem import SettingsItem
 from utilsOpenEMS.GlobalFunctions.GlobalFunctions import _bool, _r, _getFreeCADUnitLength_m
+from ..ScriptLinesGenerator.CommonScriptLinesGenerator import CommonScriptLinesGenerator
 
 # Port settings
 #	There are just few types of ports defined in OpenEMS:
@@ -70,6 +71,8 @@ class PortSettingsItem(SettingsItem):
         self.modalModeType = modalModeType
         self.modalMixedMaterials = modalMixedMaterials
         self.modalImpedanceDefinition = modalImpedanceDefinition
+
+        self.freeCADUnitLength_m = 0.001    #for now hardwired value 0.001 what means FreeCAD units are mm
 
         return
 
@@ -279,71 +282,71 @@ class PortSettingsItem(SettingsItem):
         #
         #   2. set coordinates of coplanar based on plane, height must be same
         #
-        if (currSetting.direction in ["XY plane, top layer", "r-theta, top layer"]):
+        if (self.direction in ["XY plane, top layer", "r-theta, top layer"]):
             portStartZ = _r(sf * bbCoords.ZMax)
             portStopZ = _r(sf * bbCoords.ZMax)
-        elif (currSetting.direction in ["XY plane, bottom layer", "r-theta, bottom layer"]):
+        elif (self.direction in ["XY plane, bottom layer", "r-theta, bottom layer"]):
             portStartZ = _r(sf * bbCoords.ZMin)
             portStopZ = _r(sf * bbCoords.ZMin)
-        elif (currSetting.direction in ["YZ plane, right layer", "z-theta, outside layer"]):
+        elif (self.direction in ["YZ plane, right layer", "z-theta, outside layer"]):
             portStartX = _r(sf * bbCoords.XMax)
             portStopX = _r(sf * bbCoords.XMax)
-        elif (currSetting.direction in ["YZ plane, left layer", "z-theta, inside layer"]):
+        elif (self.direction in ["YZ plane, left layer", "z-theta, inside layer"]):
             portStartX = _r(sf * bbCoords.XMin)
             portStopX = _r(sf * bbCoords.XMin)
-        elif (currSetting.direction in ["XZ plane, front layer", "z-theta, outside layer"]):
+        elif (self.direction in ["XZ plane, front layer", "z-theta, outside layer"]):
             portStartY = _r(sf * bbCoords.YMax)
             portStopY = _r(sf * bbCoords.YMax)
-        elif (currSetting.direction in ["XZ plane, back layer", "z-theta, inside layer"]):
+        elif (self.direction in ["XZ plane, back layer", "z-theta, inside layer"]):
             portStartY = _r(sf * bbCoords.YMin)
             portStopY = _r(sf * bbCoords.YMin)
 
         #
         #   3. set coplanar direcion based on propagation
         #
-        if (currSetting.coplanarPropagation == "z-"):
+        if (self.coplanarPropagation == "z-"):
             portStartZ = _r(sf * bbCoords.ZMax)
             portStopZ = _r(sf * bbCoords.ZMin)
-        elif (currSetting.coplanarPropagation in ["x-", "r-"]):
+        elif (self.coplanarPropagation in ["x-", "r-"]):
             portStartX = _r(sf * bbCoords.XMax)
             portStopX = _r(sf * bbCoords.XMin)
-        elif (currSetting.coplanarPropagation in ["y-", "theta-"]):
+        elif (self.coplanarPropagation in ["y-", "theta-"]):
             portStartY = _r(sf * bbCoords.YMax)
             portStopY = _r(sf * bbCoords.YMin)
-        elif (currSetting.coplanarPropagation == "z+"):
+        elif (self.coplanarPropagation == "z+"):
             portStartZ = _r(sf * bbCoords.ZMin)
             portStopZ = _r(sf * bbCoords.ZMax)
-        elif (currSetting.coplanarPropagation in ["x+", "r+"]):
+        elif (self.coplanarPropagation in ["x+", "r+"]):
             portStartX = _r(sf * bbCoords.XMin)
             portStopX = _r(sf * bbCoords.XMax)
-        elif (currSetting.coplanarPropagation in ["y+", "theta+"]):
+        elif (self.coplanarPropagation in ["y+", "theta+"]):
             portStartY = _r(sf * bbCoords.YMin)
             portStopY = _r(sf * bbCoords.YMax)
 
-        gapWidth = currSetting.coplanarGapValue * currSetting.getUnitsAsNumber(currSetting.coplanarGapUnits)
-        gapWidth_freeCAD_units = currSetting.coplanarGapValue * currSetting.getUnitsAsNumber(currSetting.coplanarGapUnits) / self.getFreeCADUnitLength_m()
+        gapWidth = self.coplanarGapValue * self.getUnitsAsNumber(self.coplanarGapUnits)
+        gapWidth_freeCAD_units = self.coplanarGapValue * self.getUnitsAsNumber(self.coplanarGapUnits) / self.freeCADUnitLength_m
 
-        if (currSetting.direction.startswith(("XY", "r-theta")) and currSetting.coplanarPropagation.startswith(("x", "r"))):
+        if (self.direction.startswith(("XY", "r-theta")) and self.coplanarPropagation.startswith(("x", "r"))):
             coplanarEVecStr = '[0 1 0]'
             portStartY += gapWidth_freeCAD_units
             portStopY -= gapWidth_freeCAD_units
-        elif (currSetting.direction.startswith(("XY", "r-theta")) and currSetting.coplanarPropagation.startswith(("y", "theta"))):
+        elif (self.direction.startswith(("XY", "r-theta")) and self.coplanarPropagation.startswith(("y", "theta"))):
             coplanarEVecStr = '[1 0 0]'
             portStartX += gapWidth_freeCAD_units
             portStopX -= gapWidth_freeCAD_units
-        elif (currSetting.direction.startswith(("XZ", "z-theta")) and currSetting.coplanarPropagation.startswith(("x", "r"))):
+        elif (self.direction.startswith(("XZ", "z-theta")) and self.coplanarPropagation.startswith(("x", "r"))):
             coplanarEVecStr = '[0 0 1]'
             portStartZ += gapWidth_freeCAD_units
             portStopZ -= gapWidth_freeCAD_units
-        elif (currSetting.direction.startswith(("XZ", "z-theta")) and currSetting.coplanarPropagation.startswith("z")):
+        elif (self.direction.startswith(("XZ", "z-theta")) and self.coplanarPropagation.startswith("z")):
             coplanarEVecStr = '[1 0 0]'
             portStartX += gapWidth_freeCAD_units
             portStopX -= gapWidth_freeCAD_units
-        elif (currSetting.direction.startswith(("XZ", "z-theta")) and currSetting.coplanarPropagation.startswith(("y", "theta"))):
+        elif (self.direction.startswith(("XZ", "z-theta")) and self.coplanarPropagation.startswith(("y", "theta"))):
             coplanarEVecStr = '[0 0 1]'
             portStartZ += gapWidth_freeCAD_units
             portStopZ -= gapWidth_freeCAD_units
-        elif (currSetting.direction.startswith(("XZ", "z-theta")) and currSetting.coplanarPropagation.startswith("z")):
+        elif (self.direction.startswith(("XZ", "z-theta")) and self.coplanarPropagation.startswith("z")):
             coplanarEVecStr = '[0 1 0]'
             portStartY += gapWidth_freeCAD_units
             portStopY -= gapWidth_freeCAD_units

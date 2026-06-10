@@ -992,8 +992,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
     def getExcitationScriptLines(self, definitionsOnly=False):
         genScript = ""
 
-        excitationCategory = self.form.objectAssignmentRightTreeWidget.findItems("Excitation",
-                                                                                 QtCore.Qt.MatchFixedString)
+        excitationCategory = self.form.objectAssignmentRightTreeWidget.findItems("Excitation", QtCore.Qt.MatchFixedString)
         if len(excitationCategory) >= 0:
             print("Excitation Settings detected")
             print("#")
@@ -1018,9 +1017,21 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                     genScript += f"fmax = {str(currSetting.sweep['fmax'])}*{str(currSetting.getUnitsAsNumber(currSetting.units))}\n"
                     genScript += f"resolution = {str(currSetting.sweep['resolution'])}\n"
                     genScript += f"npoints = {str(currSetting.sweep['npoints'])}\n"
-                    genScript += f"simulationObj.mw.set_frequency_range(fmin, fmax, npoints)\n"
-                    genScript += f"simulationObj.mw.set_resolution(resolution)\n"
-                    pass
+
+                    #
+                    #   Normaly frequency range is used, when frequency groups are going to be used these commands to specify resolution and
+                    #   frequency mesh are used later in loop.
+                    #
+                    if self.form.simParamsUseFrequencyGroups_emerge.isChecked() == False:
+                        genScript += f"simulationObj.mw.set_frequency_range(fmin, fmax, npoints)\n"
+                        genScript += f"simulationObj.mw.set_resolution(resolution)\n"
+                    else:
+                        genScript += f"ngroups = {self.form.simParamsNumberOfFrequencyGroups_emerge.value()}\n"
+                        genScript += f"npgroup = npoints // ngroups + 1\n"
+                        genScript += f"\n"
+                        genScript += f"frequencies = np.linspace(fmin, fmax, npoints)\n"
+                        genScript += f"fgroups = [frequencies[i * npgroup: (i + 1) * npgroup] for i in range(ngroups)]\n"
+
                 else:
                     genScript += f"# ERROR: Excitation type \"{currSetting.getType()}\" not implemented in script generator!\n"
 
@@ -1136,6 +1147,24 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += self.getExcitationScriptLines()
 
         #
+        # If frequency groups are used then generated code till know must be stored and genScript will collect generated script lines
+        # which will be set to start with \t since they will be used in loop when simulation will be run part by part for frequency
+        # group.
+        #
+        storedGenScript = ""
+        if self.form.simParamsUseFrequencyGroups_emerge.isChecked():
+            genScript += "for fgroupIndex, fgroup in enumerate(fgroups):\n"
+            genScript += "\tsimulationObj.reset(mesh=True, geometry=True, physics=True)\n"
+            genScript += "\thelperFunctionsObj = EMergeHelperFunctions(simulationObj)\n"
+            genScript += "\tsimulationObj.mw.set_frequencies(fgroup)  # (fmin, fmax, npoints)\n"
+            genScript += "\tsimulationObj.mw.set_resolution(resolution)\n"
+            genScript += "\n"
+
+            # store generated python lines till now and reset genScript variable
+            storedGenScript = genScript
+            genScript = "\n"    #now it must start with \n since later all \n -> \t\n and without this first line will have no tab, it's just simple hack
+
+        #
         # MATERIAL - Write material definitions.
         #
         genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None), outputDir)
@@ -1147,6 +1176,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         #
         genScript += self.getObjectUsedInSomeCategoryStepImportScriptLines(itemsByClassName.get("BoundaryConditionSettingsItem", None), outputDir, itemsCategoryName="boundary conditions")
         genScript += self.getObjectUsedInSomeCategoryStepImportScriptLines(itemsByClassName.get("LumpedPartSettingsItem", None), outputDir, itemsCategoryName="lumped elements")
+        genScript += "\n"
 
         # Write port definitions.
         genScript += self.getPortDefinitionsScriptLines(itemsByClassName.get("PortSettingsItem", None))
@@ -1214,7 +1244,7 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "\tos.mkdir('mesh')\n"
         genScript += "except:\n"
         genScript += "\tpass\n"
-        genScript += f"simulationObj.export(os.path.join('mesh', '{simulationName}.msh'))\n"
+        genScript += f"simulationObj.export(os.path.join('mesh', f'{simulationName}{'_fgroup_{fgroups.index(fgroup)}' if self.form.simParamsUseFrequencyGroups_emerge.isChecked() else ''}.msh'))\n"
         genScript += "\n"
 
         #
@@ -1223,9 +1253,17 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         genScript += "#######################################################################################################################################\n"
         genScript += "# DISPLAY MODEL\n"
         genScript += "#######################################################################################################################################\n"
-        genScript += "simulationObj.view()\n"
-        genScript += "simulationObj.view(plot_mesh=True, volume_mesh=False)\n"
-        genScript += "\n"
+
+        if self.form.simParamsUseFrequencyGroups_emerge.isChecked():
+            genScript += "# display model and mesh just first time, in next frequency groups there will be no display\n"
+            genScript += "if fgroupIndex == 0:\n"
+            genScript += "\tsimulationObj.view()\n"
+            genScript += "\tsimulationObj.view(plot_mesh=True, volume_mesh=False)\n"
+            genScript += "\n"
+        else:
+            genScript += "simulationObj.view()\n"
+            genScript += "simulationObj.view(plot_mesh=True, volume_mesh=False)\n"
+            genScript += "\n"
 
         print("======================== REPORT END ========================\n")
 
@@ -1238,16 +1276,23 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
         if self.form.simParamsDisableRAMCheck_emerge.isChecked():
             genScript += "simulationObj.settings.check_ram = False\n"
 
-        if self.form.generateJustPreviewCheckbox.isChecked():
-            genScript += "#simulationResult = simulationObj.mw.run_sweep()\n"
-            genScript += "#simulationObj.save()\n"
-        else:
-            genScript += "simulationResult = simulationObj.mw.run_sweep()\n"
-            genScript += "simulationObj.save()\n"
+        genScript += ("#" if self.form.generateJustPreviewCheckbox.isChecked() else "") + "simulationResult = simulationObj.mw.run_sweep()\n"
 
+        #
+        #   When frequency groups are used then we need to add \t on each generated line
+        #   Then add stored generated scripted line at beginning.
+        #
+        if self.form.simParamsUseFrequencyGroups_emerge.isChecked():
+            genScript = genScript.replace("\n", "\n\t")
+            genScript = storedGenScript + genScript     #add stored scripted lines to beginning
+            genScript += "\n"
+
+        genScript += ("#" if self.form.generateJustPreviewCheckbox.isChecked() else "") + "simulationObj.save()\n"
         genScript += "\n"
 
-        # Write _OpenEMS.py script file to current directory.
+        #
+        #   Write _emerge.py script file to current directory.
+        #
         currDir, nameBase = self.getCurrDir()
 
         if (not outputDir is None):

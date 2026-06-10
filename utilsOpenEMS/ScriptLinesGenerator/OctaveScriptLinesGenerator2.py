@@ -672,11 +672,11 @@ class OctaveScriptLinesGenerator2(CommonScriptLinesGenerator):
                         measPlaneStr = {False: "", True: ", 'MeasPlaneShift', " + str(_r(currSetting.coplanarMeasPlaneShiftValue / self.getUnitLengthFromUI_m() * currSetting.getUnitsAsNumber(currSetting.coplanarMeasPlaneShiftUnits)))}
                         genScript_R = ", 'Feed_R', portR*portUnits"
 
-                        genScript += "[CSX port{" + str(genScriptPortCount) + "}] = AddCPWPort(CSX," + \
-                                     str(priorityIndex) + "," + \
-                                     str(genScriptPortCount) + "," + \
-                                     "'" + currSetting.coplanarMaterial + "'," + \
-                                     "portStart,portStop,gap_width,coplanarDir, coplanarEVec" + \
+                        genScript += "[CSX port{" + str(genScriptPortCount) + "}] = AddCPWPort(CSX, " + \
+                                     str(priorityIndex) + ", " + \
+                                     str(genScriptPortCount) + ", " + \
+                                     "'" + currSetting.coplanarMaterial + "', " + \
+                                     "portStart, portStop, gap_width, coplanarDir, coplanarEVec" + \
                                      isActiveStr.get(currSetting.isActive) + \
                                      feedShiftStr.get(currSetting.coplanarFeedpointShiftValue > 0) + \
                                      measPlaneStr.get(currSetting.coplanarMeasPlaneShiftValue > 0) + \
@@ -1574,6 +1574,7 @@ class OctaveScriptLinesGenerator2(CommonScriptLinesGenerator):
         #genScript += "Sim_CSX = '" + os.path.splitext(os.path.basename(self.cadHelpers.getCurrDocumentFileName()))[0] + ".xml';\n"
         genScript += "Sim_CSX = '" + nameBase + ".xml';\n"
 
+        genScript += "%%confirm_recursive_rmdir(0); %auto confirm remove simulation directory, when run once in octave IDE it will be applied till IDE is running, when run with 1 it will start asks again\n"
         genScript += "[status, message, messageid] = rmdir( Sim_Path, 's' ); % clear previous directory\n"
         genScript += "[status, message, messageid] = mkdir( Sim_Path ); % create empty simulation folder\n"
         genScript += "\n"
