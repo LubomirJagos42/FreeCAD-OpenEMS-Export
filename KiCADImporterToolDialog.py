@@ -121,7 +121,7 @@ class KiCADImporterToolDialog(QtCore.QObject):
 		fuseCoppers = self.form.importSettingsFuseCoppers.isChecked()
 
 		pcb = kicad.KicadFcad(filename)
-		pcb.make(combo=combo, fuseCoppers=fuseCoppers)
+		pcb.make(combo=combo, fuseCoppers=fuseCoppers, load_parts=False)	#LuboJ: load parts should be enabled later as they will be loaded using my modified fcad_pcb rather than kicad stepup module
 
 	def load_kicad_board(self, pcb_file, insertIntoCurrentDocument=True):
 		try:

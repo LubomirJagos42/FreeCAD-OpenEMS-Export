@@ -374,6 +374,8 @@ class IniFile0v1:
         simulationSettings.params['generateTouchstoneFile_emerge'] = self.form.simParamsGenerateTouchstoneFile_emerge.isChecked()
         simulationSettings.params['generateTouchstoneFileDense_emerge'] = self.form.simParamsGenerateTouchstoneFileDense_emerge.isChecked()
         simulationSettings.params['generateTouchstoneFileDenseNPoints_emerge'] = self.form.simParamsGenerateTouchstoneFileDenseNPoints_emerge.value()
+        simulationSettings.params['useFrequencyGroups_emerge'] = self.form.simParamsUseFrequencyGroups_emerge.isChecked()
+        simulationSettings.params['frequencyGroupCount_emerge'] = self.form.simParamsNumberOfFrequencyGroups_emerge.value()
 
         simulationSettings.params['outputScriptType'] = 'octave'
         if self.form.radioButton_pythonType.isChecked():
@@ -403,7 +405,7 @@ class IniFile0v1:
         simulationPalaceSettings.palaceParams["nf2ffNSample"] = self.form.boundaryNf2ffPalaceNSample.value()
 
         #
-        #   Write parameters frp, above into JSON
+        #   Write parameters from, above into JSON
         #
         settings.beginGroup("SIMULATION-" + simulationSettings.name)
         settings.setValue("name", simulationSettings.name)
@@ -440,6 +442,7 @@ class IniFile0v1:
             settings.beginGroup("BOUNDARYCONDITION-" + boundaryConditionList[k].getName())
             settings.setValue("type", boundaryConditionList[k].type)
             settings.setValue("customType", boundaryConditionList[k].customType)
+            settings.setValue("surfaceImpedance", json.dumps(boundaryConditionList[k].surfaceImpedance))
             settings.endGroup()
 
         # SAVE OBJECT ASSIGNMENTS
@@ -887,6 +890,8 @@ class IniFile0v1:
                     self.form.simParamsGenerateTouchstoneFile_emerge.setChecked(simulationSettings.params['generateTouchstoneFile_emerge'])
                     self.form.simParamsGenerateTouchstoneFileDense_emerge.setChecked(simulationSettings.params['generateTouchstoneFileDense_emerge'])
                     self.form.simParamsGenerateTouchstoneFileDenseNPoints_emerge.setValue(simulationSettings.params['generateTouchstoneFileDenseNPoints_emerge'])
+                    self.form.simParamsUseFrequencyGroups_emerge.setChecked(simulationSettings.params['useFrequencyGroups_emerge'])
+                    self.form.simParamsNumberOfFrequencyGroups_emerge.setValue(simulationSettings.params['frequencyGroupCount_emerge'])
                 except:
                     pass
 
@@ -1072,6 +1077,7 @@ class IniFile0v1:
                 categorySettings.name = itemName
                 categorySettings.type = settings.value('type')
                 categorySettings.customType = settings.value('customType')
+                categorySettings.surfaceImpedance = json.loads(settings.value('surfaceImpedance'))
 
                 settings.endGroup()
 

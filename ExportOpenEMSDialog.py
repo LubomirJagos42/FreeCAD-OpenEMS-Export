@@ -705,6 +705,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "Boundary Conditions")
 			self.form.boundaryConditionTab.setEnabled(True)		# enable main BoundaryConditions tab, just for FEM simulations
 
+			#change item to update items since tab was disabled
+			if self.form.boundaryConditionSettingsTreeView.topLevelItemCount() > 0:
+				first_item = self.form.boundaryConditionSettingsTreeView.topLevelItem(0)
+				self.form.boundaryConditionSettingsTreeView.currentItemChanged.emit(first_item, first_item)	#emit signal that item changed
+
 			#
 			# Hide probe settings tab, not applicable for EMerge
 			#
@@ -2149,6 +2154,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		programbase.replace(" ", "_")					#replace whitespaces to underscores, ie. "some file name 1" -> "some_file_name_1", octave has problem from gui to run files with spaces in name
 
 		self.simulationOutputDir = f"{os.path.dirname(outputFile)}/{programbase}_{self.getSolverType()}_simulation"
+
+		#
+		# Update window title with loaded filename
+		#
+		self.form.setWindowTitle(self._constantWindowTitle + " - " + programbase)
+
 		print(f"-----> saveToFileSettingsButtonClicked, setting simulationOutputDir: {self.simulationOutputDir}")
 
 	def loadFromFileSettingsButtonClicked(self):
@@ -2939,6 +2950,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.updateMaterialComboBoxJustMetals(self.form.coplanarPortMaterialComboBox)				# update coplanar port material combobox
 			self.updateMaterialComboBoxJustUserdefined(self.form.coaxialPortMaterialComboBox)			# update coaxial port material combobox
 			self.updateMaterialComboBoxAllMaterials(self.form.coaxialPortConductorMaterialComboBox)		# update coaxial port material combobox
+			self.updateMaterialComboBoxAllMaterials(self.form.boundaryConditionTypeSurfaceImpedanceMaterial)		# update boundary condition surface impedance material combobox, just for EMerge
 
 	def materialAddPEC(self):
 		"""
@@ -3024,7 +3036,23 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				if (item.data(0, QtCore.Qt.UserRole).type == "coplanar" and item.data(0, QtCore.Qt.UserRole).coplanarMaterial == oldName):
 					item.data(0, QtCore.Qt.UserRole).coplanarMaterial = newName
 
+			#
+			# There are boundary condition surface impedance with material definition which must be also renamed
+			#
+			boundaryConditionGroupWidgetItems = self.form.objectAssignmentRightTreeWidget.findItems(
+				"Material",
+				QtCore.Qt.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive
+			)[0]
+			for k in range(boundaryConditionGroupWidgetItems.childCount()):
+				item = boundaryConditionGroupWidgetItems.child(k)
+				if (item.data(0, QtCore.Qt.UserRole).type == "surfaceImpedance" and item.data(0, QtCore.Qt.UserRole).surfaceImpedance["material"] == oldName):
+					item.data(0, QtCore.Qt.UserRole).surfaceImpedance["material"] = newName
+
+			#
+			#	Show result message
+			#
 			self.guiHelpers.displayMessage("Material " + oldName + " renamed to " + newName, forceModal=False)
+
 		except Exception as e:
 			self.guiHelpers.displayMessage("ERROR: " + str(e), forceModal=False)
 			self.cadHelpers.printError(traceback.format_exc())
@@ -3721,6 +3749,14 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		elif (self.form.boundaryConditionTypeCustomRadio.isChecked()):
 			boundaryConditionItem.type = "custom"
 			boundaryConditionItem.customType = self.form.boundaryConditionTypeCustomTextInput.text()
+		elif (self.form.boundaryConditionTypeSurfaceImpedanceRadio.isChecked()):
+			boundaryConditionItem.type = "surfaceImpedance"
+			boundaryConditionItem.surfaceImpedance["material"] = self.form.boundaryConditionTypeSurfaceImpedanceMaterial.currentText()
+			boundaryConditionItem.surfaceImpedance["conductance"] = self.form.boundaryConditionTypeSurfaceImpedanceConductance.value()
+			boundaryConditionItem.surfaceImpedance["roughness"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughness.value()
+			boundaryConditionItem.surfaceImpedance["roughnessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits.currentText()
+			boundaryConditionItem.surfaceImpedance["thickness"] = self.form.boundaryConditionTypeSurfaceImpedanceThickness.value()
+			boundaryConditionItem.surfaceImpedance["thicknessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits.currentText()
 
 		return boundaryConditionItem
 
@@ -3797,10 +3833,17 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		if (currSetting.type == "custom"):
 			self.form.boundaryConditionTypeCustomRadio.click()
 			self.form.boundaryConditionTypeCustomTextInput.setText(currSetting.customType)
+		elif (currSetting.type.lower() == "surfaceimpedance"):
+			self.form.boundaryConditionTypeSurfaceImpedanceRadio.click()
+			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceMaterial, text=currSetting.surfaceImpedance["material"])
+			self.form.boundaryConditionTypeSurfaceImpedanceConductance.setValue(currSetting.surfaceImpedance["conductance"])
+			self.form.boundaryConditionTypeSurfaceImpedanceRoughness.setValue(currSetting.surfaceImpedance["roughness"])
+			self.form.boundaryConditionTypeSurfaceImpedanceThickness.setValue(currSetting.surfaceImpedance["thickness"])
+			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits, text=currSetting.surfaceImpedance["roughnessUnits"])
+			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits, text=currSetting.surfaceImpedance["thicknessUnits"])
 		else:
 			self.form.boundaryConditionTypePredefinedRadio.click()
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeCombobox, currSetting.type)
-			self.form.boundaryConditionTypeCustomTextInput.setText("")
 
 		return
 
