@@ -3849,6 +3849,14 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.boundaryConditionTypeSurfaceImpedanceThickness.setValue(currSetting.surfaceImpedance["thickness"])
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits, text=currSetting.surfaceImpedance["roughnessUnits"])
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits, text=currSetting.surfaceImpedance["thicknessUnits"])
+		elif (currSetting.type.lower() == "thinconductor"):
+			self.form.boundaryConditionTypeThinConductorRadio.click()
+			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceMaterial, text=currSetting.thinConductor["material"])
+			self.form.boundaryConditionTypeSurfaceImpedanceConductance.setValue(currSetting.thinConductor["conductance"])
+			self.form.boundaryConditionTypeSurfaceImpedanceRoughness.setValue(currSetting.thinConductor["roughness"])
+			self.form.boundaryConditionTypeSurfaceImpedanceThickness.setValue(currSetting.thinConductor["thickness"])
+			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits, text=currSetting.thinConductor["roughnessUnits"])
+			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits, text=currSetting.thinConductor["thicknessUnits"])
 		else:
 			self.form.boundaryConditionTypePredefinedRadio.click()
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeCombobox, currSetting.type)
