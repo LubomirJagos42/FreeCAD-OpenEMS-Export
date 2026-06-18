@@ -3757,6 +3757,14 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			boundaryConditionItem.surfaceImpedance["roughnessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits.currentText()
 			boundaryConditionItem.surfaceImpedance["thickness"] = self.form.boundaryConditionTypeSurfaceImpedanceThickness.value()
 			boundaryConditionItem.surfaceImpedance["thicknessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits.currentText()
+		elif (self.form.self.form.boundaryConditionTypeThinConductorRadio.isChecked()):
+			boundaryConditionItem.type = "thinConductor"
+			boundaryConditionItem.thinConductor["material"] = self.form.boundaryConditionTypeSurfaceImpedanceMaterial.currentText()
+			boundaryConditionItem.thinConductor["conductance"] = self.form.boundaryConditionTypeSurfaceImpedanceConductance.value()
+			boundaryConditionItem.thinConductor["roughness"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughness.value()
+			boundaryConditionItem.thinConductor["roughnessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits.currentText()
+			boundaryConditionItem.thinConductor["thickness"] = self.form.boundaryConditionTypeSurfaceImpedanceThickness.value()
+			boundaryConditionItem.thinConductor["thicknessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits.currentText()
 
 		return boundaryConditionItem
 

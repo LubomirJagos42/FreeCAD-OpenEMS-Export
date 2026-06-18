@@ -443,6 +443,7 @@ class IniFile0v1:
             settings.setValue("type", boundaryConditionList[k].type)
             settings.setValue("customType", boundaryConditionList[k].customType)
             settings.setValue("surfaceImpedance", json.dumps(boundaryConditionList[k].surfaceImpedance))
+            settings.setValue("thinConductor", json.dumps(boundaryConditionList[k].thinConductor))
             settings.endGroup()
 
         # SAVE OBJECT ASSIGNMENTS
@@ -1077,7 +1078,12 @@ class IniFile0v1:
                 categorySettings.name = itemName
                 categorySettings.type = settings.value('type')
                 categorySettings.customType = settings.value('customType')
-                categorySettings.surfaceImpedance = json.loads(settings.value('surfaceImpedance'))
+
+                try:
+                    categorySettings.surfaceImpedance = json.loads(settings.value('surfaceImpedance'))
+                    categorySettings.thinConductor = json.loads(settings.value('thinConductor'))
+                except:
+                    pass
 
                 settings.endGroup()
 

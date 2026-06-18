@@ -8859,14 +8859,6 @@ Transient use AMS</string>
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="0">
-                 <widget class="QRadioButton" name="boundaryConditionTypeSurfaceImpedanceRadio">
-                  <property name="text">
-                   <string>SurfaceImpedance
-(EMerge only)</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="3" column="2">
                  <spacer name="verticalSpacer_49">
                   <property name="orientation">
@@ -8886,7 +8878,7 @@ Transient use AMS</string>
                 <item row="4" column="1">
                  <widget class="QGroupBox" name="groupBox_4">
                   <property name="title">
-                   <string>SurfaceImpedance - EMerge settings</string>
+                   <string>ThinConductor or SurfaceImpedance - EMerge settings</string>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_57">
                    <item>
@@ -9068,6 +9060,26 @@ Transient use AMS</string>
                    </item>
                   </layout>
                  </widget>
+                </item>
+                <item row="4" column="0">
+                 <layout class="QVBoxLayout" name="verticalLayout_56">
+                  <item>
+                   <widget class="QRadioButton" name="boundaryConditionTypeSurfaceImpedanceRadio">
+                    <property name="text">
+                     <string>SurfaceImpedance
+(EMerge only)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="boundaryConditionTypeThinConductorRadio">
+                    <property name="text">
+                     <string>ThinConductor
+(EMerge only)</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
                 </item>
                </layout>
               </widget>

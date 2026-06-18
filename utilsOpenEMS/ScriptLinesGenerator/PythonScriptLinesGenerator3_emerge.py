@@ -875,6 +875,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                 print("#BOUNDARY CONDITION TYPE: " + currentSetting.getType())
                 if currentSetting.getType() == 'surfaceImpedance':
                     genScript += f"helperFunctionsObj.setSurfaceImpedanceBoundaryConditionToObject(name=\"{childName}\", surface_conductance={currentSetting.surfaceImpedance['conductance']}, surface_roughness={currentSetting.surfaceImpedance['roughness']}*{currentSetting.surfaceImpedance['roughnessUnits']}, thickness={currentSetting.surfaceImpedance['thickness']}*{currentSetting.surfaceImpedance['thicknessUnits']}, material=\"{currentSetting.surfaceImpedance['material']}\")\n"
+                elif currentSetting.getType() == 'thinConductor':
+                    genScript += f"helperFunctionsObj.setThinConductorBoundaryConditionToObject(name=\"{childName}\", surface_conductance={currentSetting.surfaceImpedance['conductance']}, surface_roughness={currentSetting.surfaceImpedance['roughness']}*{currentSetting.surfaceImpedance['roughnessUnits']}, thickness={currentSetting.surfaceImpedance['thickness']}*{currentSetting.surfaceImpedance['thicknessUnits']}, material=\"{currentSetting.surfaceImpedance['material']}\")\n"
                 else:
                     genScript += f"helperFunctionsObj.setBoundaryConditionToObject(name=\"{childName}\", type=\"{currentSetting.getType()}\")\n"
 
