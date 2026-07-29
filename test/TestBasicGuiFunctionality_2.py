@@ -1,29 +1,26 @@
-#import sys
-#sys.path.append("..") # Adds higher directory to python modules path.
-
 import os
 import sys
 import inspect
-
-import time
+import unittest
+from typing import Literal
 
 # Add parent dir to system path to instantiate FreeCAD simulation creator gui
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-import unittest
-from typing import Literal
-
 from ExportOpenEMSDialog import ExportOpenEMSDialog
 from PySide import QtGui, QtCore, QtWidgets
 
-class MacroTestBase(unittest.TestCase):
-    """
-    Loads the macro once per TestCase class and exposes `cls.window`.
-    Override `window_title_fragment` if your dialog has a distinctive title.
-    """
+import time
 
+def wait_for_ui(seconds=1):
+    """Non-blocking wait to let FreeCAD render widgets."""
+    loop = QtCore.QEventLoop()
+    QtCore.QTimer.singleShot(int(seconds * 1000), loop.quit)
+    loop.exec_()
+
+class MacroTestBase(unittest.TestCase):
     appWindow: QtWidgets.QWidget | None = None
 
     @classmethod
@@ -37,87 +34,62 @@ class MacroTestBase(unittest.TestCase):
         return
 
     def getCategoryItem(self, name: Literal["LumpedPart", "Probe", "Port", "Grid", "Excitation", "Material"]) -> QtWidgets.QTreeWidgetItem:
-        """
-        Return category item from right assignement QTreeWidget, it's top level category as Material or Excitation, ...
-        :param name:
-        :return:
-        """
         categoryItem = self.appWindow.form.objectAssignmentRightTreeWidget.findItems(name, QtCore.Qt.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)[0]
         return categoryItem
 
 class TestWindowBasics(MacroTestBase):
-    """The main window opens and has a sensible title."""
-
     def test_window_visible(self):
         self.assertIsNotNone(self.appWindow, "Main window should be visible")
         self.assertTrue(self.appWindow.form.isVisible(), "Window should be visible")
 
-class TestMaterialCategory(MacroTestBase):
+    def test_dialog_opens(self):
+        # Use the already active test window instance from setUpClass
+        self.assertIsNotNone(self.appWindow)
+        self.assertTrue(self.appWindow.form.isVisible())
+        wait_for_ui(1.5)
 
+class TestMaterialCategory(MacroTestBase):
     def test_material_checkDefaultMaterial(self):
         materialCategoryItem = self.getCategoryItem("Material")
         self.assertEqual(materialCategoryItem.child(0).text(0), "PEC")
 
     def test_material_addNew(self):
         materialCategoryItem = self.getCategoryItem("Material")
-
         self.appWindow.form.objectAssignmentRightTreeWidget.setCurrentItem(materialCategoryItem)
         materialCategoryItem.setExpanded(True)
         self.assertEqual(materialCategoryItem.childCount(), 1)
+        wait_for_ui(1)
 
-        #add first material
-        self.appWindow.form.materialSettingsNameInput.setText("auto material 1")
-        self.appWindow.form.materialMetalRadioButton.toggle()
-        self.appWindow.form.materialSettingsAddButton.clicked.emit()
-        self.assertEqual(materialCategoryItem.childCount(), 2)
-        time.sleep(1)
-
-        #add second material
-        self.appWindow.form.materialSettingsNameInput.setText("auto material 2")
-        self.appWindow.form.materialMetalRadioButton.toggle()
-        self.appWindow.form.materialSettingsAddButton.clicked.emit()
-        self.assertEqual(materialCategoryItem.childCount(), 3)
-        time.sleep(1)
-
-        #add third material
-        self.appWindow.form.materialSettingsNameInput.setText("auto material 3")
-        self.appWindow.form.materialMetalRadioButton.toggle()
-        self.appWindow.form.materialSettingsAddButton.clicked.emit()
-        self.assertEqual(materialCategoryItem.childCount(), 4)
-        time.sleep(1)
+        for i, name in enumerate(["auto material 1", "auto material 2", "auto material 3"], start=2):
+            self.appWindow.form.materialSettingsNameInput.setText(name)
+            self.appWindow.form.materialMetalRadioButton.toggle()
+            self.appWindow.form.materialSettingsAddButton.clicked.emit()
+            self.assertEqual(materialCategoryItem.childCount(), i)
+            wait_for_ui(1)
 
     def test_material_addItemToMaterial(self):
         assert self.appWindow.form.objectAssignmentLeftTreeWidget.topLevelItemCount() >= 2
 
-        # select item in left widget, these objects will be assigned to material
-        leftItems = []
-        leftItems.append(self.appWindow.form.objectAssignmentLeftTreeWidget.topLevelItem(0))
-        leftItems.append(self.appWindow.form.objectAssignmentLeftTreeWidget.topLevelItem(1))
-        [item.setSelected(True) for item in leftItems]
+        leftItems = [
+            self.appWindow.form.objectAssignmentLeftTreeWidget.topLevelItem(0),
+            self.appWindow.form.objectAssignmentLeftTreeWidget.topLevelItem(1)
+        ]
+        for item in leftItems:
+            item.setSelected(True)
 
         materialCategoryItem = self.getCategoryItem("Material")
         materialCategoryItem.setExpanded(True)
 
-        # select PEC material
         materialItemPEC = materialCategoryItem.child(0)
         self.appWindow.form.objectAssignmentRightTreeWidget.setCurrentItem(materialItemPEC)
-
-        # click on move right button to assign objects to material
         self.appWindow.form.moveRightButton.click()
-        time.sleep(1)
+        wait_for_ui(1)
 
-        #
-        #   Test checking if everything was assigned to material
-        #       - check selected items names from objects with assigned objects to material 'PEC'
-        #
         assert materialItemPEC.childCount() == 2
         for k in range(materialItemPEC.childCount()):
             assert materialItemPEC.child(k).text(0) == leftItems[k].text(0)
-            time.sleep(1)
+            wait_for_ui(1)
 
-        #
-        #   Check priority list if material items were added into it
-        #
         self.assertEqual(self.appWindow.form.objectAssignmentPriorityTreeView.topLevelItemCount(), 2)
         leftItems.reverse()
         for k in range(self.appWindow.form.objectAssignmentPriorityTreeView.topLevelItemCount()):
@@ -125,20 +97,27 @@ class TestMaterialCategory(MacroTestBase):
             priorityItemLabel = priorityItem.text(0)
             expectedLabel = f"Material, PEC, {leftItems[k].text(0)}"
             self.assertEqual(expectedLabel, priorityItemLabel)
-            time.sleep(1)
+            wait_for_ui(1)
 
-#
-#   Running all tests
-#
-if __name__ == '__main__':
-    loader = unittest.TestLoader()
+# Function wrapper so the CLI loader can explicitly execute the test suite
+def run_interactive_tests():
+    print("Executing test cases interactively in FreeCAD...")
     suite = unittest.TestSuite()
+    loader = unittest.TestLoader()
 
-    for case in [
-        TestWindowBasics,
-        TestMaterialCategory
-    ]:
-        suite.addTests(loader.loadTestsFromTestCase(case))
+    # Explicitly load test cases from current module context
+    suite.addTests(loader.loadTestsFromTestCase(TestWindowBasics))
+    suite.addTests(loader.loadTestsFromTestCase(TestMaterialCategory))
 
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
+    print(f"Test suite finished. Success: {result.wasSuccessful()}")
+
+    print("Keeping dialog open for inspection...")
+    loop = QtCore.QEventLoop()
+    QtCore.QTimer.singleShot(10000, loop.quit)
+    loop.exec_()
+
+if __name__ == '__main__':
+    if 'FreeCAD' in sys.modules and FreeCADGui and FreeCADGui.getMainWindow():
+        run_interactive_tests()
