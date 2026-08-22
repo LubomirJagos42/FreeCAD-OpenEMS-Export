@@ -113,10 +113,32 @@ def run_interactive_tests():
     result = runner.run(suite)
     print(f"Test suite finished. Success: {result.wasSuccessful()}")
 
+    #
+    #   Keep FreeCAD app hanging and open.
+    #
     print("Keeping dialog open for inspection...")
     loop = QtCore.QEventLoop()
     QtCore.QTimer.singleShot(10000, loop.quit)
     loop.exec_()
+
+
+    #
+    #   This will close whole FreeCAD application.
+    #
+    # Determine exit code based on test success (0 = success, 1 = failure)
+    # exit_code = 0 if result.wasSuccessful() else 1
+    #
+    # # Cleanly close the main FreeCAD window / application
+    # try:
+    #     import FreeCADGui
+    #     if FreeCADGui.getMainWindow():
+    #         FreeCADGui.getMainWindow().close()
+    # except Exception:
+    #     pass
+    #
+    # # Forcefully exit the Python interpreter process so FreeCAD shuts down completely
+    # sys.exit(exit_code)
+
 
 if __name__ == '__main__':
     if 'FreeCAD' in sys.modules and FreeCADGui and FreeCADGui.getMainWindow():
