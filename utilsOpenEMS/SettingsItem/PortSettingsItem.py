@@ -146,7 +146,7 @@ class PortSettingsItem(SettingsItem):
         portStopY = _r(sf * bbCoords.YMax)
         portStopZ = _r(sf * bbCoords.ZMax)
 
-        if (self.waveguideCircDirstartswith("z-")):
+        if (self.waveguideCircDir.startswith("z-")):
             portStartZ = _r(sf * bbCoords.ZMax)
             portStopZ = _r(sf * bbCoords.ZMin)
         elif (self.waveguideCircDir.startswith(("x-", "r-"))):

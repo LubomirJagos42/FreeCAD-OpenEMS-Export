@@ -1137,6 +1137,8 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
             genScript += "simulationObj.mw.solveroutine.set_solver(em.EMSolver.SMART_ARPACK_BMA)\n"
         elif(solverEngineStr.upper() == "MUMPS"):
             genScript += "simulationObj.mw.solveroutine.set_solver(em.EMSolver.MUMPS)\n"
+        elif(solverEngineStr.upper() == "SPARTA"):
+            genScript += "simulationObj.mw.solveroutine.set_solver(em.EMSolver.SPARTA)\n"
 
         genScript += f"helperFunctionsObj = EMergeHelperFunctions(simulationObj)\n"
         genScript += "\n"

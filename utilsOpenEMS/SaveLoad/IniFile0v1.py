@@ -367,6 +367,8 @@ class IniFile0v1:
         simulationSettings.params['min_gridspacing_z'] = self.form.genParamMinGridSpacingZ.value()
         simulationSettings.params['OverSampling'] = self.form.simParamsOverSampling.value()
 
+        simulationSettings.params['useGPU'] = self.form.simParamsUseGPU.isChecked()
+
         #write all settings from "Simulation Params" tab from EMerge tab
         simulationSettings.params['base_length_unit_m_emerge'] = self.form.simParamsDeltaUnitList_emerge.currentText()
         simulationSettings.params['solverEngine_emerge'] = self.form.simParamsSolverEngine_emerge.currentText()
@@ -929,6 +931,13 @@ class IniFile0v1:
                     self.form.simParamsOverSampling.setValue(simulationSettings.params['OverSampling'])
                 except:
                     pass
+
+                #   option use GPU for openEMS on simulation params tab
+                try:
+                    self.form.simParamsUseGPU.setChecked(simulationSettings.params['useGPU'])
+                except:
+                    pass
+
 
                 #
                 #   try catch block here due backward compatibility, loading simulation settings for palace solver tab

@@ -541,10 +541,31 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                         genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'circular waveguide'):
-                        #
-                        #   NOV 2023 - PYTHON API NOT IMPLEMENTED
-                        #
-                        genScript += "%% circular port openEMS code should be here, NOT IMPLEMENTED python API for it\n"
+                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, waveguideRadius = currSetting.getCircularWaveguidStartStopRadius(bbCoords, sf)
+                        bbCoords.XMin = portStartX
+                        bbCoords.YMin = portStartY
+                        bbCoords.ZMin = portStartZ
+                        bbCoords.XMax = portStopX
+                        bbCoords.YMax = portStopY
+                        bbCoords.ZMax = portStopZ
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
+
+                        genScript += f"portExcitationAmplitude = {str(currSetting.excitationAmplitude)} * {'1' if currSetting.isActive else '0'}\n"
+                        genScript += f'port[{str(genScriptPortCount)}] = FDTD.AddCircWaveGuidePort(' + \
+                                     f'{str(genScriptPortCount)}, ' + \
+                                     f'portStart, ' + \
+                                     f'portStop, ' + \
+                                     f'"{currSetting.waveguideCircDir[0]}", ' + \
+                                     f'{waveguideRadius}, ' + \
+                                     f'"{currSetting.modeName}", ' + \
+                                     f"excite=portExcitationAmplitude, " + \
+                                     f'priority={str(priorityIndex)}, ' + \
+                                     f")\n"
+
+                        internalPortName = currSetting.name + " - " + obj.Label
+                        self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
+                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount};\n'
+                        genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'rectangular waveguide'):
                         portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, waveguideWidth, waveguideHeight = currSetting.getRectangularWaveguideStartStopWidthHeight(bbCoords, sf)
@@ -575,11 +596,76 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                         genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount};\n'
                         genScriptPortCount += 1
                     elif (currSetting.getType() == 'coaxial'):
+                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, coaxialRadius = currSetting.getCoaxialStartStopAndRadius(bbCoords, sf)
+
                         #
-                        #   NOV 2023 - PYTHON API NOT IMPLEMENTED
+                        #   This is important, radius is calculated from bounding box coordinates from FreeCAD so must be multiplied by metric units used in FreeCAD.
+                        #   LuboJ ERROR: not sure if scaling done right
                         #
-                        genScript += '# ERROR: caoxial port function NOT IMPLEMENTED IN openEMS PYTHON INTERFACE\n'
-                        genScript += '# raise BaseException("caoxial port function NOT IMPLEMENTED IN openEMS PYTHON INTERFACE coaxial port")\n'
+                        coaxialRadius = coaxialRadius * self.getFreeCADUnitLength_m() / self.getUnitLengthFromUI_m()
+
+                        #
+                        #   LuboJ ERROR: not sure if scaling done right
+                        #
+                        coaxialInnerRadius, coaxialShellThickness, coaxialFeedShift, coaxialMeasPlaneShift = currSetting.getCoaxialInnerRadiusShellThicknessFeedShiftMeasShift()
+                        coaxialInnerRadius = _r(coaxialInnerRadius / self.getUnitLengthFromUI_m())
+                        coaxialShellThickness = _r(coaxialShellThickness / self.getUnitLengthFromUI_m())
+                        coaxialFeedShift = _r(coaxialFeedShift / self.getUnitLengthFromUI_m())
+                        coaxialMeasPlaneShift = _r(coaxialMeasPlaneShift / self.getUnitLengthFromUI_m())
+
+                        #
+                        #   LuboJ ERROR: FeedShift and MeasPlaneShift doesn't seem to be working properly, it's not moving anything, error is somewhere here in code
+                        #
+                        feedShiftStr = {False: "", True: ", FeedShift=" + str(coaxialFeedShift)}
+                        measPlaneStr = {False: "", True: ", MeasPlaneShift=" + str(coaxialMeasPlaneShift)}
+
+                        #
+                        #   Port start and end need to be shifted into middle of feed plane, this is done inside function in port settings
+                        #
+                        bbCoords.XMin = portStartX
+                        bbCoords.YMin = portStartY
+                        bbCoords.ZMin = portStartZ
+                        bbCoords.XMax = portStopX
+                        bbCoords.YMax = portStopY
+                        bbCoords.ZMax = portStopZ
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
+
+                        genScript += 'coaxialDir = {}\n'.format(coaxialDirStr.get(currSetting.direction))
+
+                        genScript += 'r_i = ' + str(coaxialInnerRadius) + '\n'
+                        genScript += 'r_o = ' + str(coaxialRadius - coaxialShellThickness) + '\n'
+                        genScript += 'r_os = ' + str(coaxialRadius) + '\n'
+
+                        genScript_R = ""
+                        if not _bool(currSetting.infiniteResistance):
+                            genScript += 'portR = ' + str(currSetting.R) + '\n'
+                            genScript += 'portUnits = ' + str(currSetting.getRUnits()) + '\n'
+                            genScript_R = ", Feed_R=portR*portUnits"
+
+                        genScript += "portExcitationAmplitude = " + str(currSetting.excitationAmplitude) + "\n"
+
+                        isActiveCoaxialStr = {
+                            False:  "",
+                            True:   ", 'ExcitePort', true, 'ExciteAmp', portExcitationAmplitude"
+                        }
+
+                        genScript += f"portExcitationAmplitude = {str(currSetting.excitationAmplitude)} * {'1' if currSetting.isActive else '0'}\n"
+                        genScript += f'port[{str(genScriptPortCount)}] = FDTD.AddCoaxialPort(' + \
+                                     f'{str(genScriptPortCount)}, ' + \
+                                     f"materialList['{currSetting.coaxialConductorMaterial}'], " + \
+                                     f"materialList['{currSetting.coaxialMaterial}'], " + \
+                                     "portStart,portStop,coaxialDir, r_i, r_o, r_os, " + \
+                                     f"excite=portExcitationAmplitude, " + \
+                                     f'priority={str(priorityIndex)} ' + \
+                                     feedShiftStr.get(currSetting.coaxialFeedpointShiftValue > 0) + \
+                                     measPlaneStr.get(currSetting.coaxialMeasPlaneShiftValue > 0) + \
+                                     genScript_R + \
+                                     f")\n"
+
+                        internalPortName = currSetting.name + " - " + obj.Label
+                        self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
+                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount};\n'
+                        genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'coplanar'):
                         #
@@ -853,8 +939,8 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                     priorityIndex = self.getItemPriority(priorityItemName)
 
                     # WARNING: Caps param has hardwired value 1, will be generated small metal caps to connect part with circuit !!!
-                    genScript += f"lumpedPart = CSX.AddLumpedElement({lumpedPartParams});\n"
-                    genScript += f"lumpedPart.AddBox(lumpedPartStart, lumpedPartStop, priority={priorityIndex});\n"
+                    genScript += f"lumpedPart = CSX.AddLumpedElement({lumpedPartParams})\n"
+                    genScript += f"lumpedPart.AddBox(lumpedPartStart, lumpedPartStop, priority={priorityIndex})\n"
 
             genScript += "\n"
 
@@ -1666,7 +1752,14 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
         genScript += "from CSXCAD import AppCSXCAD_BIN\n"
         genScript += "os.system(AppCSXCAD_BIN + ' \"{}\"'.format(CSX_file))\n"
         genScript += "\n"
-        genScript += "FDTD.Run(Sim_Path, verbose=3, cleanup=True, setup_only=setup_only, debug_pec=debug_pec)\n"
+
+        #
+        #   Oct2026 - GPU is almost part of openEMS so for playing with things, this is how to use it in python script
+        #
+        if self.form.simParamsUseGPU.isChecked():
+            genScript += "FDTD.Run(Sim_Path, verbose=3, cleanup=True, setup_only=setup_only, debug_pec=debug_pec, engine=\"gpu\")\n"
+        else:
+            genScript += "FDTD.Run(Sim_Path, verbose=3, cleanup=True, setup_only=setup_only, debug_pec=debug_pec)\n"
 
         # Write _OpenEMS.py script file to current directory.
         currDir, nameBase = self.getCurrDir()
@@ -1933,8 +2026,7 @@ generatorFunc_DumpFF2VTK(E_far_normalized, nf2ff.theta, nf2ff.phi, os.path.join(
         genScript += self.getExcitationScriptLines(definitionsOnly=True)
 
         # Write material definitions.
-        genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None),
-                                                            outputDir, generateObjects=False)
+        genScript += self.getMaterialDefinitionsScriptLines(itemsByClassName.get("MaterialSettingsItem", None), outputDir, generateObjects=True)
 
         # Write grid definitions.
         genScript += self.getOrderedGridDefinitionsScriptLines(itemsByClassName.get("GridSettingsItem", None))
