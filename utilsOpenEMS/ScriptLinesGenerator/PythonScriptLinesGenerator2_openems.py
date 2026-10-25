@@ -642,8 +642,6 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                             genScript += 'portUnits = ' + str(currSetting.getRUnits()) + '\n'
                             genScript_R = ", Feed_R=portR*portUnits"
 
-                        genScript += "portExcitationAmplitude = " + str(currSetting.excitationAmplitude) + "\n"
-
                         isActiveCoaxialStr = {
                             False:  "",
                             True:   ", 'ExcitePort', true, 'ExciteAmp', portExcitationAmplitude"
@@ -955,7 +953,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
         sf = self.getFreeCADUnitLength_m() / refUnit  # scaling factor for FreeCAD units to drawing units
 
         genScript += "#######################################################################################################################################\n"
-        genScript += "# BOUNDARY CONDITIONS PART\n"
+        genScript += "# LOCALIZED BOUNDARY CONDITIONS PART\n"
         genScript += "#######################################################################################################################################\n"
 
         for [item, currSetting] in items:
@@ -1997,9 +1995,9 @@ E_CPLH = 20.0*log10(np.abs(nf2ff.E_cplh[0])/np.max(nf2ff.E_norm[0])) + 10*log10(
 
 ##
 figure()
-plot(thetaRange, E_norm[:,phiRange==0],'k-' , linewidth=2, label='$|E|$')
-plot(thetaRange, E_CPRH[:,phiRange==0],'g--', linewidth=2, label='$|E_{{CPRH}}|$')
-plot(thetaRange, E_CPLH[:,phiRange==0],'r-.', linewidth=2, label='$|E_{{CPLH}}|$')
+plot(thetaRange, E_norm[:,phiRange==0],'k-' , linewidth=2, label=r'$|E|$')
+plot(thetaRange, E_CPRH[:,phiRange==0],'g--', linewidth=2, label=r'$|E_{{CPRH}}|$')
+plot(thetaRange, E_CPLH[:,phiRange==0],'r-.', linewidth=2, label=r'$|E_{{CPLH}}|$')
 grid()
 xlabel('theta (deg)')
 ylabel('directivity (dBi)')
@@ -2102,12 +2100,12 @@ grid()
 plot(freq / 1e6, np.imag(Zin), 'r--', linewidth=2, label=r'$\Im(Z_{{in}})$')
 title('impedance of {portName}')
 xlabel('frequency (MHz)')
-ylabel('$Z (\\Omega)$')
+ylabel(r'$Z (\\Omega)$')
 legend()
 
 # plot S11 parameter
 figure()
-plot(freq/1e6, s11_dB, 'k-', linewidth=2, label='$S_{{11}}$')
+plot(freq/1e6, s11_dB, 'k-', linewidth=2, label=r'$S_{{11}}$')
 grid()
 legend()
 title('S11-Parameter (dB) of {portName}')
@@ -2215,7 +2213,7 @@ with open(filename, 'w', newline='') as csvfile:
         genScript += "plot(freq/1e9,s11_dB,'k-', linewidth=2)\n"
         genScript += "grid()\n"
         genScript += "plot(freq/1e9,s21_dB,'r--', linewidth=2)\n"
-        genScript += "legend(('$S_{11}$','$S_{21}$'))\n"
+        genScript += "legend((r'$S_{11}$','$S_{21}$'))\n"
         genScript += f"title('S21-Parameter\\n{sourcePortName} $\\\\rightarrow$ {targetPortName}', fontsize=12)\n"
         genScript += "ylabel('S21(dB)', fontsize=12)\n"
         genScript += "xlabel('frequency (GHz)', fontsize=12)\n"
