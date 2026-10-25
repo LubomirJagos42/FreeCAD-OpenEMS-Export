@@ -32,9 +32,9 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
         """ # Till now not used, just using rectangular coordination type, cylindrical MUST BE IMPLEMENTED!
         gridCoordsType = self.getModelCoordsType()
         if (gridCoordsType == "rectangular"):
-            genScript += "CSX = InitCSX('CoordSystem',0); # Cartesian coordinate system.\n"
+            genScript += "CSX = InitCSX('CoordSystem',0) # Cartesian coordinate system.\n"
         elif (gridCoordsType == "cylindrical"):
-            genScript += "CSX = InitCSX('CoordSystem',1); # Cylindrical coordinate system.\n"
+            genScript += "CSX = InitCSX('CoordSystem',1) # Cylindrical coordinate system.\n"
         else:
             genScript += "%%%%%% ERROR GRID COORDINATION SYSTEM TYPE UNKNOWN"				
         """
@@ -289,7 +289,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                         stlModelFileName = childName + "_gen_model.stl"
 
                         #genScript += "CSX = ImportSTL( CSX, '" + currSetting.getName() + "'," + str(
-                        #    objModelPriority) + ", [currDir '/" + stlModelFileName + "'],'Transform',{'Scale', fc_unit/unit} );\n"
+                        #    objModelPriority) + ", [currDir '/" + stlModelFileName + "'],'Transform',{'Scale', fc_unit/unit} )\n"
                         genScript += f"{materialPythonVariable}.AddPolyhedronReader(os.path.join(currDir,'{stlModelFileName}'), priority={objModelPriority}).ReadFile()\n"
 
                         #   _____ _______ _                                        _   _
@@ -322,15 +322,15 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
         return genScript
 
     def getCartesianOrCylindricalScriptLinesFromStartStop(self, bbCoords, startPointName=None, stopPointName=None):
-        genScript = "";
+        genScript = ""
         refUnit = self.getUnitLengthFromUI_m()  # Coordinates need to be given in drawing units
         sf = self.getFreeCADUnitLength_m() / refUnit  # scaling factor for FreeCAD units to drawing units
 
         strPortCoordsCartesianToCylindrical = ""
-        strPortCoordsCartesianToCylindrical += "[generatedAuxTheta, generatedAuxR, generatedAuxZ] = cart2pol(portStart);\n"
-        strPortCoordsCartesianToCylindrical += "portStart = [generatedAuxR, generatedAuxTheta, generatedAuxZ];\n"
-        strPortCoordsCartesianToCylindrical += "[generatedAuxTheta, generatedAuxR, generatedAuxZ] = cart2pol(portStop);\n"
-        strPortCoordsCartesianToCylindrical += "portStop = [generatedAuxR, generatedAuxTheta, generatedAuxZ];\n"
+        strPortCoordsCartesianToCylindrical += "[generatedAuxTheta, generatedAuxR, generatedAuxZ] = cart2pol(portStart)\n"
+        strPortCoordsCartesianToCylindrical += "portStart = [generatedAuxR, generatedAuxTheta, generatedAuxZ]\n"
+        strPortCoordsCartesianToCylindrical += "[generatedAuxTheta, generatedAuxR, generatedAuxZ] = cart2pol(portStop)\n"
+        strPortCoordsCartesianToCylindrical += "portStop = [generatedAuxR, generatedAuxTheta, generatedAuxZ]\n"
 
         if (self.getModelCoordsType() == "cylindrical"):
             # CYLINDRICAL COORDINATE TYPE USED
@@ -482,7 +482,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
 
                         internalPortName = currSetting.name + " - " + obj.Label
                         self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
-                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount};\n'
+                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount}\n'
                         genScriptPortCount += 1
 
                     #
@@ -537,7 +537,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
 
                         internalPortName = currSetting.name + " - " + obj.Label
                         self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
-                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount};\n'
+                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount}\n'
                         genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'circular waveguide'):
@@ -564,7 +564,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
 
                         internalPortName = currSetting.name + " - " + obj.Label
                         self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
-                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount};\n'
+                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount}\n'
                         genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'rectangular waveguide'):
@@ -593,7 +593,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
 
                         internalPortName = currSetting.name + " - " + obj.Label
                         self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
-                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount};\n'
+                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount}\n'
                         genScriptPortCount += 1
                     elif (currSetting.getType() == 'coaxial'):
                         portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, coaxialRadius = currSetting.getCoaxialStartStopAndRadius(bbCoords, sf)
@@ -664,7 +664,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
 
                         internalPortName = currSetting.name + " - " + obj.Label
                         self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
-                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount};\n'
+                        genScript += f'portNamesAndNumbersList["{obj.Label}"] = {genScriptPortCount}\n'
                         genScriptPortCount += 1
 
                     elif (currSetting.getType() == 'coplanar'):
@@ -851,7 +851,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
 
                         genScript += f"dumpBoxList[dumpboxName] = CSX.AddDump(dumpboxName, dump_type=1, dump_mode=2)\n"
                         genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords, "dumpboxStart", "dumpboxStop")
-                        genScript += f"dumpBoxList[dumpboxName].AddBox(dumpboxStart, dumpboxStop );\n"
+                        genScript += f"dumpBoxList[dumpboxName].AddBox(dumpboxStart, dumpboxStop )\n"
                         genDumpBoxCounter += 1
 
                     elif (currSetting.getType() == 'nf2ff box'):
@@ -861,7 +861,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
 
                         genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords, "nf2ffStart", "nf2ffStop")
 
-                        # genScript += 'nf2ffUnit = ' + currSetting.getUnitAsScriptLine() + ';\n'
+                        # genScript += 'nf2ffUnit = ' + currSetting.getUnitAsScriptLine() + '\n'
                         genScript += f"nf2ffBoxList[dumpboxName] = FDTD.CreateNF2FFBox(dumpboxName, nf2ffStart, nf2ffStop)\n"
                         # NF2FF grid lines are generated below via getNF2FFDefinitionsScriptLines()
 
@@ -943,6 +943,53 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                     genScript += f"lumpedPart.AddBox(lumpedPartStart, lumpedPartStop, priority={priorityIndex})\n"
 
             genScript += "\n"
+
+        return genScript
+
+    def getBoundaryConditionScriptLines(self, items):
+        genScript = ""
+        if not items:
+            return genScript
+
+        refUnit = self.getUnitLengthFromUI_m()  # Coordinates need to be given in drawing units
+        sf = self.getFreeCADUnitLength_m() / refUnit  # scaling factor for FreeCAD units to drawing units
+
+        genScript += "#######################################################################################################################################\n"
+        genScript += "# BOUNDARY CONDITIONS PART\n"
+        genScript += "#######################################################################################################################################\n"
+
+        for [item, currSetting] in items:
+
+            objs = self.cadHelpers.getObjects()
+            for k in range(item.childCount()):
+                childName = item.child(k).text(0)
+                boundaryVariableName = childName.replace(' ', '_')
+
+                print("#BOUNDARY CONDITION TYPE: " + currSetting.getType())
+                if currSetting.getType() == 'openemsAbsorber':
+                    genScript += f"{boundaryVariableName} = CSX.AddAbsorbingBC(name=\"{childName}\", NormalSignPositive={currSetting.openemsAbsorber['NormalSignPositive']}, AbsorbingBoundaryType=CSXCAD.CSProperties.ABCtype.{currSetting.openemsAbsorber['AbsorbingBoundaryType']}, PhaseVelocity=C0/np.sqrt({currSetting.openemsAbsorber['PhaseVelocity_material_er']}*{currSetting.openemsAbsorber['PhaseVelocity_material_muer']}))\n"
+                elif currSetting.getType() == 'openemsUnknown':
+                    genScript += f"{boundaryVariableName} = CSX.AddAbsorbingBC(name=\"{childName}\", NormalSignPositive={currSetting.openemsAbsorber['NormalSignPositive']}, AbsorbingBoundaryType=CSXCAD.CSProperties.ABCtype.{currSetting.openemsAbsorbing['AbsorbingBoundaryType']}, PhaseVelocity=C0/np.sqrt({currSetting.openemsAbsorber['PhaseVelocity_material_er']}*{currSetting.openemsAbsorber['PhaseVelocity_material_muer']}))\n"
+                else:
+                    genScript += f"raise TypeError('Unknown boundary condition name=\"{childName}\", type=\"{currSetting.getType()}\"')\n"
+
+                genScript += "## BOUNDARY CONDITION - " + currSetting.getName() + " - " + childName + "\n"
+
+                freecadObjects = [i for i in objs if (i.Label) == childName]
+                for obj in freecadObjects:
+                    # BOUNDING BOX
+                    bbCoords = obj.Shape.BoundBox
+                    print('\tFreeCAD lumped port BoundBox: ' + str(bbCoords))
+
+                    priorityItemName = item.parent().text(0) + ", " + item.text(0) + ", " + childName
+                    priorityIndex = self.getItemPriority(priorityItemName)
+
+                    if (currSetting.getType() == 'openemsAbsorber'):
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords).replace("portStart", "boundaryStart").replace("portStop", "boundaryStop")
+                        genScript += f"{boundaryVariableName}.AddBox(boundaryStart, boundaryStop, priority={str(priorityIndex)})\n"
+
+        #last empty line
+        genScript += "\n"
 
         return genScript
 
@@ -1240,7 +1287,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                     if gridSettingsInst.topPriorityLines:
                         genScript += "mesh.x = np.delete(mesh.x, np.argwhere((mesh.x >= {0:g}) & (mesh.x <= {1:g})))\n".format(_r(xList[0]), _r(xList[-1]))
 
-                    genScript += f"smoothMesh.x = {str(xList)};\n"
+                    genScript += f"smoothMesh.x = {str(xList)}\n"
                     if gridSettingsInst.smoothMesh['xMaxRes'] == 0:
                         genScript += "smoothMesh.x = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.x, max_res/unit) #max_res calculated in excitation part\n"
                     else:
@@ -1252,7 +1299,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                     if gridSettingsInst.topPriorityLines:
                         genScript += "mesh.y = np.delete(mesh.y, np.argwhere((mesh.y >= {0:g}) & (mesh.y <= {1:g})))\n".format(_r(yList[0]), _r(yList[-1]))
 
-                    genScript += f"smoothMesh.y = {str(yList)};\n"
+                    genScript += f"smoothMesh.y = {str(yList)}\n"
                     if gridSettingsInst.smoothMesh['yMaxRes'] == 0:
                         genScript += "smoothMesh.y = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.y, max_res/unit) #max_res calculated in excitation part\n"
                     else:
@@ -1264,7 +1311,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                     if gridSettingsInst.topPriorityLines:
                         genScript += "mesh.z = np.delete(mesh.z, np.argwhere((mesh.z >= {0:g}) & (mesh.z <= {1:g})))\n".format(_r(zList[0]), _r(zList[-1]))
 
-                    genScript += f"smoothMesh.z = {str(zList)};\n"
+                    genScript += f"smoothMesh.z = {str(zList)}\n"
                     if gridSettingsInst.smoothMesh['zMaxRes'] == 0:
                         genScript += "smoothMesh.z = CSXCAD.SmoothMeshLines.SmoothMeshLines(smoothMesh.z, max_res/unit) #max_res calculated in excitation part\n"
                     else:
@@ -1398,7 +1445,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                         genScript += "mesh.z = np.append(mesh.z, {0:g})\n".format(_r((zmin + zmax) / 2))
 
             elif (gridSettingsInst.getType() == 'User Defined'):
-                genScript += "mesh = " + gridSettingsInst.getXYZ() + ";\n"
+                genScript += "mesh = " + gridSettingsInst.getXYZ() + "\n"
 
             genScript += "\n"
 
@@ -1499,7 +1546,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                     genScript += "f0 = " + str(currSetting.sinusodial['f0']) + "*" + str(
                         currSetting.getUnitsAsNumber(currSetting.units)) + "\n"
                     if not definitionsOnly:
-                        genScript += "FDTD.SetSinusExcite(f0);\n"
+                        genScript += "FDTD.SetSinusExcite(f0)\n"
                     genScript += "max_res = C0 / f0 / 20\n"
                     self.maxGridResolution_m = 3e8 / (
                                 currSetting.sinusodial['f0'] * currSetting.getUnitsAsNumber(currSetting.units) * 20)
@@ -1519,7 +1566,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                     f0 = currSetting.custom['f0'] * currSetting.getUnitsAsNumber(currSetting.units)
                     genScript += "f0 = " + str(currSetting.custom['f0']) + "*" + str(
                         currSetting.getUnitsAsNumber(currSetting.units)) + "\n"
-                    genScript += "fc = 0.0;\n"
+                    genScript += "fc = 0.0\n"
                     if not definitionsOnly:
                         genScript += "FDTD.SetCustomExcite(f0, '" + currSetting.custom['functionStr'].replace(
                             'f0', str(f0)) + "' )\n"
@@ -1528,7 +1575,7 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                     pass
                 elif (currSetting.getType() == 'dirac'):
                     if not definitionsOnly:
-                        # genScript += "FDTD.SetDiracExcite(FDTD);\n"
+                        # genScript += "FDTD.SetDiracExcite(FDTD)\n"
                         genScript += "# DIRAC EXCITATION USING PYTHON SCRIPT NOT IMPLEMENTED IN GUI YET\n"
                     pass
                 elif (currSetting.getType() == 'step'):
@@ -1727,6 +1774,9 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
         # Write lumped part definitions.
         genScript += self.getLumpedPartDefinitionsScriptLines(itemsByClassName.get("LumpedPartSettingsItem", None))
 
+        # Write lumped part definitions.
+        genScript += self.getBoundaryConditionScriptLines(itemsByClassName.get("BoundaryConditionSettingsItem", None))
+
         # Write probes definitions
         genScript += self.getProbeDefinitionsScriptLines(itemsByClassName.get("ProbeSettingsItem", None))
 
@@ -1891,10 +1941,10 @@ def generatorFunc_DumpFF2VTK(farfield, t, a, filename):
                  val3 = farfield[nt][na]*math.cos(t[nt])
                  outFile.write(f"{{val1}} {{val2}} {{val3}}\\n")
 
-         outFile.write(f'\\n\\n');
-         outFile.write(f'POINT_DATA {{len(t)*len(a)}}\\n');
-         outFile.write(f'SCALARS gain double 1\\n');
-         outFile.write(f'LOOKUP_TABLE default\\n');
+         outFile.write(f'\\n\\n')
+         outFile.write(f'POINT_DATA {{len(t)*len(a)}}\\n')
+         outFile.write(f'SCALARS gain double 1\\n')
+         outFile.write(f'LOOKUP_TABLE default\\n')
          for na in range(len(a)):
              for nt in range(len(t)):
                  outFile.write(f"{{farfield[nt][na]}}\\n")

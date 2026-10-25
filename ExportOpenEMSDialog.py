@@ -542,6 +542,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		#		- emerge have just python interface, it's FEM so different grid definition is used therefore some UI needs to be disabled to not confues user
 		#
 		self.form.comboBox_solverType.currentIndexChanged.connect(self.updateUiBasedOnSolverType)
+		self.form.radioButton_octaveType.clicked.connect(self.updateUiBasedOnSolverType)
+		self.form.radioButton_pythonType.clicked.connect(self.updateUiBasedOnSolverType)
 		QTimer.singleShot(0, self.updateUiBasedOnSolverType)	#update gui based on solver type after start
 
 		print(f"----> init finished")
@@ -590,12 +592,37 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.pythonScriptGenerator = PythonScriptLinesGenerator2_openems(self.form, statusBar = self.statusBar)
 
 			#
-			# Hide boundary conditions in right tree widget, not applicable for openEMS
+			# Boundary conditions in right tree widget:
+			#	- palace, emerge - support them, it's their main way how they are working
+			#	- openems - has limited support for localized MUR boundaries but just for python code
+			#		- python - enabled
+			#		- octave/matlab - disabled
 			#
-			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "BoundaryCondition", False)
-			self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "BoundaryCondition", False)
-			boundaryConditionTabIndex = self.form.openEMSTab.indexOf(self.form.boundaryConditionTab)
-			self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "")
+			if self.form.radioButton_pythonType.isChecked():
+				# self.guiHelpers.displayMessage("openEMS --> python interface")
+
+				self.form.boundaryConditionTab.setEnabled(True)
+
+				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "BoundaryCondition", True)
+				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "BoundaryCondition", True)
+				boundaryConditionTabIndex = self.form.openEMSTab.indexOf(self.form.boundaryConditionTab)
+				self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "BoundaryCondition")
+
+				self.form.boundaryConditionsTab_tabWidget.setCurrentIndex(1)
+
+				self.form.boundaryConditionsTab_openemsTab.setEnabled(True)
+				self.form.boundaryConditionsTab_femTab.setEnabled(False)
+
+			else:
+				# self.guiHelpers.displayMessage("openEMS --> octave interface")
+
+				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentRightTreeWidget, "BoundaryCondition", False)
+				self.guiHelpers.setVisibleTreeWidgetItem(self.form.objectAssignmentPriorityTreeView, "BoundaryCondition", False)
+				boundaryConditionTabIndex = self.form.openEMSTab.indexOf(self.form.boundaryConditionTab)
+				self.form.openEMSTab.setTabText(boundaryConditionTabIndex, "")
+
+				self.form.boundaryConditionsTab_openemsTab.setEnabled(False)
+				self.form.boundaryConditionsTab_femTab.setEnabled(False)
 
 			#
 			# Display probe settings tab, this is applicable tab just for openEMS
@@ -709,6 +736,12 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			if self.form.boundaryConditionSettingsTreeView.topLevelItemCount() > 0:
 				first_item = self.form.boundaryConditionSettingsTreeView.topLevelItem(0)
 				self.form.boundaryConditionSettingsTreeView.currentItemChanged.emit(first_item, first_item)	#emit signal that item changed
+
+			#
+			#	Boundary condition tab enable for palace and emerge
+			#
+			self.form.boundaryConditionsTab_openemsTab.setEnabled(False)
+			self.form.boundaryConditionsTab_femTab.setEnabled(True)
 
 			#
 			# Hide probe settings tab, not applicable for EMerge
@@ -3744,27 +3777,46 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		boundaryConditionItem = BoundaryConditionSettingsItem()
 		boundaryConditionItem.name = name
-		if (self.form.boundaryConditionTypePredefinedRadio.isChecked()):
-			boundaryConditionItem.type = self.form.boundaryConditionTypeCombobox.currentText()
-		elif (self.form.boundaryConditionTypeCustomRadio.isChecked()):
-			boundaryConditionItem.type = "custom"
-			boundaryConditionItem.customType = self.form.boundaryConditionTypeCustomTextInput.text()
-		elif (self.form.boundaryConditionTypeSurfaceImpedanceRadio.isChecked()):
-			boundaryConditionItem.type = "surfaceImpedance"
-			boundaryConditionItem.surfaceImpedance["material"] = self.form.boundaryConditionTypeSurfaceImpedanceMaterial.currentText()
-			boundaryConditionItem.surfaceImpedance["conductance"] = self.form.boundaryConditionTypeSurfaceImpedanceConductance.value()
-			boundaryConditionItem.surfaceImpedance["roughness"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughness.value()
-			boundaryConditionItem.surfaceImpedance["roughnessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits.currentText()
-			boundaryConditionItem.surfaceImpedance["thickness"] = self.form.boundaryConditionTypeSurfaceImpedanceThickness.value()
-			boundaryConditionItem.surfaceImpedance["thicknessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits.currentText()
-		elif (self.form.boundaryConditionTypeThinConductorRadio.isChecked()):
-			boundaryConditionItem.type = "thinConductor"
-			boundaryConditionItem.thinConductor["material"] = self.form.boundaryConditionTypeSurfaceImpedanceMaterial.currentText()
-			boundaryConditionItem.thinConductor["conductance"] = self.form.boundaryConditionTypeSurfaceImpedanceConductance.value()
-			boundaryConditionItem.thinConductor["roughness"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughness.value()
-			boundaryConditionItem.thinConductor["roughnessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits.currentText()
-			boundaryConditionItem.thinConductor["thickness"] = self.form.boundaryConditionTypeSurfaceImpedanceThickness.value()
-			boundaryConditionItem.thinConductor["thicknessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits.currentText()
+
+		#
+		#	Boundary condition for openEMS
+		#
+		if self.form.comboBox_solverType.currentText().lower().find("openems") > -1:
+			if (self.form.boundaryConditionTypeOpenEMS_Absorbing.isChecked()):
+				boundaryConditionItem.type = "openemsAbsorber"
+				boundaryConditionItem.openemsAbsorber["AbsorbingBoundaryType"] = self.form.boundaryConditionTypeOpenEMS_Absorbing_Type.currentText()
+				boundaryConditionItem.openemsAbsorber["NormalSignPositive"] = self.form.boundaryConditionTypeOpenEMS_Absorbing_NormalSignPositive.isChecked()
+				boundaryConditionItem.openemsAbsorber["PhaseVelocity_material_er"] = self.form.boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permittivity.value()
+				boundaryConditionItem.openemsAbsorber["PhaseVelocity_material_muer"] = self.form.boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permeability.value()
+			if (self.form.boundaryConditionTypeOpenEMS_Unknown.isChecked()):
+				boundaryConditionItem.type = "openemsUnknown"
+				boundaryConditionItem.openemsAbsorber["AbsorbingBoundaryType"] = "UNKNOWN"
+
+		#
+		#	Boundary condition for emerge, palace solver
+		#
+		if self.form.comboBox_solverType.currentText().lower().find("emerge") > -1 or self.form.comboBox_solverType.currentText().lower().find("palace") > -1:
+			if (self.form.boundaryConditionTypePredefinedRadio.isChecked()):
+				boundaryConditionItem.type = self.form.boundaryConditionTypeCombobox.currentText()
+			elif (self.form.boundaryConditionTypeCustomRadio.isChecked()):
+				boundaryConditionItem.type = "custom"
+				boundaryConditionItem.customType = self.form.boundaryConditionTypeCustomTextInput.text()
+			elif (self.form.boundaryConditionTypeSurfaceImpedanceRadio.isChecked()):
+				boundaryConditionItem.type = "surfaceImpedance"
+				boundaryConditionItem.surfaceImpedance["material"] = self.form.boundaryConditionTypeSurfaceImpedanceMaterial.currentText()
+				boundaryConditionItem.surfaceImpedance["conductance"] = self.form.boundaryConditionTypeSurfaceImpedanceConductance.value()
+				boundaryConditionItem.surfaceImpedance["roughness"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughness.value()
+				boundaryConditionItem.surfaceImpedance["roughnessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits.currentText()
+				boundaryConditionItem.surfaceImpedance["thickness"] = self.form.boundaryConditionTypeSurfaceImpedanceThickness.value()
+				boundaryConditionItem.surfaceImpedance["thicknessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits.currentText()
+			elif (self.form.boundaryConditionTypeThinConductorRadio.isChecked()):
+				boundaryConditionItem.type = "thinConductor"
+				boundaryConditionItem.thinConductor["material"] = self.form.boundaryConditionTypeSurfaceImpedanceMaterial.currentText()
+				boundaryConditionItem.thinConductor["conductance"] = self.form.boundaryConditionTypeSurfaceImpedanceConductance.value()
+				boundaryConditionItem.thinConductor["roughness"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughness.value()
+				boundaryConditionItem.thinConductor["roughnessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits.currentText()
+				boundaryConditionItem.thinConductor["thickness"] = self.form.boundaryConditionTypeSurfaceImpedanceThickness.value()
+				boundaryConditionItem.thinConductor["thicknessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits.currentText()
 
 		return boundaryConditionItem
 
@@ -3838,6 +3890,8 @@ class ExportOpenEMSDialog(QtCore.QObject):
 
 		currSetting = self.form.boundaryConditionSettingsTreeView.currentItem().data(0, QtCore.Qt.UserRole)
 		self.form.boundaryConditionSettingsNameInput.setText(currSetting.name)
+		self.form.boundaryConditionsTab_tabWidget.setCurrentIndex(0)
+
 		if (currSetting.type == "custom"):
 			self.form.boundaryConditionTypeCustomRadio.click()
 			self.form.boundaryConditionTypeCustomTextInput.setText(currSetting.customType)
@@ -3857,6 +3911,17 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.boundaryConditionTypeSurfaceImpedanceThickness.setValue(currSetting.thinConductor["thickness"])
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits, text=currSetting.thinConductor["roughnessUnits"])
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits, text=currSetting.thinConductor["thicknessUnits"])
+		elif (currSetting.type.lower() == "openemsabsorber"):
+			self.form.boundaryConditionsTab_tabWidget.setCurrentIndex(1)
+
+			self.form.boundaryConditionTypeOpenEMS_Absorbing.setChecked(True)
+			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeOpenEMS_Absorbing_Type, text=currSetting.openemsAbsorber["AbsorbingBoundaryType"])
+			self.form.boundaryConditionTypeOpenEMS_Absorbing_NormalSignPositive.setChecked(currSetting.openemsAbsorber["NormalSignPositive"])
+			self.form.boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permittivity.setValue(currSetting.openemsAbsorber["PhaseVelocity_material_er"])
+			self.form.boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permeability.setValue(currSetting.openemsAbsorber["PhaseVelocity_material_muer"])
+		elif (currSetting.type.lower() == "openemsunknown"):
+			self.form.boundaryConditionsTab_tabWidget.setCurrentIndex(1)
+			self.form.boundaryConditionTypeOpenEMS_Unknown.setChecked(True)
 		else:
 			self.form.boundaryConditionTypePredefinedRadio.click()
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeCombobox, currSetting.type)
