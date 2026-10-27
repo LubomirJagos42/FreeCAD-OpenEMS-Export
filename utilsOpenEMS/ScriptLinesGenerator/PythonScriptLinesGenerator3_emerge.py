@@ -1499,6 +1499,9 @@ simulationObj.display.show()
                 if (currSetting.getType() == 'lumped'):
                     portNamesAndNumbersList[portName] = genScriptPortCount
                     genScriptPortCount += 1
+                elif (currSetting.getType() == 'coaxial'):
+                    portNamesAndNumbersList[portName] = genScriptPortCount
+                    genScriptPortCount += 1
 
         sourcePortName:str = self.form.drawS11Port.currentText().split(' - ')[1]
         sourcePortNumber = portNamesAndNumbersList[sourcePortName]
@@ -1508,7 +1511,7 @@ simulationObj.display.show()
         genScript += "#\n"
         genScript += "import emerge as em\n"
         genScript += "import numpy as np\n"
-        genScript += "from emerge.plot import smith, plot_sp\n"
+        genScript += "from emerge.plot import smith, plot_sp, plot\n"
         genScript += "\n"
         genScript += "from basicemergesolverhelperpackage import EMergeHelperFunctions\n"
         genScript += "from basicemergesolverhelperpackage.EMergeConstants import *\n"
@@ -1551,6 +1554,36 @@ simulationObj.display.show()
         genScript += f'helperFunctionsObj.exportCSV_SParam("{simulationName}_s11.csv", sourcePortNumber, sourcePortNumber)\n'
         genScript += "helperFunctionsObj.plotSParamUsingPortNumbers(sourcePortNumber, sourcePortNumber)\n"
         genScript += "\n"
+        genScript += "\n"
+
+        genScript += "###############################################################################\n"
+        genScript += "# CALCULATE AND PLOT INPUT IMPEDANCE (Zin)\n"
+        genScript += "#   - experimental\n"
+        genScript += "#   - there is simulationResult.scalar.grid.Z0 array\n"
+        genScript += "#   - impedance is calculated from S dense array which contains fitted values\n"
+        genScript += "###############################################################################\n"
+        genScript += "if False:\n"
+        genScript += "\tZ0 = 50.0  # Reference characteristic impedance\n"
+        genScript += "\n"
+        genScript += "\tfreqs = simulationResult.scalar.grid.freq\n"
+        genScript += "\tfmin = freqs.min()\n"
+        genScript += "\tfmax = freqs.max()\n"
+        genScript += "\tfreq_dense = np.linspace(fmin, fmax, 1001)\n"
+        genScript += "\tS_data = simulationResult.scalar.grid.model_S(sourcePortNumber, sourcePortNumber, freq_dense)  # reflection coefficient\n"
+        genScript += "\n"
+        genScript += "\tZ_in = Z0 * (1.0 + S_data) / (1.0 - S_data)\n"
+        genScript += "\n"
+        genScript += "\tplot(\n"
+        genScript += "\t\tfreq_dense / 1e9,\n"
+        genScript += "\t\t[Z_in.real, Z_in.imag],\n"
+        genScript += "\t\tlabels=['Resistance Re(Zin)', 'Reactance Im(Zin)'],\n"
+        genScript += "\t\tlinewidth=2,\n"
+        genScript += "\t\tlinestyles=['-', '--'],\n"
+        genScript += "\t\txlabel='Frequency [GHz]',\n"
+        genScript += "\t\tylabel='Impedance [Ω]',\n"
+        genScript += "\t\tgrid=True,\n"
+        genScript += "\t\ttitle=f'Input Impedance (Zin) — {sourcePortName}'\n"
+        genScript += "\t)\n"
 
         #
         # WRITE OpenEMS Script file into current dir
