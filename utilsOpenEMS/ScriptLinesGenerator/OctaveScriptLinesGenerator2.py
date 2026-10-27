@@ -764,6 +764,12 @@ class OctaveScriptLinesGenerator2(CommonScriptLinesGenerator):
                         genScript += f'portNamesAndNumbersList("{obj.Label}") = {genScriptPortCount};\n'
                         genScriptPortCount += 1
 
+                    elif (currSetting.getType() == 'userdefined'):
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
+                        genScript += "portExcitationAmplitude = " + str(currSetting.excitationAmplitude) + ";\n"
+                        genScript += "portPriorityIndex = " + str(priorityIndex) + ";\n"
+
+                        genScript += currSetting.userDefinedData
                     else:
                         genScript += '% Unknown port type. Nothing was generated. \n'
 

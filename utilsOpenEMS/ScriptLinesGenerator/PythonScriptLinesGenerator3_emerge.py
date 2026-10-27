@@ -716,7 +716,12 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
 
                         portExcitationAmplitude = str(currSetting.excitationAmplitude)
 
-                        portStartX, portStartY, portStartZ, portStopX, portStopY, portStopZ, coaxialRadius = currSetting.getCoaxialStartStopAndRadius(bbCoords, sf)
+                        #
+                        #   This code was copied from openems python generator where coaxial port is probably done other way specifying start and radius and so but
+                        #   in emerge port is attached to face therefore there is no change in start/stop coordinates, they are used as they are read from freecad
+                        #   object, no recalculation, therefore returned values from method are not used and _,_,_,... = currSetting.getCoaxialStartStopAndRadius(bbCoords, sf)
+                        #
+                        _,_,_,_,_,_, coaxialRadius = currSetting.getCoaxialStartStopAndRadius(bbCoords, sf)
 
                         #
                         #   This is important, radius is calculated from bounding box coordinates from FreeCAD so must be multiplied by metric units used in FreeCAD.
@@ -736,32 +741,32 @@ class PythonScriptLinesGenerator3_emerge(PythonScriptLinesGenerator2_openems):
                         #
                         #   Port start and end need to be shifted into middle of feed plane, this is done inside function in port settings
                         #
-                        bbCoords.XMin = portStartX
-                        bbCoords.YMin = portStartY
-                        bbCoords.ZMin = portStartZ
-                        bbCoords.XMax = portStopX
-                        bbCoords.YMax = portStopY
-                        bbCoords.ZMax = portStopZ
                         genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
 
-                        genScript += 'r_i = ' + str(coaxialInnerRadius) + '\n'
-                        genScript += 'r_o = ' + str(coaxialRadius - coaxialShellThickness) + '\n'
-                        genScript += 'r_os = ' + str(coaxialRadius) + '\n'
+                        genScript += "portStart = [k*unit for k in portStart]  #dimension scaled by freecad unit to meters\n"
+                        genScript += "portStop = [k*unit for k in portStop]  #dimension scaled by freecad unit to meters\n"
+
+                        genScript += 'r_i = ' + str(coaxialInnerRadius) + '*unit\n'
+                        genScript += 'r_o = ' + str(coaxialRadius - coaxialShellThickness) + '*unit\n'
+                        genScript += 'r_os = ' + str(coaxialRadius) + '*unit\n'
 
                         objNormalVector = obj.Shape.normalAt(0.5, 0.5)
                         genScript += f"portNormalVector = [{objNormalVector.x}, {objNormalVector.y}, {objNormalVector.z}]\n"
                         genScript += f"portStart, portWidth, portHeight = helperFunctionsObj.create_emerge_plane_data(portStart, portStop, portNormalVector)\n"
-                        genScript += f"er = helperFunctionsObj.getMaterial('{currSetting.materialName}').er.value\n"
+                        genScript += f"er = helperFunctionsObj.getMaterial('{currSetting.coaxialMaterial}').er.value\n"
 
                         portGeometryObject = f"em.geo.Plate(name='{PORT_NAME}', origin=portStart, u=portWidth, v=portHeight)"
 
                         self.portBoundaryConditionScriptLinesBuffer.append(f"helperFunctionsObj.setPortAsCoaxPort('{PORT_NAME}')\n")
                         genScript += f'#portName: "{obj.Label}" -> portNumber: {genScriptPortCount}\n'
-                        genScript += f"helperFunctionsObj.addCoaxPort(name'{PORT_NAME}', inner_radius=r_i, outer_radius=r_o, er=er, power={portExcitationAmplitude}, geometryObject={portGeometryObject})\n"
+                        genScript += f"helperFunctionsObj.addCoaxPort(name='{PORT_NAME}', inner_radius=r_i, outer_radius=r_o, er=er, power={portExcitationAmplitude}, geometryObject={portGeometryObject})\n"
 
                         internalPortName = PORT_NAME    #this is freecad object label since they are unique (must be set in freecad settings itself)
                         self.internalPortIndexNamesList[internalPortName] = genScriptPortCount
                         genScriptPortCount += 1
+
+                    elif (currSetting.getType() == 'userdefined'):
+                        genScript += currSetting.userDefinedData
 
                     else:
                         genScript += '# Unknown port type. Nothing was generated.\n'

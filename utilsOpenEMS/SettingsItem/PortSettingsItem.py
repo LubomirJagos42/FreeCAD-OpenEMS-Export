@@ -16,6 +16,7 @@ class PortSettingsItem(SettingsItem):
                  coplanarMaterial = "", coplanarPropagation = "", coplanarGapValue = 0, coplanarGapUnits = "", coplanarFeedpointShiftValue = 0, coplanarFeedpointShiftUnits = "", coplanarMeasPlaneShiftValue = 0, coplanarMeasPlaneShiftUnits = "",
                  striplineMaterial = "", striplinePropagation = "", striplineHeightValue = 0, striplineHeightUnits = "", striplineFeedpointShiftValue = 0, striplineFeedpointShiftUnits = "", striplineMeasPlaneShiftValue = 0, striplineMeasPlaneShiftUnits = "",
                  modalModeType = "TE", modalMixedMaterials = False, modalImpedanceDefinition = "PV",
+                 userDefinedData = ""
                  ):
         self.name = name
         self.type = type
@@ -71,6 +72,8 @@ class PortSettingsItem(SettingsItem):
         self.modalModeType = modalModeType
         self.modalMixedMaterials = modalMixedMaterials
         self.modalImpedanceDefinition = modalImpedanceDefinition
+
+        self.userDefinedData = userDefinedData
 
         self.freeCADUnitLength_m = 0.001    #for now hardwired value 0.001 what means FreeCAD units are mm
 

@@ -303,6 +303,12 @@ class IniFile0v1:
                 except Exception as e:
                     print(f"{__file__} > write() modal ERROR: {e}")
 
+            elif (portList[k].type == "userdefined"):
+                try:
+                    settings.setValue("userDefinedData", portList[k].userDefinedData)
+                except Exception as e:
+                    print(f"{__file__} > write() userdefined ERROR: {e}")
+
             settings.endGroup()
 
         #
@@ -447,6 +453,7 @@ class IniFile0v1:
             settings.setValue("surfaceImpedance", json.dumps(boundaryConditionList[k].surfaceImpedance))
             settings.setValue("thinConductor", json.dumps(boundaryConditionList[k].thinConductor))
             settings.setValue("openemsAbsorber", json.dumps(boundaryConditionList[k].openemsAbsorber))
+            settings.setValue("userDefined", boundaryConditionList[k].userDefined)
             settings.endGroup()
 
         # SAVE OBJECT ASSIGNMENTS
@@ -780,6 +787,12 @@ class IniFile0v1:
                     except Exception as e:
                         print(f"There was error during reading modal port settings: {e}")
 
+                elif (categorySettings.type == "userdefined"):
+                    try:
+                        categorySettings.userDefinedData = settings.value('userDefinedData')
+                    except Exception as e:
+                        print(f"There was error during reading modal port settings: {e}")
+
                 settings.endGroup()
 
             elif (re.compile("PROBE").search(settingsGroup)):
@@ -1093,6 +1106,7 @@ class IniFile0v1:
                     categorySettings.surfaceImpedance = json.loads(settings.value('surfaceImpedance'))
                     categorySettings.thinConductor = json.loads(settings.value('thinConductor'))
                     categorySettings.openemsAbsorber = json.loads(settings.value('openemsAbsorber'))
+                    categorySettings.userDefined = settings.value('userDefined')
                 except:
                     pass
 

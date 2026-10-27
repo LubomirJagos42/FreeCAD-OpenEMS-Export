@@ -8,7 +8,8 @@ class BoundaryConditionSettingsItem(SettingsItem):
         customType="",
         surfaceImpedance={"material":None, "conductance":0.0, "roughness":0.0, "roughnessUnits":"nm", "thickness":0.0, "thicknessUnits":"um"},
         thinConductor={"material":None, "conductance":0.0, "roughness":0.0, "roughnessUnits":"nm", "thickness":0.0, "thicknessUnits":"um"},
-        openemsAbsorber={"AbsorbingBoundaryType":"MUR_1ST", "NormalSignPositive":True, "PhaseVelocity_material_er":1.0, "PhaseVelocity_material_muer":1.0}
+        openemsAbsorber={"AbsorbingBoundaryType":"MUR_1ST", "NormalSignPositive":True, "PhaseVelocity_material_er":1.0, "PhaseVelocity_material_muer":1.0},
+        userDefined=""
     ):
         self.name = name
         self.type = type
@@ -16,6 +17,7 @@ class BoundaryConditionSettingsItem(SettingsItem):
         self.surfaceImpedance = surfaceImpedance
         self.thinConductor = thinConductor
         self.openemsAbsorber = openemsAbsorber
+        self.userDefined = userDefined
 
         return
 

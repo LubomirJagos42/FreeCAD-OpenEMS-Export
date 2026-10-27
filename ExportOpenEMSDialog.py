@@ -444,6 +444,17 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			[element.setEnabled(False) for element in [self.form.genParamMinGridSpacingX, self.form.genParamMinGridSpacingY, self.form.genParamMinGridSpacingZ]]
 		)
 
+		################################################################################################################
+		#	BOUNDARY CONDITIONS TAB
+		################################################################################################################
+		#use click event
+		self.form.boundaryConditionTypeOpenEMS_UserDefined.clicked.connect(self.boundaryConditionUserDefinedRadioButtonClicked)
+		self.form.boundaryConditionTypeUserDefinedRadio.clicked.connect(self.boundaryConditionUserDefinedRadioButtonClicked)
+
+		#userDefined radio toggled, this is used when leaved
+		self.form.boundaryConditionTypeOpenEMS_UserDefined.toggled.connect(self.boundaryConditionUserDefinedRadioButtonClicked)
+		self.form.boundaryConditionTypeUserDefinedRadio.toggled.connect(self.boundaryConditionUserDefinedRadioButtonClicked)
+
 		####################################################################################################
 		# GUI SAVE/LOAD from file
 		####################################################################################################
@@ -783,11 +794,11 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			#		- enable just lumped port as it's now only one implemented in code generator (Mar2026)
 			#		+ enabled UI for rectangular waveguide, coax port and added modal port for EMerge
 			#
-			[radio.setEnabled(radio.objectName() == "lumpedPortRadioButton") for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
+			[radio.setEnabled(radio.objectName() in ["lumpedPortRadioButton", "userDefinedPortRadioButton"]) for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
 			[radio.click() for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton) if radio.objectName() == "lumpedPortRadioButton"]
 
 			if tempSolverType == "emerge":
-				[radio.setEnabled(radio.objectName() in ["lumpedPortRadioButton", "coaxialPortRadioButton", "rectangularWaveguidePortRadioButton", "modalPortRadioButton"]) for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
+				[radio.setEnabled(radio.objectName() in ["lumpedPortRadioButton", "coaxialPortRadioButton", "rectangularWaveguidePortRadioButton", "modalPortRadioButton", "userDefinedPortRadioButton"]) for radio in self.form.portSettingsTab_portTypeGroup.findChildren(QtWidgets.QRadioButton)]
 
 			#
 			#	Use python script generator for emerge and palace as they accept only python scripts
@@ -1368,7 +1379,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 	
 			elif (currSetting.getType() == 'Fixed Count'):
 	
-	            #collecting Z coordinates where grid will be drawn, grid will be drawn in XY plane
+				#collecting Z coordinates where grid will be drawn, grid will be drawn in XY plane
 				zAuxGridCoordList = []
 				if (currSetting.zenabled):
 					if float(currSetting.getXYZ(refUnit)['z']) != 0:
@@ -1448,7 +1459,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 	
 			elif (currSetting.getType() == 'Fixed Count'):
 	
-	            #collecting Z coordinates where grid will be drawn, grid will be drawn in XY plane
+				#collecting Z coordinates where grid will be drawn, grid will be drawn in XY plane
 				xAuxGridCoordList = []
 				if (currSetting.xenabled):
 					if float(currSetting.getXYZ(refUnit)['x']) != 0:
@@ -3386,6 +3397,10 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			portItem.modalMixedMaterials = self.form.modalPortMixedMaterials.isChecked()
 			portItem.modalImpedanceDefinition = self.form.modalPortImpedanceDefinition.currentText()
 
+		if (self.form.userDefinedPortRadioButton.isChecked()):
+			portItem.type = "userdefined"
+			portItem.userDefinedData = self.form.userDefinedPortValue.toPlainText()
+
 		return portItem
 
 	def probeCheckCurrentSettings(self, currentSettings):
@@ -3488,6 +3503,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		self.form.striplinePortSettingsGroup.setEnabled(False)
 		self.form.curvePortSettingsGroup.setEnabled(False)
 		self.form.modalPortSettingsGroup.setEnabled(False)
+		self.form.userDefinedPortValue.setEnabled(False)
 
 		#for modes update here is some source on internet: https://arxiv.org/ftp/arxiv/papers/1201/1201.3202.pdf
 
@@ -3527,6 +3543,10 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		elif (self.form.modalPortRadioButton.isChecked()):
 			self.form.modalPortSettingsGroup.setEnabled(True)
 			self.guiHelpers.portSpecificSettingsTabSetActiveByName("Modal")
+
+		elif (self.form.userDefinedPortRadioButton.isChecked()):
+			self.form.userDefinedPortValue.setEnabled(True)
+			self.guiHelpers.portSpecificSettingsTabSetActiveByName("UserDefined")
 
 		else:
 			self.guiHelpers.portSpecificSettingsTabSetActiveByName("")
@@ -3791,6 +3811,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			if (self.form.boundaryConditionTypeOpenEMS_Unknown.isChecked()):
 				boundaryConditionItem.type = "openemsUnknown"
 				boundaryConditionItem.openemsAbsorber["AbsorbingBoundaryType"] = "UNKNOWN"
+			if (self.form.boundaryConditionTypeOpenEMS_UserDefined.isChecked()):
+				boundaryConditionItem.type = "userDefined"
+				boundaryConditionItem.userDefined = self.form.boundaryConditionTypeUserDefinedTextInput.toPlainText()
 
 		#
 		#	Boundary condition for emerge, palace solver
@@ -3817,6 +3840,9 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				boundaryConditionItem.thinConductor["roughnessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits.currentText()
 				boundaryConditionItem.thinConductor["thickness"] = self.form.boundaryConditionTypeSurfaceImpedanceThickness.value()
 				boundaryConditionItem.thinConductor["thicknessUnits"] = self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits.currentText()
+			elif (self.form.boundaryConditionTypeUserDefinedRadio.isChecked()):
+				boundaryConditionItem.type = "userDefined"
+				boundaryConditionItem.userDefined = self.form.boundaryConditionTypeUserDefinedTextInput.toPlainText()
 
 		return boundaryConditionItem
 
@@ -3895,6 +3921,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 		if (currSetting.type == "custom"):
 			self.form.boundaryConditionTypeCustomRadio.click()
 			self.form.boundaryConditionTypeCustomTextInput.setText(currSetting.customType)
+
 		elif (currSetting.type.lower() == "surfaceimpedance"):
 			self.form.boundaryConditionTypeSurfaceImpedanceRadio.click()
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceMaterial, text=currSetting.surfaceImpedance["material"])
@@ -3903,6 +3930,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.boundaryConditionTypeSurfaceImpedanceThickness.setValue(currSetting.surfaceImpedance["thickness"])
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits, text=currSetting.surfaceImpedance["roughnessUnits"])
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits, text=currSetting.surfaceImpedance["thicknessUnits"])
+
 		elif (currSetting.type.lower() == "thinconductor"):
 			self.form.boundaryConditionTypeThinConductorRadio.click()
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceMaterial, text=currSetting.thinConductor["material"])
@@ -3911,6 +3939,7 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.boundaryConditionTypeSurfaceImpedanceThickness.setValue(currSetting.thinConductor["thickness"])
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceRoughnessUnits, text=currSetting.thinConductor["roughnessUnits"])
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeSurfaceImpedanceThicknessUnits, text=currSetting.thinConductor["thicknessUnits"])
+
 		elif (currSetting.type.lower() == "openemsabsorber"):
 			self.form.boundaryConditionsTab_tabWidget.setCurrentIndex(1)
 
@@ -3919,14 +3948,36 @@ class ExportOpenEMSDialog(QtCore.QObject):
 			self.form.boundaryConditionTypeOpenEMS_Absorbing_NormalSignPositive.setChecked(currSetting.openemsAbsorber["NormalSignPositive"])
 			self.form.boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permittivity.setValue(currSetting.openemsAbsorber["PhaseVelocity_material_er"])
 			self.form.boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permeability.setValue(currSetting.openemsAbsorber["PhaseVelocity_material_muer"])
+
 		elif (currSetting.type.lower() == "openemsunknown"):
 			self.form.boundaryConditionsTab_tabWidget.setCurrentIndex(1)
 			self.form.boundaryConditionTypeOpenEMS_Unknown.setChecked(True)
+
+		elif (currSetting.type.lower() == "userdefined"):
+			if any(x in self.form.comboBox_solverType.currentText().lower() for x in ['openems']):
+				self.form.boundaryConditionsTab_tabWidget.setCurrentIndex(1)
+				self.form.boundaryConditionTypeOpenEMS_UserDefined.setChecked(True)
+			else:
+				self.form.boundaryConditionsTab_tabWidget.setCurrentIndex(0)
+				self.form.boundaryConditionTypeUserDefinedRadio.setChecked(True)
+
+			self.form.boundaryConditionTypeUserDefinedTextInput.setEnabled(True)
+			self.form.boundaryConditionTypeUserDefinedTextInput.setPlainText(currSetting.userDefined)
+
 		else:
 			self.form.boundaryConditionTypePredefinedRadio.click()
 			self.guiHelpers.setComboboxItem(self.form.boundaryConditionTypeCombobox, currSetting.type)
 
 		return
+
+	def boundaryConditionUserDefinedRadioButtonClicked(self):
+		if (
+			(any(x in self.form.comboBox_solverType.currentText().lower() for x in ['openems']) and self.form.boundaryConditionTypeOpenEMS_UserDefined.isChecked()) or
+			(any(x in self.form.comboBox_solverType.currentText().lower() for x in ['emerge','palace']) and self.form.boundaryConditionTypeUserDefinedRadio.isChecked())
+		):
+			self.form.boundaryConditionTypeUserDefinedTextInput.setEnabled(True)
+		else:
+			self.form.boundaryConditionTypeUserDefinedTextInput.setEnabled(False)
 
 	#########################################################################################################################################
 	#
@@ -4578,6 +4629,13 @@ class ExportOpenEMSDialog(QtCore.QObject):
 				self.form.modalPortExcitationAmplitude.setValue(currSetting.excitationAmplitude)
 				self.form.modalPortMixedMaterials.setChecked(currSetting.modalMixedMaterials)
 				self.guiHelpers.setComboboxItem(self.form.modalPortImpedanceDefinition, currSetting.modalImpedanceDefinition)
+			except Exception as e:
+				self.guiHelpers.displayMessage(f"ERROR update modal port current settings: {e}", forceModal=False)
+
+		elif (currSetting.type.lower() == "userdefined"):
+			try:
+				self.form.userDefinedPortRadioButton.click()
+				self.form.userDefinedPortValue.setPlainText(currSetting.userDefinedData)
 			except Exception as e:
 				self.guiHelpers.displayMessage(f"ERROR update modal port current settings: {e}", forceModal=False)
 

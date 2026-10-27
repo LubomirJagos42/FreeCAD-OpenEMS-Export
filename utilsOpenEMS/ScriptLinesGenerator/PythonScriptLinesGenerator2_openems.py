@@ -683,6 +683,13 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                         genScript += '# ERROR: curve port function NOT IMPLEMENTED IN openEMS PYTHON INTERFACE\n'
                         genScript += 'raise BaseException("curve port function NOT IMPLEMENTED IN openEMS PYTHON INTERFACE")\n'
 
+                    elif (currSetting.getType() == 'userdefined'):
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords)
+                        genScript += "portExcitationAmplitude = " + str(currSetting.excitationAmplitude) + "\n"
+                        genScript += "portPriorityIndex = " + str(priorityIndex) + "\n"
+
+                        genScript += currSetting.userDefinedData
+
                     else:
                         genScript += '# Unknown port type. Nothing was generated.\n'
                         genScript += 'raise BaseException("Unknown port type. Nothing was generated.")\n'
@@ -968,6 +975,8 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                     genScript += f"{boundaryVariableName} = CSX.AddAbsorbingBC(name=\"{childName}\", NormalSignPositive={currSetting.openemsAbsorber['NormalSignPositive']}, AbsorbingBoundaryType=CSXCAD.CSProperties.ABCtype.{currSetting.openemsAbsorber['AbsorbingBoundaryType']}, PhaseVelocity=C0/np.sqrt({currSetting.openemsAbsorber['PhaseVelocity_material_er']}*{currSetting.openemsAbsorber['PhaseVelocity_material_muer']}))\n"
                 elif currSetting.getType() == 'openemsUnknown':
                     genScript += f"{boundaryVariableName} = CSX.AddAbsorbingBC(name=\"{childName}\", NormalSignPositive={currSetting.openemsAbsorber['NormalSignPositive']}, AbsorbingBoundaryType=CSXCAD.CSProperties.ABCtype.{currSetting.openemsAbsorbing['AbsorbingBoundaryType']}, PhaseVelocity=C0/np.sqrt({currSetting.openemsAbsorber['PhaseVelocity_material_er']}*{currSetting.openemsAbsorber['PhaseVelocity_material_muer']}))\n"
+                elif currSetting.getType().lower() == 'userdefined':
+                    pass
                 else:
                     genScript += f"raise TypeError('Unknown boundary condition name=\"{childName}\", type=\"{currSetting.getType()}\"')\n"
 
@@ -985,6 +994,11 @@ class PythonScriptLinesGenerator2_openems(CommonScriptLinesGenerator):
                     if (currSetting.getType() == 'openemsAbsorber'):
                         genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords).replace("portStart", "boundaryStart").replace("portStop", "boundaryStop")
                         genScript += f"{boundaryVariableName}.AddBox(boundaryStart, boundaryStop, priority={str(priorityIndex)})\n"
+                    elif (currSetting.getType().lower() == 'userdefined'):
+                        genScript += self.getCartesianOrCylindricalScriptLinesFromStartStop(bbCoords).replace("portStart", "boundaryStart").replace("portStop", "boundaryStop")
+                        genScript += currSetting.userDefined
+
+                genScript += "\n"
 
         #last empty line
         genScript += "\n"

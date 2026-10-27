@@ -2848,10 +2848,20 @@ just for Palace!!!</string>
                 <string>Port Type</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_11">
-                <item row="2" column="0">
-                 <widget class="QRadioButton" name="rectangularWaveguidePortRadioButton">
+                <item row="0" column="0">
+                 <widget class="QRadioButton" name="lumpedPortRadioButton">
                   <property name="text">
-                   <string>Rectangular Waveguide</string>
+                   <string>Lumped</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QRadioButton" name="microstripPortRadioButton">
+                  <property name="text">
+                   <string>Microstrip</string>
                   </property>
                  </widget>
                 </item>
@@ -2865,40 +2875,27 @@ just for Palace!!!</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
-                 <widget class="QRadioButton" name="coplanarPortRadioButton">
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_181">
+                  <property name="text">
+                   <string>EMerge only port type:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QRadioButton" name="userDefinedPortRadioButton">
                   <property name="enabled">
                    <bool>true</bool>
                   </property>
                   <property name="text">
-                   <string>Coplanar</string>
+                   <string>UserDefined</string>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="0">
-                 <widget class="QRadioButton" name="microstripPortRadioButton">
+                <item row="2" column="0">
+                 <widget class="QRadioButton" name="rectangularWaveguidePortRadioButton">
                   <property name="text">
-                   <string>Microstrip</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <widget class="QRadioButton" name="curvePortRadioButton">
-                  <property name="enabled">
-                   <bool>true</bool>
-                  </property>
-                  <property name="text">
-                   <string>Curve</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QRadioButton" name="circularWaveguidePortRadioButton">
-                  <property name="enabled">
-                   <bool>true</bool>
-                  </property>
-                  <property name="text">
-                   <string>Circular Waveguide</string>
+                   <string>Rectangular Waveguide</string>
                   </property>
                  </widget>
                 </item>
@@ -2912,27 +2909,40 @@ just for Palace!!!</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="0">
-                 <widget class="QRadioButton" name="lumpedPortRadioButton">
-                  <property name="text">
-                   <string>Lumped</string>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="0">
-                 <widget class="QLabel" name="label_181">
-                  <property name="text">
-                   <string>EMerge only port type:</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="5" column="0">
                  <widget class="QRadioButton" name="modalPortRadioButton">
                   <property name="text">
                    <string>Modal</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QRadioButton" name="curvePortRadioButton">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Curve</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QRadioButton" name="coplanarPortRadioButton">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Coplanar</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QRadioButton" name="circularWaveguidePortRadioButton">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Circular Waveguide</string>
                   </property>
                  </widget>
                 </item>
@@ -5775,7 +5785,7 @@ no TM modes.</string>
                  </item>
                 </layout>
                </widget>
-               <widget class="QWidget" name="tab">
+               <widget class="QWidget" name="Modal">
                 <attribute name="title">
                  <string>Modal</string>
                 </attribute>
@@ -5896,6 +5906,39 @@ no TM modes.</string>
                     </size>
                    </property>
                   </spacer>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="UserDefined">
+                <attribute name="title">
+                 <string>UserDefined</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="verticalLayout_62">
+                 <item>
+                  <widget class="QLabel" name="label_194">
+                   <property name="text">
+                    <string>User defined port, code</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPlainTextEdit" name="userDefinedPortValue">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="tabChangesFocus">
+                    <bool>false</bool>
+                   </property>
+                   <property name="plainText">
+                    <string>#available caculated variables, these are calculated for boundaries of each assigned object:
+#  portStart = [x0, y0, z0]
+#  portStop = [x1, y1, z1]
+#  portExcitationAmplitude = 1.0 or 0.0
+#  portPriorityIndex = 9700 or some other number
+#
+</string>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </widget>
@@ -8844,6 +8887,13 @@ Transient use AMS</string>
                       </property>
                      </widget>
                     </item>
+                    <item row="1" column="0">
+                     <widget class="QRadioButton" name="boundaryConditionTypeCustomRadio">
+                      <property name="text">
+                       <string>custom</string>
+                      </property>
+                     </widget>
+                    </item>
                     <item row="0" column="1">
                      <widget class="QComboBox" name="boundaryConditionTypeCombobox">
                       <property name="minimumSize">
@@ -8887,12 +8937,25 @@ Transient use AMS</string>
                       </item>
                      </widget>
                     </item>
-                    <item row="1" column="0">
-                     <widget class="QRadioButton" name="boundaryConditionTypeCustomRadio">
-                      <property name="text">
-                       <string>custom</string>
-                      </property>
-                     </widget>
+                    <item row="4" column="0">
+                     <layout class="QVBoxLayout" name="verticalLayout_56">
+                      <item>
+                       <widget class="QRadioButton" name="boundaryConditionTypeSurfaceImpedanceRadio">
+                        <property name="text">
+                         <string>SurfaceImpedance
+(EMerge only)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QRadioButton" name="boundaryConditionTypeThinConductorRadio">
+                        <property name="text">
+                         <string>ThinConductor
+(EMerge only)</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </item>
                     <item row="3" column="2">
                      <spacer name="verticalSpacer_49">
@@ -9096,25 +9159,12 @@ Transient use AMS</string>
                       </layout>
                      </widget>
                     </item>
-                    <item row="4" column="0">
-                     <layout class="QVBoxLayout" name="verticalLayout_56">
-                      <item>
-                       <widget class="QRadioButton" name="boundaryConditionTypeSurfaceImpedanceRadio">
-                        <property name="text">
-                         <string>SurfaceImpedance
-(EMerge only)</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QRadioButton" name="boundaryConditionTypeThinConductorRadio">
-                        <property name="text">
-                         <string>ThinConductor
-(EMerge only)</string>
-                        </property>
-                       </widget>
-                      </item>
-                     </layout>
+                    <item row="5" column="0">
+                     <widget class="QRadioButton" name="boundaryConditionTypeUserDefinedRadio">
+                      <property name="text">
+                       <string>UserDefined</string>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -9125,215 +9175,245 @@ Transient use AMS</string>
                 <attribute name="title">
                  <string>OpenEMS</string>
                 </attribute>
-                <widget class="QGroupBox" name="groupBox_BoundaryConditionType_openEMS">
-                 <property name="geometry">
-                  <rect>
-                   <x>10</x>
-                   <y>20</y>
-                   <width>676</width>
-                   <height>229</height>
-                  </rect>
-                 </property>
-                 <property name="title">
-                  <string>Boundary Condition - openEMS</string>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_58">
-                  <item>
-                   <layout class="QHBoxLayout" name="horizontalLayout_72">
-                    <property name="leftMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>5</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>5</number>
-                    </property>
+                <layout class="QVBoxLayout" name="verticalLayout_63">
+                 <item>
+                  <widget class="QGroupBox" name="groupBox_BoundaryConditionType_openEMS">
+                   <property name="title">
+                    <string>Boundary Condition - openEMS</string>
+                   </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_58">
                     <item>
-                     <widget class="QRadioButton" name="boundaryConditionTypeOpenEMS_Absorbing">
+                     <layout class="QHBoxLayout" name="horizontalLayout_72">
+                      <property name="leftMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>5</number>
+                      </property>
+                      <item>
+                       <widget class="QRadioButton" name="boundaryConditionTypeOpenEMS_Absorbing">
+                        <property name="text">
+                         <string>MUR Absorbing</string>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                        <property name="checked">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QGroupBox" name="groupBox_BoundaryConditionType_openEMS_MURAbsorbing">
+                        <property name="title">
+                         <string>MUR Absorbing - openEMS settings</string>
+                        </property>
+                        <layout class="QVBoxLayout" name="verticalLayout_60">
+                         <item>
+                          <layout class="QVBoxLayout" name="verticalLayout_59">
+                           <property name="leftMargin">
+                            <number>5</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>5</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>5</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>5</number>
+                           </property>
+                           <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout_73">
+                             <item>
+                              <widget class="QLabel" name="label_191">
+                               <property name="text">
+                                <string>Type</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QComboBox" name="boundaryConditionTypeOpenEMS_Absorbing_Type">
+                               <item>
+                                <property name="text">
+                                 <string>MUR_1ST</string>
+                                </property>
+                               </item>
+                               <item>
+                                <property name="text">
+                                 <string>MUR_1ST_SA</string>
+                                </property>
+                               </item>
+                              </widget>
+                             </item>
+                            </layout>
+                           </item>
+                           <item>
+                            <widget class="QCheckBox" name="boundaryConditionTypeOpenEMS_Absorbing_NormalSignPositive">
+                             <property name="text">
+                              <string>NormalSignPositive</string>
+                             </property>
+                             <property name="checked">
+                              <bool>true</bool>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout_74">
+                             <property name="leftMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>5</number>
+                             </property>
+                             <item>
+                              <widget class="QLabel" name="label_192">
+                               <property name="text">
+                                <string>material permittivity</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QDoubleSpinBox" name="boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permittivity">
+                               <property name="decimals">
+                                <number>3</number>
+                               </property>
+                               <property name="maximum">
+                                <double>10000000.000000000000000</double>
+                               </property>
+                               <property name="singleStep">
+                                <double>0.100000000000000</double>
+                               </property>
+                               <property name="value">
+                                <double>1.000000000000000</double>
+                               </property>
+                              </widget>
+                             </item>
+                            </layout>
+                           </item>
+                           <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout_75">
+                             <property name="leftMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>5</number>
+                             </property>
+                             <item>
+                              <widget class="QLabel" name="label_193">
+                               <property name="text">
+                                <string>material permeability</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QDoubleSpinBox" name="boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permeability">
+                               <property name="decimals">
+                                <number>3</number>
+                               </property>
+                               <property name="maximum">
+                                <double>10000000.000000000000000</double>
+                               </property>
+                               <property name="singleStep">
+                                <double>0.100000000000000</double>
+                               </property>
+                               <property name="value">
+                                <double>1.000000000000000</double>
+                               </property>
+                              </widget>
+                             </item>
+                            </layout>
+                           </item>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_62">
+                        <property name="orientation">
+                         <enum>Qt::Orientation::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <widget class="QRadioButton" name="boundaryConditionTypeOpenEMS_Unknown">
                       <property name="text">
-                       <string>MUR Absorbing</string>
+                       <string>Unknown</string>
                       </property>
                       <property name="checkable">
                        <bool>true</bool>
                       </property>
                       <property name="checked">
+                       <bool>false</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QRadioButton" name="boundaryConditionTypeOpenEMS_UserDefined">
+                      <property name="text">
+                       <string>UserDefined</string>
+                      </property>
+                      <property name="checkable">
                        <bool>true</bool>
                       </property>
+                      <property name="checked">
+                       <bool>false</bool>
+                      </property>
                      </widget>
-                    </item>
-                    <item>
-                     <widget class="QGroupBox" name="groupBox_BoundaryConditionType_openEMS_MURAbsorbing">
-                      <property name="title">
-                       <string>MUR Absorbing - openEMS settings</string>
-                      </property>
-                      <layout class="QVBoxLayout" name="verticalLayout_60">
-                       <item>
-                        <layout class="QVBoxLayout" name="verticalLayout_59">
-                         <property name="leftMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="topMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="rightMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="bottomMargin">
-                          <number>5</number>
-                         </property>
-                         <item>
-                          <layout class="QHBoxLayout" name="horizontalLayout_73">
-                           <item>
-                            <widget class="QLabel" name="label_191">
-                             <property name="text">
-                              <string>Type</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QComboBox" name="boundaryConditionTypeOpenEMS_Absorbing_Type">
-                             <item>
-                              <property name="text">
-                               <string>MUR_1ST</string>
-                              </property>
-                             </item>
-                             <item>
-                              <property name="text">
-                               <string>MUR_1ST_SA</string>
-                              </property>
-                             </item>
-                            </widget>
-                           </item>
-                          </layout>
-                         </item>
-                         <item>
-                          <widget class="QCheckBox" name="boundaryConditionTypeOpenEMS_Absorbing_NormalSignPositive">
-                           <property name="text">
-                            <string>NormalSignPositive</string>
-                           </property>
-                           <property name="checked">
-                            <bool>true</bool>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <layout class="QHBoxLayout" name="horizontalLayout_74">
-                           <property name="leftMargin">
-                            <number>5</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>5</number>
-                           </property>
-                           <property name="rightMargin">
-                            <number>5</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>5</number>
-                           </property>
-                           <item>
-                            <widget class="QLabel" name="label_192">
-                             <property name="text">
-                              <string>material permittivity</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QDoubleSpinBox" name="boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permittivity">
-                             <property name="decimals">
-                              <number>3</number>
-                             </property>
-                             <property name="maximum">
-                              <double>10000000.000000000000000</double>
-                             </property>
-                             <property name="singleStep">
-                              <double>0.100000000000000</double>
-                             </property>
-                             <property name="value">
-                              <double>1.000000000000000</double>
-                             </property>
-                            </widget>
-                           </item>
-                          </layout>
-                         </item>
-                         <item>
-                          <layout class="QHBoxLayout" name="horizontalLayout_75">
-                           <property name="leftMargin">
-                            <number>5</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>5</number>
-                           </property>
-                           <property name="rightMargin">
-                            <number>5</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>5</number>
-                           </property>
-                           <item>
-                            <widget class="QLabel" name="label_193">
-                             <property name="text">
-                              <string>material permeability</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QDoubleSpinBox" name="boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permeability">
-                             <property name="decimals">
-                              <number>3</number>
-                             </property>
-                             <property name="maximum">
-                              <double>10000000.000000000000000</double>
-                             </property>
-                             <property name="singleStep">
-                              <double>0.100000000000000</double>
-                             </property>
-                             <property name="value">
-                              <double>1.000000000000000</double>
-                             </property>
-                            </widget>
-                           </item>
-                          </layout>
-                         </item>
-                        </layout>
-                       </item>
-                      </layout>
-                     </widget>
-                    </item>
-                    <item>
-                     <spacer name="horizontalSpacer_62">
-                      <property name="orientation">
-                       <enum>Qt::Orientation::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
                     </item>
                    </layout>
-                  </item>
-                  <item>
-                   <widget class="QRadioButton" name="boundaryConditionTypeOpenEMS_Unknown">
-                    <property name="text">
-                     <string>Unknown</string>
-                    </property>
-                    <property name="checkable">
-                     <bool>true</bool>
-                    </property>
-                    <property name="checked">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
+                  </widget>
+                 </item>
+                </layout>
                </widget>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_195">
+               <property name="text">
+                <string>UserDefined boundary condition code</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPlainTextEdit" name="boundaryConditionTypeUserDefinedTextInput">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="plainText">
+                <string>#available caculated variables, these are calculated for boundaries of each assigned object:
+#  boundaryStart = [x0, y0, z0]
+#  boundaryStop = [x1, y1, z1]
+#
+</string>
+               </property>
               </widget>
              </item>
              <item>
