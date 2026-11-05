@@ -2848,10 +2848,20 @@ just for Palace!!!</string>
                 <string>Port Type</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_11">
-                <item row="2" column="0">
-                 <widget class="QRadioButton" name="rectangularWaveguidePortRadioButton">
+                <item row="0" column="0">
+                 <widget class="QRadioButton" name="lumpedPortRadioButton">
                   <property name="text">
-                   <string>Rectangular Waveguide</string>
+                   <string>Lumped</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QRadioButton" name="microstripPortRadioButton">
+                  <property name="text">
+                   <string>Microstrip</string>
                   </property>
                  </widget>
                 </item>
@@ -2865,40 +2875,27 @@ just for Palace!!!</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
-                 <widget class="QRadioButton" name="coplanarPortRadioButton">
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_181">
+                  <property name="text">
+                   <string>EMerge only port type:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QRadioButton" name="userDefinedPortRadioButton">
                   <property name="enabled">
                    <bool>true</bool>
                   </property>
                   <property name="text">
-                   <string>Coplanar</string>
+                   <string>UserDefined</string>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="0">
-                 <widget class="QRadioButton" name="microstripPortRadioButton">
+                <item row="2" column="0">
+                 <widget class="QRadioButton" name="rectangularWaveguidePortRadioButton">
                   <property name="text">
-                   <string>Microstrip</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <widget class="QRadioButton" name="curvePortRadioButton">
-                  <property name="enabled">
-                   <bool>true</bool>
-                  </property>
-                  <property name="text">
-                   <string>Curve</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QRadioButton" name="circularWaveguidePortRadioButton">
-                  <property name="enabled">
-                   <bool>true</bool>
-                  </property>
-                  <property name="text">
-                   <string>Circular Waveguide</string>
+                   <string>Rectangular Waveguide</string>
                   </property>
                  </widget>
                 </item>
@@ -2912,27 +2909,40 @@ just for Palace!!!</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="0">
-                 <widget class="QRadioButton" name="lumpedPortRadioButton">
-                  <property name="text">
-                   <string>Lumped</string>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="0">
-                 <widget class="QLabel" name="label_181">
-                  <property name="text">
-                   <string>EMerge only port type:</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="5" column="0">
                  <widget class="QRadioButton" name="modalPortRadioButton">
                   <property name="text">
                    <string>Modal</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QRadioButton" name="curvePortRadioButton">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Curve</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QRadioButton" name="coplanarPortRadioButton">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Coplanar</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QRadioButton" name="circularWaveguidePortRadioButton">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="text">
+                   <string>Circular Waveguide</string>
                   </property>
                  </widget>
                 </item>
@@ -4630,9 +4640,6 @@ no TM modes.</string>
                     </item>
                     <item row="0" column="2">
                      <widget class="QCheckBox" name="coaxialPortInfinitResistance">
-                      <property name="enabled">
-                       <bool>false</bool>
-                      </property>
                       <property name="text">
                        <string>infinite resistance</string>
                       </property>
@@ -5778,7 +5785,7 @@ no TM modes.</string>
                  </item>
                 </layout>
                </widget>
-               <widget class="QWidget" name="tab">
+               <widget class="QWidget" name="Modal">
                 <attribute name="title">
                  <string>Modal</string>
                 </attribute>
@@ -5899,6 +5906,39 @@ no TM modes.</string>
                     </size>
                    </property>
                   </spacer>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="UserDefined">
+                <attribute name="title">
+                 <string>UserDefined</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="verticalLayout_62">
+                 <item>
+                  <widget class="QLabel" name="label_194">
+                   <property name="text">
+                    <string>User defined port, code</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPlainTextEdit" name="userDefinedPortValue">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="tabChangesFocus">
+                    <bool>false</bool>
+                   </property>
+                   <property name="plainText">
+                    <string>#available caculated variables, these are calculated for boundaries of each assigned object:
+#  portStart = [x0, y0, z0]
+#  portStop = [x1, y1, z1]
+#  portExcitationAmplitude = 1.0 or 0.0
+#  portPriorityIndex = 9700 or some other number
+#
+</string>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </widget>
@@ -7136,56 +7176,6 @@ no TM modes.</string>
                  <property name="bottomMargin">
                   <number>5</number>
                  </property>
-                 <item row="10" column="1">
-                  <widget class="QCheckBox" name="genParamMinGridSpacingEnable">
-                   <property name="text">
-                    <string>remove grid lines closer
-than min spacing</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="6">
-                  <widget class="QLabel" name="label_33">
-                   <property name="text">
-                    <string>zmax</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="11" column="2">
-                  <widget class="QLabel" name="label_252">
-                   <property name="text">
-                    <string>dy (mm)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="8" column="0">
-                  <widget class="QLabel" name="label_100">
-                   <property name="text">
-                    <string>oversampling</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="3">
-                  <widget class="QLabel" name="label_36">
-                   <property name="text">
-                    <string>ymin PML cells number</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="5">
-                  <widget class="QLabel" name="label_20">
-                   <property name="text">
-                    <string>zmin</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="1">
-                  <widget class="QLabel" name="label_34">
-                   <property name="text">
-                    <string>xmin PML cells number</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="6" column="1">
                   <widget class="QSpinBox" name="PMLxmincells">
                    <property name="enabled">
@@ -7199,15 +7189,46 @@ than min spacing</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="5" column="5">
-                  <widget class="QLabel" name="label_38">
-                   <property name="text">
-                    <string>zmin PML cells number</string>
+                 <item row="8" column="1">
+                  <widget class="QSpinBox" name="simParamsOverSampling">
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>10000000</number>
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="1">
-                  <widget class="QComboBox" name="BCxmin">
+                 <item row="6" column="3">
+                  <widget class="QSpinBox" name="PMLymincells">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="value">
+                    <number>8</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="6">
+                  <widget class="QLabel" name="label_39">
+                   <property name="text">
+                    <string>zmax PML cells number</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="1">
+                  <widget class="QCheckBox" name="genParamMinGridSpacingEnable">
+                   <property name="text">
+                    <string>remove grid lines closer
+than min spacing</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="4">
+                  <widget class="QComboBox" name="BCymax">
                    <item>
                     <property name="text">
                      <string>PEC</string>
@@ -7230,30 +7251,47 @@ than min spacing</string>
                    </item>
                   </widget>
                  </item>
-                 <item row="3" column="1">
-                  <widget class="QLabel" name="label_21">
+                 <item row="4" column="3">
+                  <widget class="QComboBox" name="BCymin">
+                   <item>
+                    <property name="text">
+                     <string>PEC</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>PMC</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>MUR</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>PML</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="11" column="3">
+                  <widget class="QLabel" name="label_253">
                    <property name="text">
-                    <string>xmin</string>
+                    <string>dz (mm)</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="2">
-                  <widget class="QLabel" name="simParamsMinDecrementdBLabel">
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_25">
+                   <property name="minimumSize">
+                    <size>
+                     <width>150</width>
+                     <height>30</height>
+                    </size>
+                   </property>
                    <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="6">
-                  <widget class="QSpinBox" name="PMLzmaxcells">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="value">
-                    <number>8</number>
+                    <string>min decrement</string>
                    </property>
                   </widget>
                  </item>
@@ -7282,10 +7320,191 @@ than min spacing</string>
                    </property>
                   </widget>
                  </item>
+                 <item row="11" column="2">
+                  <widget class="QLabel" name="label_252">
+                   <property name="text">
+                    <string>dy (mm)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="5">
+                  <widget class="QSpinBox" name="PMLzmincells">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="value">
+                    <number>8</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QSpinBox" name="simParamsMaxTimesteps">
+                   <property name="maximum">
+                    <number>1000000000</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>1000</number>
+                   </property>
+                   <property name="value">
+                    <number>1000000</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QDoubleSpinBox" name="simParamsMinDecrement">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="decimals">
+                    <number>10</number>
+                   </property>
+                   <property name="maximum">
+                    <double>10000000000.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.000001000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.000010000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="0">
+                  <spacer name="verticalSpacer_25">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Vertical</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Policy::Preferred</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="3" column="4">
+                  <widget class="QLabel" name="label_31">
+                   <property name="text">
+                    <string>ymax</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="13" column="0">
+                  <spacer name="verticalSpacer_51">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Vertical</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Policy::Preferred</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="4" column="1">
+                  <widget class="QComboBox" name="BCxmin">
+                   <item>
+                    <property name="text">
+                     <string>PEC</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>PMC</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>MUR</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>PML</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
                  <item row="3" column="0">
                   <widget class="QLabel" name="label_32">
                    <property name="text">
                     <string>boundary conditions</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="12" column="3">
+                  <widget class="QDoubleSpinBox" name="genParamMinGridSpacingZ">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="decimals">
+                    <number>10</number>
+                   </property>
+                   <property name="maximum">
+                    <double>1000000000.000000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.000001000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="2">
+                  <widget class="QLabel" name="label_35">
+                   <property name="text">
+                    <string>xmax PML cells number</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="3">
+                  <widget class="QLabel" name="label_36">
+                   <property name="text">
+                    <string>ymin PML cells number</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="11" column="1">
+                  <widget class="QLabel" name="label_251">
+                   <property name="text">
+                    <string>dx (mm)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="9">
+                  <spacer name="horizontalSpacer_12">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="5" column="5">
+                  <widget class="QLabel" name="label_38">
+                   <property name="text">
+                    <string>zmin PML cells number</string>
                    </property>
                   </widget>
                  </item>
@@ -7320,85 +7539,17 @@ than min spacing</string>
                    </item>
                   </widget>
                  </item>
-                 <item row="4" column="4">
-                  <widget class="QComboBox" name="BCymax">
-                   <item>
-                    <property name="text">
-                     <string>PEC</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>PMC</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>MUR</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>PML</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_48">
-                   <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;OpenEMS deltaUnit first specified by setRectilinearGrid. This unit is applied to objects as drawingunit.&lt;br/&gt;FreeCAD STL files are exported in FreeCAD standard units (mm) and imported with the appropriate scaling factor to match drawing units.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <item row="6" column="4">
+                  <widget class="QSpinBox" name="PMLymaxcells">
+                   <property name="enabled">
+                    <bool>false</bool>
                    </property>
-                   <property name="text">
-                    <string>geometry units</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="8" column="1">
-                  <widget class="QSpinBox" name="simParamsOverSampling">
                    <property name="minimum">
                     <number>1</number>
                    </property>
-                   <property name="maximum">
-                    <number>10000000</number>
+                   <property name="value">
+                    <number>8</number>
                    </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_25">
-                   <property name="minimumSize">
-                    <size>
-                     <width>150</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>min decrement</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="3">
-                  <widget class="QComboBox" name="BCymin">
-                   <item>
-                    <property name="text">
-                     <string>PEC</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>PMC</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>MUR</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>PML</string>
-                    </property>
-                   </item>
                   </widget>
                  </item>
                  <item row="0" column="0">
@@ -7420,6 +7571,44 @@ than min spacing</string>
                    </property>
                   </widget>
                  </item>
+                 <item row="4" column="6">
+                  <widget class="QComboBox" name="BCzmax">
+                   <item>
+                    <property name="text">
+                     <string>PEC</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>PMC</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>MUR</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>PML</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="8" column="0">
+                  <widget class="QLabel" name="label_100">
+                   <property name="text">
+                    <string>oversampling</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QLabel" name="simParamsMinDecrementdBLabel">
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="6" column="2">
                   <widget class="QSpinBox" name="PMLxmaxcells">
                    <property name="enabled">
@@ -7430,6 +7619,112 @@ than min spacing</string>
                    </property>
                    <property name="value">
                     <number>8</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="6">
+                  <widget class="QLabel" name="label_33">
+                   <property name="text">
+                    <string>zmax</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QLabel" name="label_21">
+                   <property name="text">
+                    <string>xmin</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="15" column="1">
+                  <spacer name="verticalSpacer_8">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="5" column="4">
+                  <widget class="QLabel" name="label_37">
+                   <property name="text">
+                    <string>ymax PML cells number</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="1">
+                  <widget class="QLabel" name="label_34">
+                   <property name="text">
+                    <string>xmin PML cells number</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="6">
+                  <widget class="QSpinBox" name="PMLzmaxcells">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="value">
+                    <number>8</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="3">
+                  <widget class="QLabel" name="label_30">
+                   <property name="text">
+                    <string>ymin</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="0">
+                  <spacer name="verticalSpacer_29">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Vertical</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Policy::Preferred</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="12" column="2">
+                  <widget class="QDoubleSpinBox" name="genParamMinGridSpacingY">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="decimals">
+                    <number>10</number>
+                   </property>
+                   <property name="maximum">
+                    <double>1000000000.000000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.000001000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="11" column="0">
+                  <widget class="QLabel" name="label_47">
+                   <property name="text">
+                    <string>min grid spacing</string>
                    </property>
                   </widget>
                  </item>
@@ -7471,68 +7766,6 @@ than min spacing</string>
                    </item>
                   </widget>
                  </item>
-                 <item row="5" column="2">
-                  <widget class="QLabel" name="label_35">
-                   <property name="text">
-                    <string>xmax PML cells number</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="3">
-                  <widget class="QSpinBox" name="PMLymincells">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="value">
-                    <number>8</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QDoubleSpinBox" name="simParamsMinDecrement">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="decimals">
-                    <number>10</number>
-                   </property>
-                   <property name="maximum">
-                    <double>10000000000.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.000001000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>0.000010000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QSpinBox" name="simParamsMaxTimesteps">
-                   <property name="maximum">
-                    <number>1000000000</number>
-                   </property>
-                   <property name="singleStep">
-                    <number>1000</number>
-                   </property>
-                   <property name="value">
-                    <number>1000000</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="6">
-                  <widget class="QLabel" name="label_39">
-                   <property name="text">
-                    <string>zmax PML cells number</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="4" column="5">
                   <widget class="QComboBox" name="BCzmin">
                    <item>
@@ -7557,197 +7790,27 @@ than min spacing</string>
                    </item>
                   </widget>
                  </item>
-                 <item row="11" column="0">
-                  <widget class="QLabel" name="label_47">
+                 <item row="3" column="5">
+                  <widget class="QLabel" name="label_20">
                    <property name="text">
-                    <string>min grid spacing</string>
+                    <string>zmin</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="7" column="0">
-                  <spacer name="verticalSpacer_25">
-                   <property name="orientation">
-                    <enum>Qt::Orientation::Vertical</enum>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="label_48">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;OpenEMS deltaUnit first specified by setRectilinearGrid. This unit is applied to objects as drawingunit.&lt;br/&gt;FreeCAD STL files are exported in FreeCAD standard units (mm) and imported with the appropriate scaling factor to match drawing units.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
-                   <property name="sizeType">
-                    <enum>QSizePolicy::Policy::Preferred</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="0" column="9">
-                  <spacer name="horizontalSpacer_12">
-                   <property name="orientation">
-                    <enum>Qt::Orientation::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="4" column="6">
-                  <widget class="QComboBox" name="BCzmax">
-                   <item>
-                    <property name="text">
-                     <string>PEC</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>PMC</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>MUR</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>PML</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="9" column="0">
-                  <spacer name="verticalSpacer_29">
-                   <property name="orientation">
-                    <enum>Qt::Orientation::Vertical</enum>
-                   </property>
-                   <property name="sizeType">
-                    <enum>QSizePolicy::Policy::Preferred</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="11" column="3">
-                  <widget class="QLabel" name="label_253">
                    <property name="text">
-                    <string>dz (mm)</string>
+                    <string>geometry units</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="4">
-                  <widget class="QSpinBox" name="PMLymaxcells">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="value">
-                    <number>8</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="11" column="1">
-                  <widget class="QLabel" name="label_251">
+                 <item row="14" column="0">
+                  <widget class="QCheckBox" name="simParamsUseGPU">
                    <property name="text">
-                    <string>dx (mm)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="4">
-                  <widget class="QLabel" name="label_37">
-                   <property name="text">
-                    <string>ymax PML cells number</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="4">
-                  <widget class="QLabel" name="label_31">
-                   <property name="text">
-                    <string>ymax</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="3">
-                  <widget class="QLabel" name="label_30">
-                   <property name="text">
-                    <string>ymin</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="12" column="2">
-                  <widget class="QDoubleSpinBox" name="genParamMinGridSpacingY">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="decimals">
-                    <number>10</number>
-                   </property>
-                   <property name="maximum">
-                    <double>1000000000.000000000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>0.000001000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="13" column="1">
-                  <spacer name="verticalSpacer_8">
-                   <property name="orientation">
-                    <enum>Qt::Orientation::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="6" column="5">
-                  <widget class="QSpinBox" name="PMLzmincells">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="value">
-                    <number>8</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="12" column="3">
-                  <widget class="QDoubleSpinBox" name="genParamMinGridSpacingZ">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="decimals">
-                    <number>10</number>
-                   </property>
-                   <property name="maximum">
-                    <double>1000000000.000000000000000</double>
-                   </property>
-                   <property name="value">
-                    <double>0.000001000000000</double>
+                    <string>use GPU</string>
                    </property>
                   </widget>
                  </item>
@@ -7835,6 +7898,11 @@ RAM swap will be used if no enough RAM</string>
                  <item>
                   <property name="text">
                    <string>UMFPACK</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>SPARTA</string>
                   </property>
                  </item>
                 </widget>
@@ -8778,298 +8846,574 @@ Transient use AMS</string>
               <widget class="QLineEdit" name="boundaryConditionSettingsNameInput"/>
              </item>
              <item>
-              <widget class="QGroupBox" name="groupBox_10">
-               <property name="title">
-                <string>Boundary Condition Type</string>
+              <widget class="QTabWidget" name="boundaryConditionsTab_tabWidget">
+               <property name="currentIndex">
+                <number>0</number>
                </property>
-               <layout class="QGridLayout" name="gridLayout_26">
-                <item row="0" column="2">
-                 <spacer name="horizontalSpacer_52">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QLineEdit" name="boundaryConditionTypeCustomTextInput"/>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QRadioButton" name="boundaryConditionTypePredefinedRadio">
-                  <property name="text">
-                   <string>predefined</string>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QComboBox" name="boundaryConditionTypeCombobox">
-                  <property name="minimumSize">
-                   <size>
-                    <width>200</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="currentIndex">
-                   <number>3</number>
-                  </property>
-                  <item>
-                   <property name="text">
-                    <string>PEC</string>
+               <widget class="QWidget" name="boundaryConditionsTab_femTab">
+                <attribute name="title">
+                 <string>EMerge, Palace</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="verticalLayout_61">
+                 <item>
+                  <widget class="QGroupBox" name="groupBox_BoundaryConditionType">
+                   <property name="title">
+                    <string>Boundary Condition Type - emerge, palace</string>
                    </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>PMC</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Robin</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Absorbing</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>ZeroCharge</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Ground</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QRadioButton" name="boundaryConditionTypeCustomRadio">
-                  <property name="text">
-                   <string>custom</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="0">
-                 <widget class="QRadioButton" name="boundaryConditionTypeSurfaceImpedanceRadio">
-                  <property name="text">
-                   <string>SurfaceImpedance
+                   <layout class="QGridLayout" name="gridLayout_26">
+                    <item row="0" column="2">
+                     <spacer name="horizontalSpacer_52">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QLineEdit" name="boundaryConditionTypeCustomTextInput"/>
+                    </item>
+                    <item row="0" column="0">
+                     <widget class="QRadioButton" name="boundaryConditionTypePredefinedRadio">
+                      <property name="text">
+                       <string>predefined</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QRadioButton" name="boundaryConditionTypeCustomRadio">
+                      <property name="text">
+                       <string>custom</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QComboBox" name="boundaryConditionTypeCombobox">
+                      <property name="minimumSize">
+                       <size>
+                        <width>200</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="currentIndex">
+                       <number>3</number>
+                      </property>
+                      <item>
+                       <property name="text">
+                        <string>PEC</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>PMC</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Robin</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Absorbing</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>ZeroCharge</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Ground</string>
+                       </property>
+                      </item>
+                     </widget>
+                    </item>
+                    <item row="4" column="0">
+                     <layout class="QVBoxLayout" name="verticalLayout_56">
+                      <item>
+                       <widget class="QRadioButton" name="boundaryConditionTypeSurfaceImpedanceRadio">
+                        <property name="text">
+                         <string>SurfaceImpedance
 (EMerge only)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="2">
-                 <spacer name="verticalSpacer_49">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Vertical</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Policy::Preferred</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="4" column="1">
-                 <widget class="QGroupBox" name="groupBox_4">
-                  <property name="title">
-                   <string>SurfaceImpedance - EMerge settings</string>
-                  </property>
-                  <layout class="QVBoxLayout" name="verticalLayout_57">
-                   <item>
-                    <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceMaterial">
-                     <property name="placeholderText">
-                      <string>...material...</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_69">
-                     <property name="leftMargin">
-                      <number>5</number>
-                     </property>
-                     <property name="topMargin">
-                      <number>5</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>5</number>
-                     </property>
-                     <property name="bottomMargin">
-                      <number>5</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_187">
-                       <property name="text">
-                        <string>conductance</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceConductance">
-                       <property name="maximum">
-                        <double>1000000000000000.000000000000000</double>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_70">
-                     <property name="leftMargin">
-                      <number>5</number>
-                     </property>
-                     <property name="topMargin">
-                      <number>5</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>5</number>
-                     </property>
-                     <property name="bottomMargin">
-                      <number>5</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_188">
-                       <property name="text">
-                        <string>roughness</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceRoughness">
-                       <property name="decimals">
-                        <number>3</number>
-                       </property>
-                       <property name="maximum">
-                        <double>1000000000.000000000000000</double>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceRoughnessUnits">
-                       <property name="currentIndex">
-                        <number>4</number>
-                       </property>
-                       <item>
-                        <property name="text">
-                         <string>m</string>
                         </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QRadioButton" name="boundaryConditionTypeThinConductorRadio">
+                        <property name="text">
+                         <string>ThinConductor
+(EMerge only)</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item row="3" column="2">
+                     <spacer name="verticalSpacer_49">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Vertical</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Policy::Preferred</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="4" column="1">
+                     <widget class="QGroupBox" name="groupBox_4">
+                      <property name="title">
+                       <string>ThinConductor or SurfaceImpedance - EMerge settings</string>
+                      </property>
+                      <layout class="QVBoxLayout" name="verticalLayout_57">
+                       <item>
+                        <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceMaterial">
+                         <property name="placeholderText">
+                          <string>...material...</string>
+                         </property>
+                        </widget>
                        </item>
                        <item>
-                        <property name="text">
-                         <string>cm</string>
-                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_69">
+                         <property name="leftMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>5</number>
+                         </property>
+                         <item>
+                          <widget class="QLabel" name="label_187">
+                           <property name="text">
+                            <string>conductance</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceConductance">
+                           <property name="maximum">
+                            <double>1000000000000000.000000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
                        </item>
                        <item>
-                        <property name="text">
-                         <string>mm</string>
-                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_70">
+                         <property name="leftMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>5</number>
+                         </property>
+                         <item>
+                          <widget class="QLabel" name="label_188">
+                           <property name="text">
+                            <string>roughness</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceRoughness">
+                           <property name="decimals">
+                            <number>3</number>
+                           </property>
+                           <property name="maximum">
+                            <double>1000000000.000000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceRoughnessUnits">
+                           <property name="currentIndex">
+                            <number>4</number>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>m</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>cm</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>mm</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>um</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>nm</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>pm</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                        </layout>
                        </item>
                        <item>
-                        <property name="text">
-                         <string>um</string>
-                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_71">
+                         <property name="leftMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>5</number>
+                         </property>
+                         <item>
+                          <widget class="QLabel" name="label_189">
+                           <property name="text">
+                            <string>thickness</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceThickness">
+                           <property name="decimals">
+                            <number>3</number>
+                           </property>
+                           <property name="maximum">
+                            <double>1000000000.000000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceThicknessUnits">
+                           <property name="currentIndex">
+                            <number>3</number>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>m</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>cm</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>mm</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>um</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>nm</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>pm</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                        </layout>
                        </item>
-                       <item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item row="5" column="0">
+                     <widget class="QRadioButton" name="boundaryConditionTypeUserDefinedRadio">
+                      <property name="text">
+                       <string>UserDefined</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="boundaryConditionsTab_openemsTab">
+                <attribute name="title">
+                 <string>OpenEMS</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="verticalLayout_63">
+                 <item>
+                  <widget class="QGroupBox" name="groupBox_BoundaryConditionType_openEMS">
+                   <property name="title">
+                    <string>Boundary Condition - openEMS</string>
+                   </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_58">
+                    <item>
+                     <layout class="QHBoxLayout" name="horizontalLayout_72">
+                      <property name="leftMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>5</number>
+                      </property>
+                      <item>
+                       <widget class="QRadioButton" name="boundaryConditionTypeOpenEMS_Absorbing">
                         <property name="text">
-                         <string>nm</string>
+                         <string>MUR Absorbing</string>
                         </property>
-                       </item>
-                       <item>
-                        <property name="text">
-                         <string>pm</string>
+                        <property name="checkable">
+                         <bool>true</bool>
                         </property>
-                       </item>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_71">
-                     <property name="leftMargin">
-                      <number>5</number>
-                     </property>
-                     <property name="topMargin">
-                      <number>5</number>
-                     </property>
-                     <property name="rightMargin">
-                      <number>5</number>
-                     </property>
-                     <property name="bottomMargin">
-                      <number>5</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_189">
-                       <property name="text">
-                        <string>thickness</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QDoubleSpinBox" name="boundaryConditionTypeSurfaceImpedanceThickness">
-                       <property name="decimals">
-                        <number>3</number>
-                       </property>
-                       <property name="maximum">
-                        <double>1000000000.000000000000000</double>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QComboBox" name="boundaryConditionTypeSurfaceImpedanceThicknessUnits">
-                       <property name="currentIndex">
-                        <number>3</number>
-                       </property>
-                       <item>
-                        <property name="text">
-                         <string>m</string>
+                        <property name="checked">
+                         <bool>true</bool>
                         </property>
-                       </item>
-                       <item>
-                        <property name="text">
-                         <string>cm</string>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QGroupBox" name="groupBox_BoundaryConditionType_openEMS_MURAbsorbing">
+                        <property name="title">
+                         <string>MUR Absorbing - openEMS settings</string>
                         </property>
-                       </item>
-                       <item>
-                        <property name="text">
-                         <string>mm</string>
+                        <layout class="QVBoxLayout" name="verticalLayout_60">
+                         <item>
+                          <layout class="QVBoxLayout" name="verticalLayout_59">
+                           <property name="leftMargin">
+                            <number>5</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>5</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>5</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>5</number>
+                           </property>
+                           <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout_73">
+                             <item>
+                              <widget class="QLabel" name="label_191">
+                               <property name="text">
+                                <string>Type</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QComboBox" name="boundaryConditionTypeOpenEMS_Absorbing_Type">
+                               <item>
+                                <property name="text">
+                                 <string>MUR_1ST</string>
+                                </property>
+                               </item>
+                               <item>
+                                <property name="text">
+                                 <string>MUR_1ST_SA</string>
+                                </property>
+                               </item>
+                              </widget>
+                             </item>
+                            </layout>
+                           </item>
+                           <item>
+                            <widget class="QCheckBox" name="boundaryConditionTypeOpenEMS_Absorbing_NormalSignPositive">
+                             <property name="text">
+                              <string>NormalSignPositive</string>
+                             </property>
+                             <property name="checked">
+                              <bool>true</bool>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout_74">
+                             <property name="leftMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>5</number>
+                             </property>
+                             <item>
+                              <widget class="QLabel" name="label_192">
+                               <property name="text">
+                                <string>material permittivity</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QDoubleSpinBox" name="boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permittivity">
+                               <property name="decimals">
+                                <number>3</number>
+                               </property>
+                               <property name="maximum">
+                                <double>10000000.000000000000000</double>
+                               </property>
+                               <property name="singleStep">
+                                <double>0.100000000000000</double>
+                               </property>
+                               <property name="value">
+                                <double>1.000000000000000</double>
+                               </property>
+                              </widget>
+                             </item>
+                            </layout>
+                           </item>
+                           <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout_75">
+                             <property name="leftMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>5</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>5</number>
+                             </property>
+                             <item>
+                              <widget class="QLabel" name="label_193">
+                               <property name="text">
+                                <string>material permeability</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QDoubleSpinBox" name="boundaryConditionTypeOpenEMS_Absorbing_PhaseVelocity_Permeability">
+                               <property name="decimals">
+                                <number>3</number>
+                               </property>
+                               <property name="maximum">
+                                <double>10000000.000000000000000</double>
+                               </property>
+                               <property name="singleStep">
+                                <double>0.100000000000000</double>
+                               </property>
+                               <property name="value">
+                                <double>1.000000000000000</double>
+                               </property>
+                              </widget>
+                             </item>
+                            </layout>
+                           </item>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_62">
+                        <property name="orientation">
+                         <enum>Qt::Orientation::Horizontal</enum>
                         </property>
-                       </item>
-                       <item>
-                        <property name="text">
-                         <string>um</string>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
                         </property>
-                       </item>
-                       <item>
-                        <property name="text">
-                         <string>nm</string>
-                        </property>
-                       </item>
-                       <item>
-                        <property name="text">
-                         <string>pm</string>
-                        </property>
-                       </item>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-               </layout>
+                       </spacer>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <widget class="QRadioButton" name="boundaryConditionTypeOpenEMS_Unknown">
+                      <property name="text">
+                       <string>Unknown</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>true</bool>
+                      </property>
+                      <property name="checked">
+                       <bool>false</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QRadioButton" name="boundaryConditionTypeOpenEMS_UserDefined">
+                      <property name="text">
+                       <string>UserDefined</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>true</bool>
+                      </property>
+                      <property name="checked">
+                       <bool>false</bool>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_195">
+               <property name="text">
+                <string>UserDefined boundary condition code</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPlainTextEdit" name="boundaryConditionTypeUserDefinedTextInput">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="plainText">
+                <string>#available caculated variables, these are calculated for boundaries of each assigned object:
+#  boundaryStart = [x0, y0, z0]
+#  boundaryStop = [x1, y1, z1]
+#
+</string>
+               </property>
               </widget>
              </item>
              <item>
@@ -9944,6 +10288,9 @@ Transient use AMS</string>
                             <property name="maximum">
                              <double>100000000000.000000000000000</double>
                             </property>
+                            <property name="value">
+                             <double>40.000000000000000</double>
+                            </property>
                            </widget>
                           </item>
                           <item row="6" column="0">
@@ -10223,7 +10570,7 @@ Transient use AMS</string>
                         <item>
                          <widget class="QGroupBox" name="groupBox_11">
                           <property name="title">
-                           <string>Cutplane (meters)</string>
+                           <string>Cutplane (mm)</string>
                           </property>
                           <layout class="QHBoxLayout" name="horizontalLayout_67">
                            <item>
@@ -10625,9 +10972,10 @@ hr { height: 1px; border-width: 0; }
 li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://www.openems.de/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#005393;&quot;&gt;https://www.openems.de/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://www.emerge-software.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#005393;&quot;&gt;https://www.emerge-software.com/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://awslabs.github.io/palace/stable/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#005393;&quot;&gt;https://awslabs.github.io/palace/stable/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span&gt;OpenEMS solver by &lt;b&gt;Thorsten Liebig&lt;/b&gt;: &lt;a style=&quot; text-decoration: underline; color:#005393;&quot; href=&quot;https://www.openems.de/&quot;&gt;https://www.openems.de/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span&gt;EMerge solver by &lt;b&gt;Robert Fennis&lt;/b&gt;: &lt;a style=&quot; text-decoration: underline; color:#005393;&quot; href=&quot;https://www.emerge-software.com/&quot;&gt;https://www.emerge-software.com/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span&gt;Palace solver: &lt;a style=&quot; text-decoration: underline; color:#005393;&quot; href=&quot;https://awslabs.github.io/palace/stable/&quot;&gt;https://awslabs.github.io/palace/stable/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span&gt;KiCAD importer - fcad_pcb library by &lt;b&gt;realthunder&lt;/b&gt;, github: &lt;a style=&quot; text-decoration: underline; color:#005393;&quot; href=&quot;https://github.com/realthunder/fcad_pcb&quot;&gt;https://github.com/realthunder/fcad_pcb&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>

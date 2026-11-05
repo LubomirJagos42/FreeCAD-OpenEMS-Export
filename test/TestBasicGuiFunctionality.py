@@ -5,6 +5,8 @@ import os
 import sys
 import inspect
 
+import time
+
 # Add parent dir to system path to instantiate FreeCAD simulation creator gui
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -68,18 +70,21 @@ class TestMaterialCategory(MacroTestBase):
         self.appWindow.form.materialMetalRadioButton.toggle()
         self.appWindow.form.materialSettingsAddButton.clicked.emit()
         self.assertEqual(materialCategoryItem.childCount(), 2)
+        time.sleep(1)
 
         #add second material
         self.appWindow.form.materialSettingsNameInput.setText("auto material 2")
         self.appWindow.form.materialMetalRadioButton.toggle()
         self.appWindow.form.materialSettingsAddButton.clicked.emit()
         self.assertEqual(materialCategoryItem.childCount(), 3)
+        time.sleep(1)
 
         #add third material
         self.appWindow.form.materialSettingsNameInput.setText("auto material 3")
         self.appWindow.form.materialMetalRadioButton.toggle()
         self.appWindow.form.materialSettingsAddButton.clicked.emit()
         self.assertEqual(materialCategoryItem.childCount(), 4)
+        time.sleep(1)
 
     def test_material_addItemToMaterial(self):
         assert self.appWindow.form.objectAssignmentLeftTreeWidget.topLevelItemCount() >= 2
@@ -99,6 +104,7 @@ class TestMaterialCategory(MacroTestBase):
 
         # click on move right button to assign objects to material
         self.appWindow.form.moveRightButton.click()
+        time.sleep(1)
 
         #
         #   Test checking if everything was assigned to material
@@ -107,6 +113,7 @@ class TestMaterialCategory(MacroTestBase):
         assert materialItemPEC.childCount() == 2
         for k in range(materialItemPEC.childCount()):
             assert materialItemPEC.child(k).text(0) == leftItems[k].text(0)
+            time.sleep(1)
 
         #
         #   Check priority list if material items were added into it
@@ -118,6 +125,7 @@ class TestMaterialCategory(MacroTestBase):
             priorityItemLabel = priorityItem.text(0)
             expectedLabel = f"Material, PEC, {leftItems[k].text(0)}"
             self.assertEqual(expectedLabel, priorityItemLabel)
+            time.sleep(1)
 
 #
 #   Running all tests

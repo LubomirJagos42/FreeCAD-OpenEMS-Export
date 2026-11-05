@@ -303,6 +303,12 @@ class IniFile0v1:
                 except Exception as e:
                     print(f"{__file__} > write() modal ERROR: {e}")
 
+            elif (portList[k].type == "userdefined"):
+                try:
+                    settings.setValue("userDefinedData", portList[k].userDefinedData)
+                except Exception as e:
+                    print(f"{__file__} > write() userdefined ERROR: {e}")
+
             settings.endGroup()
 
         #
@@ -366,6 +372,8 @@ class IniFile0v1:
         simulationSettings.params['min_gridspacing_y'] = self.form.genParamMinGridSpacingY.value()
         simulationSettings.params['min_gridspacing_z'] = self.form.genParamMinGridSpacingZ.value()
         simulationSettings.params['OverSampling'] = self.form.simParamsOverSampling.value()
+
+        simulationSettings.params['useGPU'] = self.form.simParamsUseGPU.isChecked()
 
         #write all settings from "Simulation Params" tab from EMerge tab
         simulationSettings.params['base_length_unit_m_emerge'] = self.form.simParamsDeltaUnitList_emerge.currentText()
@@ -443,6 +451,9 @@ class IniFile0v1:
             settings.setValue("type", boundaryConditionList[k].type)
             settings.setValue("customType", boundaryConditionList[k].customType)
             settings.setValue("surfaceImpedance", json.dumps(boundaryConditionList[k].surfaceImpedance))
+            settings.setValue("thinConductor", json.dumps(boundaryConditionList[k].thinConductor))
+            settings.setValue("openemsAbsorber", json.dumps(boundaryConditionList[k].openemsAbsorber))
+            settings.setValue("userDefined", boundaryConditionList[k].userDefined)
             settings.endGroup()
 
         # SAVE OBJECT ASSIGNMENTS
@@ -771,8 +782,14 @@ class IniFile0v1:
                 elif (categorySettings.type == "modal"):
                     try:
                         categorySettings.modalModeType = settings.value('modeType')
-                        categorySettings.modalMixedMaterials = settings.value('mixedMaterials')
+                        categorySettings.modalMixedMaterials = _bool(settings.value('mixedMaterials'))
                         categorySettings.modalImpedanceDefinition = settings.value('impedanceDefinition')
+                    except Exception as e:
+                        print(f"There was error during reading modal port settings: {e}")
+
+                elif (categorySettings.type == "userdefined"):
+                    try:
+                        categorySettings.userDefinedData = settings.value('userDefinedData')
                     except Exception as e:
                         print(f"There was error during reading modal port settings: {e}")
 
@@ -929,6 +946,13 @@ class IniFile0v1:
                 except:
                     pass
 
+                #   option use GPU for openEMS on simulation params tab
+                try:
+                    self.form.simParamsUseGPU.setChecked(simulationSettings.params['useGPU'])
+                except:
+                    pass
+
+
                 #
                 #   try catch block here due backward compatibility, loading simulation settings for palace solver tab
                 #
@@ -1077,7 +1101,14 @@ class IniFile0v1:
                 categorySettings.name = itemName
                 categorySettings.type = settings.value('type')
                 categorySettings.customType = settings.value('customType')
-                categorySettings.surfaceImpedance = json.loads(settings.value('surfaceImpedance'))
+
+                try:
+                    categorySettings.surfaceImpedance = json.loads(settings.value('surfaceImpedance'))
+                    categorySettings.thinConductor = json.loads(settings.value('thinConductor'))
+                    categorySettings.openemsAbsorber = json.loads(settings.value('openemsAbsorber'))
+                    categorySettings.userDefined = settings.value('userDefined')
+                except:
+                    pass
 
                 settings.endGroup()
 
